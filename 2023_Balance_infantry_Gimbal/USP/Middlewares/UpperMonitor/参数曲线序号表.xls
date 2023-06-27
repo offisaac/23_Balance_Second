@@ -1,0 +1,8 @@
+left_fri_speedloop.Target	0
+left_fri_speedloop.Current	1
+right_fri_speedloop.Target	2
+right_fri_speedloop.Current	3
+heat_limit	4
+booster_heat	5
+bullet_speed	6
+booster_maxspeed	7
