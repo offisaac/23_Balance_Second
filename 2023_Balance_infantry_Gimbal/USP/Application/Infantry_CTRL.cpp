@@ -691,7 +691,7 @@ void InfantryCTRL_Classdef::Actuate()
 	gimbal.Pack_CAN(1, &can1_cob);
 	gimbal.Pack_CAN(2, &can2_cob);
 	xQueueSend(CAN1_TxPort, &can1_cob.Id1ff, 0);
-	xQueueSend(CAN2_TxPort, &can2_cob.Id1ff, 0); // 此处2号电机应用1ff
+	xQueueSend(CAN2_TxPort, &can2_cob.Id1ff, 0);
 	/*小发射*/
 	booster.Pack_CAN(&can1_cob);
 	xQueueSend(CAN1_TxPort, &can1_cob.Id200, 0);
