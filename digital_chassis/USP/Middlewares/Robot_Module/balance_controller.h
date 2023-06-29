@@ -269,17 +269,12 @@ public:
 	float lqr_yaw_kp = 0;
 	float lqr_yawSpeed_kp = 0;
 
-	float speed_gain = 0.0f; //用于统一速度单位
-	// float debug_feedforward = 130 * 0.1f / 2 * 2.8f / 20 * 16384;
-	float debug_feedforward = 0.5f * 13.721f * 9.8f * 0.12537f / 4.6f * 13.0f / 20.0f * 16384.0f;
+	float debug_feedforward = 0.5f * 13.721f * 9.8f * 0.12537f;//0.5*mg*l
 	float distance_max = 0.0f;
 	int distance_count = 50; //目标距离设置计数
 	int distance_delay = 1;	 //距离环使能阈值，可用于距离环延迟执行（减小减速停车倒回问题）
 
-	float max_torque = 4.6f;											// 3508最大力矩
-	float max_current = 13.0f / 20.0f * 16384.0f; //最大力矩对应电流（说明书曲线）
-
-	float torque_scale = 0.5f; //力矩系数，用于抵消模型与实际
+	float torque_scale = 1.f; //力矩系数，用于抵消模型与实际
 	float turn_scale = 0.2f;
 
 	float balance_point = 0.0f;

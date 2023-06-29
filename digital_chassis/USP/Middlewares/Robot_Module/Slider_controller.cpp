@@ -1,6 +1,7 @@
 #include "Slider_controller.h"
 
-SliderControllerClassdef::SliderControllerClassdef()
+//////////////////////////////////////////// 2006滑块 //////////////////////////////////////////////////////////
+SliderControllerClassdef<Motor_C610>::SliderControllerClassdef()
 {
     slider[RIGHT_JOINT].positionLoop.SetPIDParam(5, 0, 0, 10, 300);
     slider[LEFT_JOINT].positionLoop.SetPIDParam(5, 0, 0, 10, 300);
@@ -9,7 +10,7 @@ SliderControllerClassdef::SliderControllerClassdef()
     slider[RIGHT_JOINT].speedLoop.SetPIDParam(50, 1, 0, 2000, 10000);
 }
 
-void SliderControllerClassdef::init()
+void SliderControllerClassdef<Motor_C610>::init()
 {
     float originOutMax[2];
     uint16_t cnt[2] = {200, 200};
@@ -85,7 +86,7 @@ void SliderControllerClassdef::init()
     }
 }
 
-void SliderControllerClassdef::update(float targetPos[2])
+void SliderControllerClassdef<Motor_C610>::update(float targetPos[2])
 {
     for (int i = 0; i < 2; i++)
     {
@@ -93,7 +94,7 @@ void SliderControllerClassdef::update(float targetPos[2])
     }
 }
 
-void SliderControllerClassdef::adjust()
+void SliderControllerClassdef<Motor_C610>::adjust()
 {
     for (int i = 0; i < 2; i++)
     {
@@ -101,7 +102,7 @@ void SliderControllerClassdef::adjust()
     }
 }
 
-void SliderControllerClassdef::acutate()
+void SliderControllerClassdef<Motor_C610>::acutate()
 {
     if (canTxPort == nullptr)
     {
@@ -112,7 +113,7 @@ void SliderControllerClassdef::acutate()
     xQueueSend(canTxPort, &(canTxPack.Id200), 0);
 }
 
-void SliderControllerClassdef::updateMotorData(CAN_COB *CAN_RxMsg)
+void SliderControllerClassdef<Motor_C610>::updateMotorData(CAN_COB *CAN_RxMsg)
 {
     if (slider[0].motor.CheckID(CAN_RxMsg->ID))
     {
@@ -126,7 +127,73 @@ void SliderControllerClassdef::updateMotorData(CAN_COB *CAN_RxMsg)
     }
 }
 
-void SliderControllerClassdef::clear()
+void SliderControllerClassdef<Motor_C610>::clear()
+{
+    slider[0].clearCommand();
+    slider[1].clearCommand();
+    acutate();
+}
+
+
+//////////////////////////////////////////// 6020滑块 //////////////////////////////////////////////////////////
+SliderControllerClassdef<Motor_GM6020>::SliderControllerClassdef()
+{
+    slider[RIGHT_JOINT].positionLoop.SetPIDParam(5, 0, 0, 10, 300);
+    slider[LEFT_JOINT].positionLoop.SetPIDParam(5, 0, 0, 10, 300);
+
+    slider[RIGHT_JOINT].speedLoop.SetPIDParam(50, 1, 0, 2000, 10000);
+    slider[LEFT_JOINT].speedLoop.SetPIDParam(50, 1, 0, 2000, 10000);
+
+    slider[RIGHT_JOINT].setEncoderOffset(500);
+    slider[LEFT_JOINT].setEncoderOffset(1050);
+}
+
+void SliderControllerClassdef<Motor_GM6020>::init()
+{
+}
+
+void SliderControllerClassdef<Motor_GM6020>::update(float targetPos[2])
+{
+    for (int i = 0; i < 2; i++)
+    {
+        slider[i].update(targetPos[i]);
+    }
+}
+
+void SliderControllerClassdef<Motor_GM6020>::adjust()
+{
+    for (int i = 0; i < 2; i++)
+    {
+        slider[i].adjust();
+    }
+}
+
+void SliderControllerClassdef<Motor_GM6020>::acutate()
+{
+    if (canTxPort == nullptr)
+    {
+        return;
+    }
+
+    canTxPack = MotorMsgPack(canTxPack, slider[0].motor, slider[1].motor);
+    xQueueSend(canTxPort, &(canTxPack.Id200), 0);
+}
+
+void SliderControllerClassdef<Motor_GM6020>::updateMotorData(CAN_COB *CAN_RxMsg)
+{
+    if (slider[0].motor.CheckID(CAN_RxMsg->ID))
+    {
+        slider[0].motor.update(CAN_RxMsg->Data);
+        sliderMotorInit[0] = true;
+    }
+    else if (slider[1].motor.CheckID(CAN_RxMsg->ID))
+    {
+        slider[1].motor.update(CAN_RxMsg->Data);
+        sliderMotorInit[1] = true;
+    }
+}
+
+void SliderControllerClassdef<Motor_GM6020>::clear()
 {
     slider[0].clearCommand();
     slider[1].clearCommand();

@@ -4,33 +4,91 @@
 #include "abstractMotor.h"
 #include "public_define.h"
 
+template <class motorType>
 class SliderClassdef
 {
 private:
     float posRatio = 1;
     float targetPos = 0, currentPos = 0;
-    abstractMotor<Motor_C610> absMotor;
+    float ratioGear = 1.f; //减速比
+    abstractMotor<motorType> absMotor;
 
 public:
-    Motor_C610 motor;
+    motorType motor;
     myPID positionLoop, speedLoop;
 
-    SliderClassdef(uint8_t id, int8_t _Polarity = 1, float _posRatio = 1);
+    SliderClassdef(uint8_t id, int8_t _Polarity, float _posRatio, float _ratioGear)
+        : motor(id)
+    {
+        absMotor.bindMotor(&motor);
+        setPolarity(_Polarity);
+        setPosRatio(_posRatio);
+        ratioGear = fabsf(_ratioGear);
+
+        absMotor.speed_unit_convert = 1 / ratioGear;
+    }
     void setPosRatio(float _posRatio)
     {
         posRatio = _posRatio;
-        absMotor.angle_unit_convert = 1 / 36.f * posRatio;
+        absMotor.angle_unit_convert = 1 / ratioGear * posRatio;
     }
-    void setPolarity(int8_t _Polarity);
+
     void setOffset(float _offset) { absMotor.baseAngle = -_offset; }
+    void setEncoderOffset(uint16_t _offset) { absMotor.setEncoderOffset(_offset); }
     float getCurrentSpeed() { return absMotor.getMotorSpeed(); }
     float getCurrentPos() { return currentPos = absMotor.getMotorTotalAngle(); }
 
-    void controlSpeed(float targetVel); // 速度控制，用于初始化使用
+    void setPolarity(int8_t _Polarity)
+    {
+        if (_Polarity != 1 && _Polarity != -1)
+        {
+            return;
+        }
+        else
+        {
+            absMotor.Polarity = _Polarity;
+            return;
+        }
+    }
 
-    void update(float _targetPos);
-    void adjust();
-    void clearCommand(); //清除滑块控制量，关闭输出
+    void controlSpeed(float targetVel)
+    {
+        speedLoop.Target = targetVel;
+        speedLoop.Current = absMotor.getMotorSpeed();
+        speedLoop.Adjust();
+        absMotor.setMotorCurrentOut(speedLoop.Out);
+    }
+
+    void update(float _targetPos)
+    {
+        targetPos = _targetPos;
+        currentPos = absMotor.getMotorTotalAngle();
+    }
+
+    void adjust()
+    {
+        positionLoop.Target = targetPos;
+        positionLoop.Current = currentPos;
+
+        speedLoop.Target = positionLoop.Adjust();
+        speedLoop.Current = absMotor.getMotorSpeed();
+        speedLoop.Adjust();
+
+        absMotor.setMotorCurrentOut(speedLoop.Out);
+    }
+
+    void clearCommand()
+    {
+        // positionLoop.Target = 0;
+        // positionLoop.Current = 0;
+        // positionLoop.I_Term = 0;
+
+        // speedLoop.Target = 0;
+        // speedLoop.Current = 0;
+        // speedLoop.I_Term = 0;
+
+        absMotor.setMotorCurrentOut(0);
+    }
 };
 
 #endif

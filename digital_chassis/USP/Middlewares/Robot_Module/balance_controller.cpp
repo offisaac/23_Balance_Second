@@ -543,16 +543,16 @@ void Controller<LQR>::Controller_Adjust()
             target_pos.pitch = balance_point;
         }
         /*直立环*/
-        output.stand_out = torque_scale * stand_adjust() / max_torque * max_current;
+        output.stand_out = torque_scale * stand_adjust();
         /*速度环*/
-        output.speed_out = torque_scale * speed_adjust() / max_torque * max_current;
+        output.speed_out = torque_scale * speed_adjust();
         if (break_flag)
         {
-            output.speed_out = std_lib::constrain(output.speed_out, -12000.0f, 12000.0f);
+            output.speed_out = std_lib::constrain(output.speed_out, -4.0f, 4.0f);
         }
         else
         {
-            output.speed_out = std_lib::constrain(output.speed_out, -10000.0f, 10000.0f);
+            output.speed_out = std_lib::constrain(output.speed_out, -3.0f, 3.0f);
         }
         /*距离环*/
         if (distance_flag && !is_rotation)
@@ -579,13 +579,13 @@ void Controller<LQR>::Controller_Adjust()
             distance_count = 0;
             distance_enable = false;
         }
-        output.distance_out = torque_scale * distance_adjust() / max_torque * max_current;
+        output.distance_out = torque_scale * distance_adjust();
         debug_out_A = output.distance_out;
         /*转向环*/
-        output.turn_out = turn_scale * turn_adjust() / max_torque * max_current;
+        output.turn_out = turn_scale * turn_adjust();
         if (is_rotation == 0)
         {
-            output.turn_out = std_lib::constrain(output.turn_out, -7500.f, 7500.f);
+            output.turn_out = std_lib::constrain(output.turn_out, -2.5f, 2.5f);
         }
         /*前馈*/
         output.feedforward_out = stand_feedforward();
@@ -822,10 +822,8 @@ float Controller<LQR>::distance_adjust()
  */
 float Controller<LQR>::stand_adjust()
 {
-    float pitch_error = (target_pos.pitch - current_pos.pitch) / 180.0f * PI;
-    float pitchSpeed_error = -current_angularSpeed.pitch / 180.0f * PI;
-    debug_out_H = pitch_error * lqr_pitch_kp;
-    debug_out_I = pitchSpeed_error * lqr_pitchSpeed_kp;
+    float pitch_error = target_pos.pitch - current_pos.pitch;
+    float pitchSpeed_error = 0 - current_angularSpeed.pitch;
     return pitch_error * lqr_pitch_kp + pitchSpeed_error * lqr_pitchSpeed_kp;
 }
 
@@ -838,12 +836,8 @@ float Controller<LQR>::stand_adjust()
  */
 float Controller<LQR>::speed_adjust()
 {
-    float current_speed = current_linearSpeed.y;
-    static MeanFilter<50> speed_mf1;
-    current_speed = speed_mf1.f(current_speed);
-    float speed_error = target_linearSpeed.y - current_speed;
-    float speed_out = speed_error * lqr_speed_kp;
-    return speed_out;
+    float speed_error = target_linearSpeed.y - current_linearSpeed.y;
+    return speed_error * lqr_speed_kp;
 }
 
 /**
@@ -855,8 +849,8 @@ float Controller<LQR>::speed_adjust()
  */
 float Controller<LQR>::turn_adjust()
 {
-    float yaw_error = (target_pos.yaw - current_pos.yaw) / 180.0f * PI;
-    float yawSpeed_error = (target_angularSpeed.yaw - current_angularSpeed.yaw) / 180.0f * PI;
+    float yaw_error = target_pos.yaw - current_pos.yaw;
+    float yawSpeed_error = target_angularSpeed.yaw - current_angularSpeed.yaw;
     return yaw_error * lqr_yaw_kp + yawSpeed_error * lqr_yawSpeed_kp;
 }
 
@@ -872,11 +866,11 @@ float Controller<LQR>::stand_feedforward()
     float error = 0 - current_pos.pitch;
     if (error > 0)
     {
-        return -debug_feedforward * arm_sin_f32(fabsf(error) * 3.14f / 180.0f);
+        return -debug_feedforward * arm_sin_f32(fabsf(error));
     }
     else
     {
-        return debug_feedforward * arm_sin_f32(fabsf(error) * 3.14f / 180.0f);
+        return debug_feedforward * arm_sin_f32(fabsf(error));
     }
 }
 

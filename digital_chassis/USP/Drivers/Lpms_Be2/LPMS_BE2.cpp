@@ -51,13 +51,13 @@
  */
 void LPMS_BE2_Typedef::LPMS_BE2_Init()
 {
-//    goto_command_mode();
-//    set_imu_id(sensor_id);
-//    set_stream_freq(stream_freq);
-//    LPMS_BE2_Data_Type(data_type);
-//    LPMS_BE2_Data_Range(gyr_range, acc_range, degrad_unit);
-//    LPMS_BE2_Filter_Mode(filter_mode, is_auto_cali, filter_mode);
-//    goto_stream_mode();
+    //    goto_command_mode();
+    //    set_imu_id(sensor_id);
+    //    set_stream_freq(stream_freq);
+    //    LPMS_BE2_Data_Type(data_type);
+    //    LPMS_BE2_Data_Range(gyr_range, acc_range, degrad_unit);
+    //    LPMS_BE2_Filter_Mode(filter_mode, is_auto_cali, filter_mode);
+    //    goto_stream_mode();
     is_init = true;
 }
 
@@ -212,7 +212,7 @@ void LPMS_BE2_Typedef::LPMS_BE2_Send_Command(CommandPack_Structdef *command_pack
 
     if (data_length == 0x04)
     {
-        memcpy(send_data_large, command_pack, sizeof(CommandPack_Structdef)); //完整数据包直接复制
+        memcpy(send_data_large, command_pack, sizeof(CommandPack_Structdef)); // 完整数据包直接复制
         Command_Cobe.address = send_data_large;
         Command_Cobe.len = sizeof(send_data_large);
     }
@@ -282,15 +282,30 @@ void LPMS_BE2_Typedef::LPMS_BE2_Data_Convert()
         unity_data.calAccX = (float)data_16bit.calAccX / 1000.f;
         unity_data.calAccY = (float)data_16bit.calAccY / 1000.f;
         unity_data.calAccZ = (float)data_16bit.calAccZ / 1000.f;
-        unity_data.rawGyroX = (float)data_16bit.rawGyroX / 10.f;
-        unity_data.rawGyroY = (float)data_16bit.rawGyroY / 10.f;
-        unity_data.rawGyroZ = (float)data_16bit.rawGyroZ / 10.f;
-        unity_data.caliGyroX = (float)data_16bit.caliGyroX / 10.f;
-        unity_data.caliGyroY = (float)data_16bit.caliGyroY / 10.f;
-        unity_data.caliGyroZ = (float)data_16bit.caliGyroZ / 10.f;
-        unity_data.aligGyroX = (float)data_16bit.aligGyroX / 10.f;
-        unity_data.aligGyroY = (float)data_16bit.aligGyroY / 10.f;
-        unity_data.aligGyroZ = (float)data_16bit.aligGyroZ / 10.f;
+        if (degrad_unit == RADIAN)
+        {
+            unity_data.rawGyroX = (float)data_16bit.rawGyroX / 100.f;
+            unity_data.rawGyroY = (float)data_16bit.rawGyroY / 100.f;
+            unity_data.rawGyroZ = (float)data_16bit.rawGyroZ / 100.f;
+            unity_data.caliGyroX = (float)data_16bit.caliGyroX / 100.f;
+            unity_data.caliGyroY = (float)data_16bit.caliGyroY / 100.f;
+            unity_data.caliGyroZ = (float)data_16bit.caliGyroZ / 100.f;
+            unity_data.aligGyroX = (float)data_16bit.aligGyroX / 100.f;
+            unity_data.aligGyroY = (float)data_16bit.aligGyroY / 100.f;
+            unity_data.aligGyroZ = (float)data_16bit.aligGyroZ / 100.f;
+        }
+        else if (degrad_unit == DEGREE)
+        {
+            unity_data.rawGyroX = (float)data_16bit.rawGyroX / 10.f;
+            unity_data.rawGyroY = (float)data_16bit.rawGyroY / 10.f;
+            unity_data.rawGyroZ = (float)data_16bit.rawGyroZ / 10.f;
+            unity_data.caliGyroX = (float)data_16bit.caliGyroX / 10.f;
+            unity_data.caliGyroY = (float)data_16bit.caliGyroY / 10.f;
+            unity_data.caliGyroZ = (float)data_16bit.caliGyroZ / 10.f;
+            unity_data.aligGyroX = (float)data_16bit.aligGyroX / 10.f;
+            unity_data.aligGyroY = (float)data_16bit.aligGyroY / 10.f;
+            unity_data.aligGyroZ = (float)data_16bit.aligGyroZ / 10.f;
+        }
         unity_data.angularSpeedX = (float)data_16bit.angularSpeedX / 100.f;
         unity_data.angularSpeedY = (float)data_16bit.angularSpeedY / 100.f;
         unity_data.angularSpeedZ = (float)data_16bit.angularSpeedZ / 100.f;
@@ -298,31 +313,41 @@ void LPMS_BE2_Typedef::LPMS_BE2_Data_Convert()
         unity_data.Quaternion2 = (float)data_16bit.Quaternion2 / 10000.f;
         unity_data.Quaternion3 = (float)data_16bit.Quaternion3 / 10000.f;
         unity_data.Quaternion4 = (float)data_16bit.Quaternion4 / 10000.f;
-        unity_data.Euler_Roll = (float)data_16bit.Euler_Roll / 100.f;
-        unity_data.Euler_Pitch = (float)data_16bit.Euler_Pitch / 100.f;
-        unity_data.Euler_Yaw = (float)data_16bit.Euler_Yaw / 100.f;
+        if (degrad_unit == RADIAN)
+        {
+            unity_data.Euler_Roll = (float)data_16bit.Euler_Roll / 10000.f;
+            unity_data.Euler_Pitch = (float)data_16bit.Euler_Pitch / 10000.f;
+            unity_data.Euler_Yaw = (float)data_16bit.Euler_Yaw / 10000.f;
+        }
+        else if (degrad_unit == DEGREE)
+        {
+            unity_data.Euler_Roll = (float)data_16bit.Euler_Roll / 100.f;
+            unity_data.Euler_Pitch = (float)data_16bit.Euler_Pitch / 100.f;
+            unity_data.Euler_Yaw = (float)data_16bit.Euler_Yaw / 100.f;
+        }
         unity_data.linearAccX = (float)data_16bit.linearAccX / 1000.f;
         unity_data.linearAccY = (float)data_16bit.linearAccY / 1000.f;
         unity_data.linearAccZ = (float)data_16bit.linearAccZ / 1000.f;
         unity_data.temperature = (float)data_16bit.temperature / 100.f;
     }
-//		static float last_timeStamp = 0;
-//		if(unity_data.timestamp != last_timeStamp)
-//		{
-//			link_count = 0;
-//		}
-//		else
-//		{
-//			link_count++;
-//		}
-//		last_timeStamp = unity_data.timestamp;
-//		if(link_count>100)
-//		{
-//			goto_stream_mode();
-//			link_count = 0;
-//		}
-//		else
-//		{}
+    static float last_timeStamp = 0;
+    if (unity_data.timestamp != last_timeStamp)
+    {
+        link_count = 0;
+    }
+    else
+    {
+        link_count++;
+    }
+    last_timeStamp = unity_data.timestamp;
+    if (link_count > 100)
+    {
+        goto_stream_mode();
+        link_count = 0;
+    }
+    else
+    {
+    }
 }
 
 /**
@@ -334,9 +359,9 @@ void LPMS_BE2_Typedef::LPMS_BE2_Data_Convert()
  */
 void LPMS_BE2_Typedef::LPMS_BE2_Data_Update(uint8_t *_data)
 {
-    uint8_t point = 0;      //用于指向串口数据包不同位置
-    uint8_t head_size = 11; //起始数据11个字节
-    uint8_t tail_size = 4;  //结尾数据4个字节
+    uint8_t point = 0;      // 用于指向串口数据包不同位置
+    uint8_t head_size = 11; // 起始数据11个字节
+    uint8_t tail_size = 4;  // 结尾数据4个字节
 
     if (data_type == DATA_32BIT)
     {
@@ -445,7 +470,7 @@ void LPMS_BE2_Typedef::LPMS_BE2_Data_Update(uint8_t *_data)
  */
 void LPMS_BE2_Typedef::LPMS_BE2_Data_Type(uint32_t _data_type)
 {
-    set_lpbus_data_precision(_data_type); //改为16bit模式会产生无应答信号，问题在排查
+    set_lpbus_data_precision(_data_type); // 改为16bit模式会产生无应答信号，问题在排查
     set_imu_transmit_data();
 }
 
@@ -462,7 +487,7 @@ void LPMS_BE2_Typedef::LPMS_BE2_Data_Range(uint32_t _gyr_range, uint32_t _acc_ra
 {
     set_gyr_range(_gyr_range);
     set_acc_range(_acc_range);
-    set_degrad_output(_degrad_unit); //无应答信号，暂时默认为弧度输出
+    set_degrad_output(_degrad_unit); // 无应答信号，暂时默认为弧度输出
 }
 
 /**
@@ -478,7 +503,7 @@ void LPMS_BE2_Typedef::LPMS_BE2_Filter_Mode(uint32_t _filter_mode, uint32_t _aut
 {
     set_filter_mode(_filter_mode);
     set_enable_gyr_autocalibration(_auto_cali);
-//    set_orientation_offset(_offset_mode);
+    //    set_orientation_offset(_offset_mode);
 }
 
 /**

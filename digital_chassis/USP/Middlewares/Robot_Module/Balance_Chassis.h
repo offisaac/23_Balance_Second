@@ -27,6 +27,8 @@
 #define DPS_TO_RPM 1.0f * 60.0f / 360.0f             //把陀螺仪角速度（dps）转化为转速(rpm)
 #define CTRL_INTERAL 0.003f                           //控制周期
 #define POWER_ENERGY_MAX 150.0f
+#define DEGREE_TO_RAD PI/180.f
+#define COM_9025_TORQUE_RATIO  1.f / 0.32f * 2048.f / 16.5f
 
 //左右电机编号
 enum _chassis_WheelEnumdef
@@ -129,7 +131,7 @@ public:
     void Source_Init();
     void Source_Adjust(); //电源管理控制
     //引入类型
-    MotorMF9025v2Classdef wheel_motor[2] = {MotorMF9025v2Classdef(1), MotorMF9025v2Classdef(2)};
+    MotorMF9025v2Classdef wheel_motor[2] = {MotorMF9025v2Classdef(2), MotorMF9025v2Classdef(1)};
     abstractMotor<MotorMF9025v2Classdef> absWheelMotor[2];
     abstractIMUClassdef<LPMS_BE2_Typedef> absLpms;
     Controller<LQR> balance_controller; //底盘控制器
@@ -142,7 +144,7 @@ public:
     GimbalCom_Classdef Board_Com;         //裁判系统交互
     PowerCtrl_ClassDef Power_Ctrl;        //功率控制
     LPMS_BE2_Typedef LPMS;                //陀螺仪
-    SliderControllerClassdef Slider_Ctrl; //滑块控制器
+    SliderControllerClassdef<Motor_GM6020> Slider_Ctrl; //滑块控制器
 
     //切换状态函数
     void Status_Switching(State_Base *_state)
@@ -190,7 +192,6 @@ public:
     //通信及其变量部分
     Gimbal_Data_Structdef gimbal_data; //云台数据结构体
     uint8_t auto_mode;                 //视觉模式
-    QueueHandle_t *motor_queue;        //电机通信队列接口
     QueueHandle_t *board_queue;        //板件通信队列接口
     /*底盘控制器*/
     // float (*balance_controller)(const float pos_current, const float pos_target,const float speed_current,const float speed_target) = NULL;

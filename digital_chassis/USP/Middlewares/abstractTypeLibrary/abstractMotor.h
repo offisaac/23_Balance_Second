@@ -303,6 +303,58 @@ private:
         motor->Out = out;
     };
 };
+
+template <>
+class abstractMotor<Motor_GM6020> : public abMotor::abstractMotorBase
+{
+public:
+    Motor_GM6020 *motor = nullptr;
+    void bindMotor(Motor_GM6020 *_motor) { motor = _motor; }
+    bool CheckID(uint32_t id)
+    {
+        if (motor == nullptr)
+            return 0;
+        return motor->CheckID(id);
+    }
+    void update(uint8_t can_rx_data[])
+    {
+        if (motor == nullptr)
+            return;
+        motor->update(can_rx_data);
+    }
+    void setEncoderOffset(uint16_t offset)
+    {
+        if (motor == nullptr)
+            return;
+        motor->setEncoderOffset(offset);
+    }
+
+private:
+    virtual float getRawMotorTotalAngle()
+    {
+        if (motor == nullptr)
+            return 0;
+        return motor->getAngle();
+    };
+    virtual float getRawMotorAngle()
+    {
+        if (motor == nullptr)
+            return 0;
+        return motor->getEncoder() / 8192.f * 360;
+    };
+    virtual float getRawMotorSpeed()
+    {
+        if (motor == nullptr)
+            return 0;
+        return motor->getSpeed();
+    };
+    virtual void setRawMotorCurrentOut(float out)
+    {
+        if (motor == nullptr)
+            return;
+        motor->Out = out;
+    };
+};
 #endif
 
 #endif

@@ -1,21 +1,21 @@
 /**
-	******************************************************************************
-	* Copyright (c) 2021 - ~, SCUT-RobotLab Development Team
-	* @file    LPMS_BE2.h
-	* @author  ZhiRui Zhang 2231625449@qq.com
-	* @brief   Header file of LPMS-BE2.
-	******************************************************************************
-	* @attention
-	* 
-	* if you had modified this file, please make sure your code does not have many 
-	* bugs, update the version Number, write dowm your name and the date, the most
-	* important is make sure the users will have clear and definite understanding 
-	* through your new brief.
-	*
-	* <h2><center>&copy; Copyright (c) 2019 - ~, SCUT-RobotLab Development Team.
-	* All rights reserved.</center></h2>
-	******************************************************************************
-	*/
+ ******************************************************************************
+ * Copyright (c) 2021 - ~, SCUT-RobotLab Development Team
+ * @file    LPMS_BE2.h
+ * @author  ZhiRui Zhang 2231625449@qq.com
+ * @brief   Header file of LPMS-BE2.
+ ******************************************************************************
+ * @attention
+ *
+ * if you had modified this file, please make sure your code does not have many
+ * bugs, update the version Number, write dowm your name and the date, the most
+ * important is make sure the users will have clear and definite understanding
+ * through your new brief.
+ *
+ * <h2><center>&copy; Copyright (c) 2019 - ~, SCUT-RobotLab Development Team.
+ * All rights reserved.</center></h2>
+ ******************************************************************************
+ */
 #ifndef _LPMS_BE2_H_
 #define _LPMS_BE2_H_
 
@@ -23,15 +23,15 @@
 #include "SRML.h"
 #include "FreeRTOS.h"
 #include "queue.h"
-//#include "internal.h"
+// #include "internal.h"
 
 /* Private macros ------------------------------------------------------------*/
 /* 数据选择开关 */
 #define RAW_ACC 			0		// 原始的加速度数据
-#define CAL_ACC 			1		// 校准的加速度数据
+#define CAL_ACC 			0		// 校准的加速度数据
 #define RAW_GYRO 			0		// 原始的陀螺仪数据
 #define CALI_GYRO 		1		// 静止偏差校准后的陀螺仪数据
-#define ALIG_GYRO 		0		// 坐标轴校准后的陀螺仪数据
+#define ALIG_GYRO 		1		// 坐标轴校准后的陀螺仪数据
 #define ANGULAR_SPEED 0 	// 角速度
 #define QUETERNION 		0		// 四元数
 #define EULER 				1		// 欧拉角
@@ -39,44 +39,44 @@
 #define TEMPERATURE 	0		// 温度
 
 /* 参数设置宏定义 */
-//数据类型
+// 数据类型
 #define DATA_32BIT 1
 #define DATA_16BIT 0
-//陀螺仪量程范围
-#define GYR_RANGE_125DPS 	125
-#define GYR_RANGE_250DPS 	250
-#define GYR_RANGE_500DPS 	500
+// 陀螺仪量程范围
+#define GYR_RANGE_125DPS 125
+#define GYR_RANGE_250DPS 250
+#define GYR_RANGE_500DPS 500
 #define GYR_RANGE_1000DPS 1000
 #define GYR_RANGE_2000DPS 2000
-//加速度量程范围
-#define ACC_RANGE_2G 	2
-#define ACC_RANGE_4G 	4
-#define ACC_RANGE_8G 	8
+// 加速度量程范围
+#define ACC_RANGE_2G 2
+#define ACC_RANGE_4G 4
+#define ACC_RANGE_8G 8
 #define ACC_RANGE_16G 16
-//数据输出单位
+// 数据输出单位
 #define DEGREE 0
 #define RADIAN 1
-//滤波模式
+// 滤波模式
 #define GYR_ONLY 0
-#define KALMAN 	 1
-#define DCM 		 3
-//使能自动校准
-#define AUTO_CALI_ENABLE 	1
+#define KALMAN 1
+#define DCM 3
+// 使能自动校准
+#define AUTO_CALI_ENABLE 1
 #define AUTO_CALI_DISABLE 0
-//调整坐标系模式
-#define OBJECT 	 0
-#define HEADING  1
+// 调整坐标系模式
+#define OBJECT 0
+#define HEADING 1
 #define ALIGMENT 2
-//设置数据流频率
-#define FREQ_5HZ  	5
-#define FREQ_10HZ 	10
-#define FREQ_50HZ 	50
-#define FREQ_100HZ 	10
-#define FREQ_250HZ 	250
+// 设置数据流频率
+#define FREQ_5HZ 5
+#define FREQ_10HZ 10
+#define FREQ_50HZ 50
+#define FREQ_100HZ 10
+#define FREQ_250HZ 250
 #define FREQ6_500HZ 500
 
 /*设置初始化指令发送间隔时间*/
-#define COMMAND_DELAY 100 //目前测得较稳定指令间隔(ms)
+#define COMMAND_DELAY 100 // 目前测得较稳定指令间隔(ms)
 
 /*选定输入参数类型*/
 
@@ -203,13 +203,13 @@ typedef struct _DataPack32bit_Structdef
 #pragma pack(1)
 typedef struct _DataPack16bit_Structdef
 {
-	uint8_t head;				// 包头
+	uint8_t head;		// 包头
 	uint8_t SensorID_L; // 低位传感器ID
 	uint8_t SensorID_H; // 高位传感器ID
-	uint8_t InsID_L;		// 低位指令号
-	uint8_t InsID_H;		// 高位指令号
-	uint8_t Lenth_L;		// 低位数据长度
-	uint8_t Lenth_H;		// 高位数据长度
+	uint8_t InsID_L;	// 低位指令号
+	uint8_t InsID_H;	// 高位指令号
+	uint8_t Lenth_L;	// 低位数据长度
+	uint8_t Lenth_H;	// 高位数据长度
 	/*时间戳*/
 	uint32_t timestamp;
 	/*原始的加速度计数据 (g)*/
@@ -311,12 +311,12 @@ typedef struct _Unity_Data_Structdef
 typedef struct _CommandPack_Structdef
 {
 	uint8_t head = 0x3A;
-	uint8_t SensorID_L;		 		// 低位传感器ID
-	uint8_t SensorID_H;		 		// 高位传感器ID
-	uint8_t Command_L;		 		// 低位指令
-	uint8_t Command_H;		 		// 高位指令
-	uint8_t Length_L = 0x00; 	// 低位长度
-	uint8_t Length_H = 0x00; 	// 高位长度
+	uint8_t SensorID_L;		 // 低位传感器ID
+	uint8_t SensorID_H;		 // 高位传感器ID
+	uint8_t Command_L;		 // 低位指令
+	uint8_t Command_H;		 // 高位指令
+	uint8_t Length_L = 0x00; // 低位长度
+	uint8_t Length_H = 0x00; // 高位长度
 	/*数据*/
 	uint8_t data1 = 0;
 	uint8_t data2 = 0;
@@ -337,35 +337,35 @@ public:
 	LPMS_BE2_Typedef(uint8_t _usart_num, uint8_t _sensor_id = 0x01) : usart_num(_usart_num), sensor_id(_sensor_id)
 	{
 	}
-	void LPMS_BE2_Init();					  					//初始化函数
-	uint8_t LPMS_BE2_Get_Data(uint8_t *data); //读取原始数据函数
-	void LPMS_BE2_Data_Convert();			  			//数据转换函数
-	void Data_Type_Config(uint8_t _data_type);//陀螺仪数据输出类型设置函数
-	void Stream_Freq_Config(uint16_t _stream_freq);	//陀螺仪数据流频率设置函数
-	void Data_Range_Config(uint16_t _gyr_range, uint8_t _acc_range, uint8_t _degrad_unit);	//陀螺仪数据量程设置函数
-	void Filter_Mode_Config(uint8_t _filter_mode, uint8_t _auto_cali, uint8_t _offset_mode);//陀螺仪滤波修正设置函数
+	void LPMS_BE2_Init();																	 // 初始化函数
+	uint8_t LPMS_BE2_Get_Data(uint8_t *data);												 // 读取原始数据函数
+	void LPMS_BE2_Data_Convert();															 // 数据转换函数
+	void Data_Type_Config(uint8_t _data_type);												 // 陀螺仪数据输出类型设置函数
+	void Stream_Freq_Config(uint16_t _stream_freq);											 // 陀螺仪数据流频率设置函数
+	void Data_Range_Config(uint16_t _gyr_range, uint8_t _acc_range, uint8_t _degrad_unit);	 // 陀螺仪数据量程设置函数
+	void Filter_Mode_Config(uint8_t _filter_mode, uint8_t _auto_cali, uint8_t _offset_mode); // 陀螺仪滤波修正设置函数
 
-	bool is_init = false;					  					//陀螺仪是否成功初始化
-	const Unity_Data_Structdef &get_data() { return unity_data; } //返回一个联合数据类型的常量引用（不能被外部更改）
-	
+	bool is_init = false;										  // 陀螺仪是否成功初始化
+	const Unity_Data_Structdef &get_data() { return unity_data; } // 返回一个联合数据类型的常量引用（不能被外部更改）
+
 	int16_t link_count = 0;
 
 private:
-	bool is_reply = false;					 			//是否收到应答信号
-	uint8_t usart_num;						 				//使用串口串口号
-	uint8_t data_type = DATA_32BIT;			 	//接收数据类型
-	uint8_t sensor_id = 1;					 			//传感器id号
-	uint16_t stream_freq = FREQ6_500HZ;			 		//数据流频率
-	uint8_t degrad_unit = RADIAN;			 		//输出数据单位
-	uint8_t orientation_offset = ALIGMENT;//坐标系调整模式
-	uint8_t acc_range = ACC_RANGE_4G;			 	//加速度量程
-	uint16_t gyr_range = GYR_RANGE_2000DPS;	//陀螺仪量程
-	uint8_t filter_mode = KALMAN;			 		//滤波模式
-	uint8_t offset_mode = ALIGMENT;			 	//调整传感器坐标系模式
-	uint32_t baudrate = 230400;				 		//波特率
-	uint8_t is_auto_cali = AUTO_CALI_ENABLE; //是否开启自动校准
+	bool is_reply = false;					 // 是否收到应答信号
+	uint8_t usart_num;						 // 使用串口串口号
+	uint8_t data_type = DATA_32BIT;			 // 接收数据类型
+	uint8_t sensor_id = 1;					 // 传感器id号
+	uint16_t stream_freq = FREQ6_500HZ;		 // 数据流频率
+	uint8_t degrad_unit = RADIAN;			 // 输出数据单位
+	uint8_t orientation_offset = ALIGMENT;	 // 坐标系调整模式
+	uint8_t acc_range = ACC_RANGE_4G;		 // 加速度量程
+	uint16_t gyr_range = GYR_RANGE_2000DPS;	 // 陀螺仪量程
+	uint8_t filter_mode = KALMAN;			 // 滤波模式
+	uint8_t offset_mode = ALIGMENT;			 // 调整传感器坐标系模式
+	uint32_t baudrate = 230400;				 // 波特率
+	uint8_t is_auto_cali = AUTO_CALI_ENABLE; // 是否开启自动校准
 
-	uint8_t send_data_large[15]; 					//发送指令数据包
+	uint8_t send_data_large[15]; // 发送指令数据包
 	uint8_t send_data_small[11];
 
 	DataPack32bit_Structdef data_32bit;
@@ -373,15 +373,15 @@ private:
 	CommandPack_Structdef command;
 	Unity_Data_Structdef unity_data;
 
-	//收发数据函数
-	void LPMS_BE2_Send_Command(CommandPack_Structdef *command_pack, uint8_t usart_port_num);				 					//发送普通指令函数
-	void LPMS_BE2_Data_Update(uint8_t *_data);																 																//数据包抓取函数
-	void LPMS_BE2_Command_Pack(CommandPack_Structdef *_command_pack, uint16_t _command, uint32_t _data = 0); 	//指令发送打包函数
-	//陀螺仪初始化配置函数
+	// 收发数据函数
+	void LPMS_BE2_Send_Command(CommandPack_Structdef *command_pack, uint8_t usart_port_num);				 // 发送普通指令函数
+	void LPMS_BE2_Data_Update(uint8_t *_data);																 // 数据包抓取函数
+	void LPMS_BE2_Command_Pack(CommandPack_Structdef *_command_pack, uint16_t _command, uint32_t _data = 0); // 指令发送打包函数
+	// 陀螺仪初始化配置函数
 	void LPMS_BE2_Data_Type(uint32_t _data_type);
 	void LPMS_BE2_Data_Range(uint32_t _gyr_range, uint32_t _acc_range, uint32_t _degrad_unit);
 	void LPMS_BE2_Filter_Mode(uint32_t _filter_mode, uint32_t _auto_cali, uint32_t _offset_mode);
-	//陀螺仪指令发送函数
+	// 陀螺仪指令发送函数
 	void set_imu_transmit_data();
 	void goto_command_mode();
 	void goto_stream_mode();

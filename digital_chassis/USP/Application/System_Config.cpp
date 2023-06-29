@@ -37,12 +37,12 @@ void System_Device_Init(void)
   // can init
 	CAN_Init(&hcan1, User_CAN1_RxCpltCallback);
   CAN_Init(&hcan2, User_CAN2_RxCpltCallback);
-	CAN_Filter_Mask_Config(&hcan1,CanFilter_1 | CanFifo_0 | Can_STDID | Can_DataType, 0x201, 0x3ff);
-	CAN_Filter_Mask_Config(&hcan1,CanFilter_2 | CanFifo_0 | Can_STDID | Can_DataType, 0x204, 0x3ff);
+	CAN_Filter_Mask_Config(&hcan1,CanFilter_1 | CanFifo_0 | Can_STDID | Can_DataType, 0x209, 0x3ff);
+	CAN_Filter_Mask_Config(&hcan1,CanFilter_2 | CanFifo_0 | Can_STDID | Can_DataType, 0x20A, 0x3ff);
 	CAN_Filter_Mask_Config(&hcan1,CanFilter_3 | CanFifo_0 | Can_STDID | Can_DataType, 0x222, 0x3ff);
 	CAN_Filter_Mask_Config(&hcan1,CanFilter_4 | CanFifo_0 | Can_STDID | Can_DataType, 0x223, 0x3ff);
-  CAN_Filter_Mask_Config(&hcan2,CanFilter_15 | CanFifo_0 | Can_STDID | Can_DataType, 0x202, 0x3ff);
-	CAN_Filter_Mask_Config(&hcan2,CanFilter_16 | CanFifo_0 | Can_STDID | Can_DataType, 0x203, 0x3ff);
+  // CAN_Filter_Mask_Config(&hcan2,CanFilter_15 | CanFifo_0 | Can_STDID | Can_DataType, 0x202, 0x3ff);
+	// CAN_Filter_Mask_Config(&hcan2,CanFilter_16 | CanFifo_0 | Can_STDID | Can_DataType, 0x203, 0x3ff);
   CAN_Filter_Mask_Config(&hcan2, CanFilter_18 | CanFifo_0 | Can_STDID | Can_DataType, 0x140, 0x1FFFFFF8); // 9025电机
 	
 	// uart init

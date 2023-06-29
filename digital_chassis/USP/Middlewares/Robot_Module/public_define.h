@@ -6,8 +6,8 @@
 #define RIGHT_WHEEL_ID 2
 #define LEFT_WHEEL_ID 3
 
-#define RIGHT_SLIDER_ID 4
-#define LEFT_SLIDER_ID 1
+#define RIGHT_SLIDER_ID 6
+#define LEFT_SLIDER_ID 5
 
 #include "arm_math.h"
 

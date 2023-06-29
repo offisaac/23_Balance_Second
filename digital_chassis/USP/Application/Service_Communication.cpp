@@ -140,15 +140,7 @@ void Task_CAN2Receive(void *arg)
     if (xQueueReceive(CAN2_RxPort, &CAN_RxCOB, portMAX_DELAY) == pdPASS)
     {
     	//更新电机数据，如
-			if(balance_infantry.wheel_motor[RIGHT].CheckID(CAN_RxCOB.ID))
-			{
-				balance_infantry.wheel_motor[RIGHT].update(CAN_RxCOB.Data);
-			}
-			else if(balance_infantry.wheel_motor[LEFT].CheckID(CAN_RxCOB.ID))
-			{
-				balance_infantry.wheel_motor[LEFT].update(CAN_RxCOB.Data);
-			}
-			else{}
+			balance_infantry.CAN_Motor_Update(&CAN_RxCOB);
     }
   }
 }
