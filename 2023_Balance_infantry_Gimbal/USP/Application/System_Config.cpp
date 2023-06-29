@@ -38,15 +38,12 @@ void System_Device_Init(void)
 	CAN_Init(&hcan1,User_CAN1_RxCpltCallback);
   CAN_Init(&hcan2, User_CAN2_RxCpltCallback);
 	
-	CAN_Filter_Mask_Config(&hcan1,CanFilter_0  | CanFifo_0 | Can_STDID | Can_DataType, 0x205, 0x3ff);	//pitch轴
-	CAN_Filter_Mask_Config(&hcan2,CanFilter_16 | CanFifo_0 | Can_STDID | Can_DataType, 0x206, 0x3ff);	//yaw轴
 	
-	CAN_Filter_Mask_Config(&hcan1,CanFilter_1  | CanFifo_0 | Can_STDID | Can_DataType, 0x201, 0x3ff);	//拨盘2006
-	CAN_Filter_Mask_Config(&hcan1,CanFilter_2  | CanFifo_0 | Can_STDID | Can_DataType, 0x202, 0x3ff);	//摩擦轮左
-	CAN_Filter_Mask_Config(&hcan1,CanFilter_3  | CanFifo_0 | Can_STDID | Can_DataType, 0x203, 0x3ff);	//摩擦轮右
+	CAN_Filter_Mask_Config(&hcan1,CanFilter_1  | CanFifo_0 | Can_STDID | Can_DataType, 0x201, 0x3f8);	
+
+  CAN_Filter_Mask_Config(&hcan2,CanFilter_16 | CanFifo_0 | Can_STDID | Can_DataType, 0x209, 0x300);	//yaw轴
 	CAN_Filter_Mask_Config(&hcan2,CanFilter_17 | CanFifo_0 | Can_STDID | Can_DataType, 0x221, 0x3ff);	//板间通信上行int数据
   CAN_Filter_Mask_Config(&hcan2,CanFilter_18 | CanFifo_0 | Can_STDID | Can_DataType, 0x220, 0x3ff);	//板间通信上行float数据
-	CAN_Filter_Mask_Config(&hcan2,CanFilter_19 | CanFifo_0 | Can_STDID | Can_DataType, 0x112, 0x3ff);	//舵轮板间通信发送速度数据
 	// uart init
 	Uart_Init(&huart1, infantry.pc_vision.PackFromVisionUnion.UsartData, 22,User_UART1_RxCpltCallback);	//视觉通信，缓存大小需要为数组大小的整数倍
 	Uart_Init(&huart2, Uart2_Rx_Buff, USART2_RX_BUFFER_SIZE, User_UART2_RxCpltCallback);

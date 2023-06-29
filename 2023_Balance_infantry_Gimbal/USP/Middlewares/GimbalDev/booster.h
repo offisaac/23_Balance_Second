@@ -25,8 +25,8 @@
 #include "srml_std_lib.h"
 
 /* Private macros ------------------------------------------------------------*/
-#define ID_FRI_LEFT (3)
-#define ID_FRI_RIGHT (2)
+#define ID_FRI_LEFT (2)
+#define ID_FRI_RIGHT (3)
 #define ID_Turnplate (1)
 /*摩擦轮射速宏定义*/
 const uint16_t BULLET_SPEED_15 = 4680;
@@ -35,8 +35,8 @@ const uint16_t BULLET_SPEED_30 = 6700;
 /*热量上限阈值宏定义*/
 #define HEAT_OFFSET (30) // 20Hz射频时上限-38，15Hz、10Hz射频上限-28，2Hz射频上限-13
 /*弹舱盖开关限位*/
-#define BULLETBAY_ON (2490)
-#define BULLETBAY_OFF (550)
+#define BULLETBAY_ON (500)
+#define BULLETBAY_OFF (2500)
 /* Private type --------------------------------------------------------------*/
 /* Exported macros -----------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
