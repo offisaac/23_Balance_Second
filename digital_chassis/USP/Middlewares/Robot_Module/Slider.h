@@ -17,7 +17,7 @@ public:
     motorType motor;
     myPID positionLoop, speedLoop;
 
-    SliderClassdef(uint8_t id, int8_t _Polarity, float _posRatio, float _ratioGear)
+    SliderClassdef(uint8_t id, int8_t _Polarity, float _posRatio = 1, float _ratioGear = 1)
         : motor(id)
     {
         absMotor.bindMotor(&motor);
