@@ -11,19 +11,21 @@ private:
     float posRatio = 1;
     float targetPos = 0, currentPos = 0;
     float ratioGear = 1.f; //减速比
+    float posMax = 100.f;  //滑块最大量程
     abstractMotor<motorType> absMotor;
 
 public:
     motorType motor;
     myPID positionLoop, speedLoop;
 
-    SliderClassdef(uint8_t id, int8_t _Polarity, float _posRatio, float _ratioGear)
+    SliderClassdef(uint8_t id, int8_t _Polarity, float _posRatio = 1.f, float _ratioGear = 1.f, float _posMax = 100.f)
         : motor(id)
     {
         absMotor.bindMotor(&motor);
         setPolarity(_Polarity);
         setPosRatio(_posRatio);
         ratioGear = fabsf(_ratioGear);
+        posMax = fabsf(_posMax);
 
         absMotor.speed_unit_convert = 1 / ratioGear;
     }
@@ -61,7 +63,7 @@ public:
 
     void update(float _targetPos)
     {
-        targetPos = _targetPos;
+        targetPos = std_lib::constrain(_targetPos, -posMax, posMax);
         currentPos = absMotor.getMotorTotalAngle();
     }
 

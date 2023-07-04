@@ -22,13 +22,13 @@
 #include "source_manage.h"
 #endif
 
-#define WHEEL_R 0.105f                                //轮子半径（m）
-#define GEAR_SCALE 2.0f * PI *WHEEL_R / 1.0f / 60.0f //转速(rpm)转换为线速度(m/s)参数
-#define DPS_TO_RPM 1.0f * 60.0f / 360.0f             //把陀螺仪角速度（dps）转化为转速(rpm)
-#define CTRL_INTERAL 0.003f                           //控制周期
+#define WHEEL_R 0.110f                               //轮子半径（m）
+#define GEAR_SCALE 2.0f * PI * WHEEL_R / 1.0f / 60.0f //转速(rpm)转换为线速度(m/s)参数
+#define RPS_TO_RPM 1.0f * 60.0f / (2 * PI)            //把陀螺仪角速度（rps）转化为转速(rpm)
+#define CTRL_INTERAL 0.003f                          //控制周期
 #define POWER_ENERGY_MAX 150.0f
-#define DEGREE_TO_RAD PI/180.f
-#define COM_9025_TORQUE_RATIO  1.f / 0.32f * 2048.f / 16.5f
+#define DEGREE_TO_RAD PI / 180.f
+#define COM_9025_TORQUE_RATIO 1.f / 0.32f * 2048.f / 16.5f
 
 //左右电机编号
 enum _chassis_WheelEnumdef
@@ -140,10 +140,10 @@ public:
 #else
     C_SourceManage_Classdef Source_Manage; //电源开关
 #endif
-    referee_Classdef Referee;             //裁判系统管理
-    GimbalCom_Classdef Board_Com;         //裁判系统交互
-    PowerCtrl_ClassDef Power_Ctrl;        //功率控制
-    LPMS_BE2_Typedef LPMS;                //陀螺仪
+    referee_Classdef Referee;                           //裁判系统管理
+    GimbalCom_Classdef Board_Com;                       //裁判系统交互
+    PowerCtrl_ClassDef Power_Ctrl;                      //功率控制
+    LPMS_BE2_Typedef LPMS;                              //陀螺仪
     SliderControllerClassdef<Motor_GM6020> Slider_Ctrl; //滑块控制器
 
     //切换状态函数

@@ -47,8 +47,8 @@
 #define PITCH_OFFSET 3900
 #endif
 #if BALANCE_INFANTRY
-#define YAW_OFFSET 1364 // 电容方向->电池方向+4096
-#define PITCH_OFFSET 600
+#define YAW_OFFSET 3400 // 电容方向->电池方向+4096
+#define PITCH_OFFSET 675
 #endif
 /*视觉补偿量*/
 #define VISION_PITCH_COMPENSATION 0.0f

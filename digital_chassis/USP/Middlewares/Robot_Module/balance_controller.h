@@ -48,7 +48,6 @@ typedef struct _Controller_Out
 	float turn_out;					 //转向环输出
 	float speed_out;				 //速度环输出
 	float feedforward_out;	 //前馈环输出
-	float rotation_move_out; //小陀螺平移输出
 } Controller_Out;
 
 class Ctrl_Base
@@ -269,7 +268,7 @@ public:
 	float lqr_yaw_kp = 0;
 	float lqr_yawSpeed_kp = 0;
 
-	float debug_feedforward = 0.5f * 13.721f * 9.8f * 0.12537f;//0.5*mg*l
+	float debug_feedforward = 0 * 14.48527f * 9.8f * 0.126807f;//0.5*mg*l
 	float distance_max = 0.0f;
 	int distance_count = 50; //目标距离设置计数
 	int distance_delay = 1;	 //距离环使能阈值，可用于距离环延迟执行（减小减速停车倒回问题）

@@ -36,7 +36,7 @@ const uint16_t BULLET_SPEED_30 = 6700;
 #define HEAT_OFFSET (30) // 20Hz射频时上限-38，15Hz、10Hz射频上限-28，2Hz射频上限-13
 /*弹舱盖开关限位*/
 #define BULLETBAY_ON (500)
-#define BULLETBAY_OFF (2500)
+#define BULLETBAY_OFF (2225)
 /* Private type --------------------------------------------------------------*/
 /* Exported macros -----------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/

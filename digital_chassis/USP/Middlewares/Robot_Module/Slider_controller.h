@@ -43,7 +43,7 @@ private:
     bool sliderMotorInit[2] = {false, false};
 
 public:
-    SliderClassdef<Motor_GM6020> slider[2] = {SliderClassdef<Motor_GM6020>(RIGHT_SLIDER_ID, -1, 1, 1.f), SliderClassdef<Motor_GM6020>(LEFT_SLIDER_ID, 1, 1, 1.f)};
+    SliderClassdef<Motor_GM6020> slider[2] = {SliderClassdef<Motor_GM6020>(RIGHT_SLIDER_ID, -1, 1, 1, 110.f), SliderClassdef<Motor_GM6020>(LEFT_SLIDER_ID, 1, 1, 1.f, 110.f)};
 
     SliderControllerClassdef();
     void importQueueHander(QueueHandle_t _canTxPort) { canTxPort = _canTxPort; }
