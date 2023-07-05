@@ -220,7 +220,7 @@ void Balance_Infantry_Classdef::UART_Gyro_Update(uint8_t *_rx_msg)
  * @return
  * @retval  None
  */
-void Balance_Infantry_Classdef::Judge_State()
+void Balance_Infantry_Classdef:: Judge_State()
 {
     if (!gimbal_data.remote_ctrl_state)
     {
@@ -595,7 +595,7 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
         }
     }
 
-    if (!gimbal_data.remote_ctrl_state)
+    if (gimbal_data.remote_ctrl_state == false)
     {
         wheel_out[LEFT] = 0;
         wheel_out[RIGHT] = 0;

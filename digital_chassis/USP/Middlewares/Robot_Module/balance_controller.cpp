@@ -495,6 +495,9 @@ void Controller<PID>::reset_adjust()
  */
 Controller<LQR>::Controller()
 {
+    silder_pid.DeadZone = 0.0f;
+    silder_pid.SetPIDParam(150.0f, 0.0f, 0.0f, 0.0f, 200.0f);
+
     set_point_pid.SetPIDParam(-10.0f, 0, 0.0f, 3.0f, 8.0f);
     rotation_point_pid.SetPIDParam(0.f, 0.000001f, 0, 1, 3);
     lqr_distance_kp = -6.f;
@@ -535,6 +538,7 @@ void Controller<LQR>::Controller_Adjust()
         idling_check();         //空转检测
         rotation_crash_check(); //小陀螺撞墙检测
                                 /*setpoint倾角辅助*/
+        silder_control();       //滑块控制
         output.set_point_out = self_adaption();
         debug_out_F = output.set_point_out;
         target_pos.pitch = output.set_point_out; //自适应的输出设置为目标角度
@@ -590,6 +594,14 @@ void Controller<LQR>::Controller_Adjust()
         /*前馈*/
         output.feedforward_out = stand_feedforward();
     }
+}
+
+void Controller<LQR>::silder_control()
+{
+    silder_pid.Target = this->target_linearSpeed.y;
+    silder_pid.Current = this->current_linearSpeed.y;
+    silder_pid.Adjust();
+    slider_pos[0] = slider_pos[1] = silder_pid.Out;
 }
 
 /**
@@ -685,8 +697,8 @@ float Controller<LQR>::self_adaption()
     /*负方向运动策略*/
     if (target_linearSpeed.y < -0.3f)
     {
-        slider_pos[0] = 200.f;
-        slider_pos[1] = 200.f;
+        // slider_pos[0] = 200.f;
+        // slider_pos[1] = 200.f;
         if (fabsf(current_angularSpeed.yaw) < 30.0f)
         {
             setpoint_ctrl_out = -1.f;
@@ -708,8 +720,8 @@ float Controller<LQR>::self_adaption()
     /* 正方向运动策略 */
     else if (target_linearSpeed.y > 0.3f)
     {
-        slider_pos[0] = -200.f;
-        slider_pos[1] = -200.f;
+        // slider_pos[0] = -200.f;
+        // slider_pos[1] = -200.f;
         if (fabsf(current_angularSpeed.yaw) < 30.0f)
         {
             setpoint_ctrl_out = 2.5f;
@@ -731,14 +743,14 @@ float Controller<LQR>::self_adaption()
     /* 刹车 */
     else if (break_flag)
     {
-        slider_pos[0] = setpoint_adapt_out * -25.f;
-        slider_pos[1] = setpoint_adapt_out * -25.f;
+        // slider_pos[0] = setpoint_adapt_out * -25.f;
+        // slider_pos[1] = setpoint_adapt_out * -25.f;
         setpoint_ctrl_out = balance_point;
     }
     else
     {
-        slider_pos[0] = 0;
-        slider_pos[1] = 0;
+        // slider_pos[0] = 0;
+        // slider_pos[1] = 0;
     }
 
     if (is_leap)

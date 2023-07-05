@@ -242,6 +242,7 @@ public:
 	float slider_pos[2] = {0, 0};
 
 public:
+	void silder_control();			 //滑块控制
 	float self_adaption();			 //重心自适应
 	float distance_adjust();		 //距离环
 	float stand_adjust();				 //直立环
@@ -255,6 +256,7 @@ public:
 	void reset_adjust(); //控制器重置
 
 	float set_point;					//车身定点目标值
+	myPID silder_pid;					//滑块pid
 	myPID set_point_pid;			//关乎参数调整
 	myPID rotation_point_pid; //小陀螺自适应pid
 
