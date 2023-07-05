@@ -503,11 +503,11 @@ Controller<LQR>::Controller()
     lqr_distance_kp = -6.f;
     distance_max = 1.5f;
     distance_delay = 10;
-    lqr_speed_kp = -3.5355f;
-    lqr_pitch_kp = -16.4797f;     // 10.7222
-    lqr_pitchSpeed_kp = -3.1640f; // 1.5485
+    lqr_speed_kp = -2.2361f;
+    lqr_pitch_kp = -13.6094f;     // 10.7222
+    lqr_pitchSpeed_kp = -2.2507f; // 1.5485
     lqr_yaw_kp = 0.f;
-    lqr_yawSpeed_kp = 1.0f;
+    lqr_yawSpeed_kp = 2.0f;
     set_point = 0;
     speed_pid_cnt = 0;
 
@@ -539,7 +539,7 @@ void Controller<LQR>::Controller_Adjust()
         rotation_crash_check(); //小陀螺撞墙检测
                                 /*setpoint倾角辅助*/
         silder_control();       //滑块控制
-        output.set_point_out = self_adaption();
+        output.set_point_out = self_adaption() * ratio_degree2rad;
         debug_out_F = output.set_point_out;
         target_pos.pitch = output.set_point_out; //自适应的输出设置为目标角度
         if (weightless_flag)
@@ -552,7 +552,7 @@ void Controller<LQR>::Controller_Adjust()
         output.speed_out = torque_scale * speed_adjust();
         if (break_flag)
         {
-            output.speed_out = std_lib::constrain(output.speed_out, -4.0f, 4.0f);
+            output.speed_out = std_lib::constrain(output.speed_out, -3.5f, 3.5f);
         }
         else
         {
@@ -587,10 +587,10 @@ void Controller<LQR>::Controller_Adjust()
         debug_out_A = output.distance_out;
         /*转向环*/
         output.turn_out = turn_scale * turn_adjust();
-        if (is_rotation == 0)
-        {
+        // if (is_rotation == 0)
+        // {
             output.turn_out = std_lib::constrain(output.turn_out, -2.5f, 2.5f);
-        }
+        // }
         /*前馈*/
         output.feedforward_out = stand_feedforward();
     }
@@ -611,7 +611,7 @@ void Controller<LQR>::silder_control()
  * @return  角度输出
  * @retval  None
  */
-float rotation_point = 0.25f;
+float rotation_point = 0.f;
 float rotation_kp = 0.f;
 float rotation_ki = 0.000001f;
 float rotation_imax = 0.f;
@@ -619,8 +619,8 @@ float rotation_omax = 3.f;
 bool leapState = false;
 float Controller<LQR>::self_adaption()
 {                                         //自适应环
-    static MeanFilter<50> speed_MF1;      //均值滤波
-    static MeanFilter<50> speed_MF2;      //均值滤波
+    static MeanFilter<10> speed_MF1;      //均值滤波
+    static MeanFilter<10> speed_MF2;      //均值滤波
     static float last_sport_flag = false; //滞回比较器标志位
     static float setpoint_adapt_out = 0.0f;
     float setpoint_ctrl_out = 0.0f;
@@ -705,10 +705,10 @@ float Controller<LQR>::self_adaption()
 
             if (current_linearSpeed.y > 0.9 * target_linearSpeed.y)
             {
-                setpoint_ctrl_out = -2.7f;
+                setpoint_ctrl_out = -2.f;
                 if (is_unlimited)
                 {
-                    setpoint_ctrl_out = -3.7f;
+                    setpoint_ctrl_out = -3.f;
                 }
                 if (is_turn90degrees)
                 {
@@ -724,14 +724,14 @@ float Controller<LQR>::self_adaption()
         // slider_pos[1] = -200.f;
         if (fabsf(current_angularSpeed.yaw) < 30.0f)
         {
-            setpoint_ctrl_out = 2.5f;
+            setpoint_ctrl_out = 1.f;
 
             if (current_linearSpeed.y < 0.9 * target_linearSpeed.y)
             {
-                setpoint_ctrl_out = 2.f;
+                setpoint_ctrl_out = 2.7f;
                 if (is_unlimited)
                 {
-                    setpoint_ctrl_out = 3.f;
+                    setpoint_ctrl_out = 3.7f;
                 }
                 if (is_turn90degrees)
                 {
@@ -755,21 +755,21 @@ float Controller<LQR>::self_adaption()
 
     if (is_leap)
     {
-        if (current_linearSpeed.y < -3.0f && leapState == false)
+        if (current_linearSpeed.y > 3.0f && leapState == false)
         {
             leapState = true;
         }
-        else if (current_linearSpeed.y > -1.5f && leapState == true)
+        else if (current_linearSpeed.y < 1.5f && leapState == true)
         {
             leapState = false;
         }
         if (leapState == true)
         {
-            setpoint_ctrl_out = 12.f;
+            setpoint_ctrl_out = -12.f;
         }
         else
         {
-            setpoint_ctrl_out = -5.f;
+            setpoint_ctrl_out = 5.f;
         }
     }
 

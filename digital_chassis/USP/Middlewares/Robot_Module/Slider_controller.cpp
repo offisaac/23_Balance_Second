@@ -134,18 +134,20 @@ void SliderControllerClassdef<Motor_C610>::clear()
     acutate();
 }
 
-
 //////////////////////////////////////////// 6020滑块 //////////////////////////////////////////////////////////
 SliderControllerClassdef<Motor_GM6020>::SliderControllerClassdef()
 {
-    slider[RIGHT_JOINT].positionLoop.SetPIDParam(5, 0, 0, 10, 300);
-    slider[LEFT_JOINT].positionLoop.SetPIDParam(5, 0, 0, 10, 300);
+    slider[RIGHT_JOINT].positionLoop.SetPIDParam(10, 0, 0, 1000, 3000);
+    slider[LEFT_JOINT].positionLoop.SetPIDParam(10, 0, 0, 1000, 3000);
 
-    slider[RIGHT_JOINT].speedLoop.SetPIDParam(50, 1, 0, 2000, 10000);
-    slider[LEFT_JOINT].speedLoop.SetPIDParam(50, 1, 0, 2000, 10000);
+    slider[RIGHT_JOINT].speedLoop.SetPIDParam(100, 500, 0, 3000, 30000);
+    slider[LEFT_JOINT].speedLoop.SetPIDParam(100, 500, 0, 3000, 30000);
 
-    slider[RIGHT_JOINT].setEncoderOffset(500);
-    slider[LEFT_JOINT].setEncoderOffset(1050);
+    slider[RIGHT_JOINT].speedLoop.I_SeparThresh = 50;
+    slider[LEFT_JOINT].speedLoop.I_SeparThresh = 50;
+
+    slider[RIGHT_JOINT].setEncoderOffset(260);
+    slider[LEFT_JOINT].setEncoderOffset(810);
 }
 
 void SliderControllerClassdef<Motor_GM6020>::init()
@@ -176,7 +178,7 @@ void SliderControllerClassdef<Motor_GM6020>::acutate()
     }
 
     canTxPack = MotorMsgPack(canTxPack, slider[0].motor, slider[1].motor);
-    xQueueSend(canTxPort, &(canTxPack.Id200), 0);
+    xQueueSend(canTxPort, &(canTxPack.Id2ff), 0);
 }
 
 void SliderControllerClassdef<Motor_GM6020>::updateMotorData(CAN_COB *CAN_RxMsg)
