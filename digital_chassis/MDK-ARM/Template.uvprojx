@@ -10,7 +10,7 @@
       <TargetName>Template</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pArmCC>5060750::V5.06 update 6 (build 750)::ARMCC</pArmCC>
+      <pArmCC>5060960::V5.06 update 7 (build 960)::.\ARMCC</pArmCC>
       <pCCUsed>5060750::V5.06 update 6 (build 750)::ARMCC</pCCUsed>
       <uAC6>8</uAC6>
       <TargetOption>
@@ -340,7 +340,7 @@
               <MiscControls>--cpp11</MiscControls>
               <Define>USE_HAL_DRIVER,STM32F405xx,ARM_MATH_CM4,__CC_ARM,USE_MY_ASSERT,SWERVE_CHASSIS,USE_REFEREE_UI</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Drivers/STM32F4xx_HAL_Driver/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../Drivers/CMSIS/Include;../USP;../SRML;../USP/Middlewares/Systemview;../Drivers/CMSIS/DSP/Include;../USB_DEVICE/App;../USB_DEVICE/Target;../Middlewares/ST/STM32_USB_Device_Library/Core/Inc;../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc;../USP/Middlewares/Robot_Module;../USP/Drivers/Lpms_Be2;../SRML/Middlewares/Module;../USP/Middlewares/abstractTypeLibrary;../../digital_Power_LibraryFile</IncludePath>
+              <IncludePath>../Core/Inc;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Drivers/STM32F4xx_HAL_Driver/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../Drivers/CMSIS/Include;../USP;../SRML;../USP/Middlewares/Systemview;../Drivers/CMSIS/DSP/Include;../USB_DEVICE/App;../USB_DEVICE/Target;../Middlewares/ST/STM32_USB_Device_Library/Core/Inc;../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc;../USP/Middlewares/Robot_Module;../USP/Drivers/Lpms_Be2;../SRML/Middlewares/Module;../USP/Middlewares/abstractTypeLibrary;../../digital_Power_LibraryFile;..\USP\Drivers\MF9025_v2</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>

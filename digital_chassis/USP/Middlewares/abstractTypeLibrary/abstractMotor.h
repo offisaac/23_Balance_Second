@@ -52,25 +52,34 @@ namespace abMotor
         virtual float getRawMotorAngle() = 0;
         virtual float getRawMotorSpeed() = 0;
         virtual void setRawMotorCurrentOut(float out) = 0;
+        inline virtual bool isInit() = 0; //检测是否导入了电机指针、队列句柄等等，防止未导入时，因为指针为空指针，调用函数而进入硬件中断
 
     public:
         virtual float getMotorTotalAngle()
         {
+            if (isInit() == 0)
+                return 0;
             return getRawMotorTotalAngle() * angle_unit_convert * Polarity + baseAngle;
         }
 
         virtual float getMotorAngle()
         {
+            if (isInit() == 0)
+                return 0;
             return getRawMotorAngle() * angle_unit_convert * Polarity + baseAngle;
         }
 
         virtual float getMotorSpeed()
         {
+            if (isInit() == 0)
+                return 0;
             return getRawMotorSpeed() * speed_unit_convert * Polarity;
         }
 
         virtual void setMotorCurrentOut(float out)
         {
+            if (isInit() == 0)
+                return;
             setRawMotorCurrentOut(out * out_unit_convert * Polarity);
         }
 
@@ -115,39 +124,40 @@ public:
     virtual float getRawMotorTotalAngle() { return 0; }
     virtual float getRawMotorAngle()
     {
-        if (motor == nullptr)
-            return 0;
         return motor->getRecData().position;
     }
     virtual float getRawMotorSpeed()
     {
-        if (motor == nullptr)
-            return 0;
         return motor->getRecData().velocity;
+    }
+    virtual float getRawMotorTorque()
+    {
+        return motor->getRecData().tau;
     }
     virtual void setRawMotorCurrentOut(float out)
     {
-        if (motor == nullptr)
-            return;
         motor->setTorque(out);
         MotorMsgPack(Tx_Buff, *motor);
         xQueueSend(CAN_TxPort, &Tx_Buff, 0);
     }
     virtual void setRawMotorAngle(float angle, float kp, float kd)
     {
-        if (motor == nullptr)
-            return;
         motor->setPosition(angle, kp, kd);
         MotorMsgPack(Tx_Buff, *motor);
         xQueueSend(CAN_TxPort, &Tx_Buff, 0);
     }
     virtual void setRawMotorSpeed(float speed, float kd, float torque)
     {
-        if (motor == nullptr)
-            return;
         motor->setVelocity(speed, kd, torque);
         MotorMsgPack(Tx_Buff, *motor);
         xQueueSend(CAN_TxPort, &Tx_Buff, 0);
+    }
+    virtual bool isInit()
+    {
+        if (CAN_TxPort == nullptr || motor == nullptr)
+            return 0;
+        else
+            return 1;
     }
 
 public:
@@ -155,17 +165,44 @@ public:
     {
         CAN_TxPort = _CAN_TxPort;
         motor = _motor;
-
+        if (isInit() == 0)
+            return;
         motor->cmd_motor_mode(Tx_Buff);
         xQueueSend(CAN_TxPort, &Tx_Buff, 0);
     }
     virtual void setMotorSpeed(float speed, float kd, float torque)
     {
+        if (isInit() == 0)
+            return;
         setRawMotorSpeed(speed / speed_unit_convert / Polarity, kd, torque / out_unit_convert / Polarity);
     }
     virtual void setMotorAngle(float angle, float kp, float kd)
     {
+        if (isInit() == 0)
+            return;
         setRawMotorAngle((angle - baseAngle) / angle_unit_convert / Polarity, kp, kd);
+    }
+
+    void setZeroPosition()
+    {
+        if (isInit() == 0)
+            return;
+        motor->cmd_zero_position(Tx_Buff);
+        xQueueSend(CAN_TxPort, &Tx_Buff, 0);
+    }
+
+    void motorCheckLink()
+    {
+        if (isInit() == 0)
+            return;
+        motor->checkLink();
+    }
+
+    uint16_t getLinkCount()
+    {
+        if (isInit() == 0)
+            return;
+        return motor->getLinkCount();
     }
 };
 #endif
@@ -181,30 +218,27 @@ private:
     MotorMF9025v2Classdef *motor = nullptr;
     virtual float getRawMotorTotalAngle()
     {
-        if (motor == nullptr)
-            return 0;
         return motor->getData().totalAngleLocal;
     }
     virtual float getRawMotorAngle()
     {
-        if (motor == nullptr)
-            return 0;
         return motor->getData().singleAngle;
     }
     virtual float getRawMotorSpeed()
     {
-        if (motor == nullptr)
-            return 0;
         return motor->getData().speed;
     }
     virtual void setRawMotorCurrentOut(float out)
     {
-        if (motor == nullptr)
-            return;
         motor->iqCloseControl_Current(out);
     }
-    virtual void setRawMotorAngle(float angle, float kp, float kd) {}
-    virtual void setRawMotorSpeed(float speed, float kd, float torque) {}
+    virtual bool isInit()
+    {
+        if (motor == nullptr)
+            return 0;
+        else
+            return 1;
+    }
 
 public:
     void bindMotor(MotorMF9025v2Classdef *_motor) { motor = _motor; }
@@ -220,40 +254,40 @@ public:
     void bindMotor(Motor_C620 *_motor) { motor = _motor; }
     bool CheckID(uint32_t id)
     {
-        if (motor == nullptr)
+        if (isInit() == 0)
             return 0;
         return motor->CheckID(id);
     }
     void update(uint8_t can_rx_data[])
     {
-        if (motor == nullptr)
+        if (isInit() == 0)
             return;
         motor->update(can_rx_data);
+    }
+
+    virtual bool isInit()
+    {
+        if (motor == nullptr)
+            return 0;
+        else
+            return 1;
     }
 
 private:
     virtual float getRawMotorTotalAngle()
     {
-        if (motor == nullptr)
-            return 0;
         return motor->getAngle();
     };
     virtual float getRawMotorAngle()
     {
-        if (motor == nullptr)
-            return 0;
         return motor->getEncoder() / 8192.f * 360;
     };
     virtual float getRawMotorSpeed()
     {
-        if (motor == nullptr)
-            return 0;
         return motor->getSpeed();
     };
     virtual void setRawMotorCurrentOut(float out)
     {
-        if (motor == nullptr)
-            return;
         motor->Out = out;
     };
 };
@@ -266,42 +300,41 @@ public:
     void bindMotor(Motor_C610 *_motor) { motor = _motor; }
     bool CheckID(uint32_t id)
     {
-        if (motor == nullptr)
+        if (isInit() == 0)
             return 0;
         return motor->CheckID(id);
     }
     void update(uint8_t can_rx_data[])
     {
-        if (motor == nullptr)
+        if (isInit() == 0)
             return;
         motor->update(can_rx_data);
+    }
+    virtual bool isInit()
+    {
+        if (motor == nullptr)
+            return 0;
+        else
+            return 1;
     }
 
 private:
     virtual float getRawMotorTotalAngle()
     {
-        if (motor == nullptr)
-            return 0;
         return motor->getAngle();
-    };
+    }
     virtual float getRawMotorAngle()
     {
-        if (motor == nullptr)
-            return 0;
         return motor->getEncoder() / 8192.f * 360;
-    };
+    }
     virtual float getRawMotorSpeed()
     {
-        if (motor == nullptr)
-            return 0;
         return motor->getSpeed();
-    };
+    }
     virtual void setRawMotorCurrentOut(float out)
     {
-        if (motor == nullptr)
-            return;
         motor->Out = out;
-    };
+    }
 };
 
 template <>
@@ -312,46 +345,46 @@ public:
     void bindMotor(Motor_GM6020 *_motor) { motor = _motor; }
     bool CheckID(uint32_t id)
     {
-        if (motor == nullptr)
+        if (isInit() == 0)
             return 0;
         return motor->CheckID(id);
     }
     void update(uint8_t can_rx_data[])
     {
-        if (motor == nullptr)
+        if (isInit() == 0)
             return;
         motor->update(can_rx_data);
     }
     void setEncoderOffset(uint16_t offset)
     {
-        if (motor == nullptr)
+        if (isInit() == 0)
             return;
         motor->setEncoderOffset(offset);
+    }
+
+    virtual bool isInit()
+    {
+        if (motor == nullptr)
+            return 0;
+        else
+            return 1;
     }
 
 private:
     virtual float getRawMotorTotalAngle()
     {
-        if (motor == nullptr)
-            return 0;
         return motor->getAngle();
     };
     virtual float getRawMotorAngle()
     {
-        if (motor == nullptr)
-            return 0;
         return motor->getEncoder() / 8192.f * 360;
     };
     virtual float getRawMotorSpeed()
     {
-        if (motor == nullptr)
-            return 0;
         return motor->getSpeed();
     };
     virtual void setRawMotorCurrentOut(float out)
     {
-        if (motor == nullptr)
-            return;
         motor->Out = out;
     };
 };
