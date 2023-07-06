@@ -446,11 +446,11 @@ float Controller<PID>::stand_feedforward()
     float error = target_pos.pitch - current_pos.pitch;
     if (error > 0)
     {
-        return debug_feedforward * arm_sin_f32(fabsf(error) * 3.14f / 180.0f);
+        return feedforward_ratio * arm_sin_f32(fabsf(error) * 3.14f / 180.0f);
     }
     else
     {
-        return -debug_feedforward * arm_sin_f32(fabsf(error) * 3.14f / 180.0f);
+        return -feedforward_ratio * arm_sin_f32(fabsf(error) * 3.14f / 180.0f);
     }
 }
 
@@ -497,6 +497,7 @@ Controller<LQR>::Controller()
 {
     silder_speed_kp = 75;
 	silder_distance_kp = 150;
+    silder_turn_kp = 10;
 
     set_point_pid.SetPIDParam(0.0f, 0, 0.0f, 3.0f, 8.0f);
     rotation_point_pid.SetPIDParam(0.f, 0.000001f, 0, 1, 3);
@@ -601,6 +602,12 @@ void Controller<LQR>::silder_control()
     static MeanFilter<50> speed_MF;      //均值滤波
     float speed_error = target_linearSpeed.y - speed_MF.f(this->current_linearSpeed.y);
     slider_pos[0] = slider_pos[1] = silder_bias + silder_distance_kp * (target_location.y - current_location.y) + silder_speed_kp * speed_error;
+    float turn_out = silder_turn_kp * current_angularSpeed.yaw;
+    slider_pos[0] += turn_out;
+    slider_pos[1] -= turn_out;
+
+    slider_pos[0] = std_lib::constrain(slider_pos[1], -200.f, 200.f);
+    slider_pos[1] = std_lib::constrain(slider_pos[1], -200.f, 200.f);
 }
 
 /**
@@ -869,11 +876,11 @@ float Controller<LQR>::stand_feedforward()
     float error = 0 - current_pos.pitch;
     if (error > 0)
     {
-        return -debug_feedforward * arm_sin_f32(fabsf(error));
+        return -feedforward_ratio * arm_sin_f32(fabsf(error));
     }
     else
     {
-        return debug_feedforward * arm_sin_f32(fabsf(error));
+        return feedforward_ratio * arm_sin_f32(fabsf(error));
     }
 }
 

@@ -176,7 +176,7 @@ private:
 	// debug调参
 	float debug_kp = 400.0f;
 	float debug_kd = 100.0f;
-	float debug_feedforward = 130 * 0.1f / 2 * 2.8f / 20 * 16384;
+	float feedforward_ratio = 130 * 0.1f / 2 * 2.8f / 20 * 16384;
 
 	/*模糊规则表*/
 	//直立环kp规则表
@@ -256,9 +256,10 @@ public:
 
 	float set_point;					//车身定点目标值
 	float silder_bias = 0;		//滑块偏差
-	float silder_speed_kp = 75;
-	float silder_distance_kp = 150;
-	
+	float silder_speed_kp = 0;
+	float silder_distance_kp = 0;
+	float silder_turn_kp = 0;
+
 	myPID set_point_pid;			//关乎参数调整
 	myPID rotation_point_pid; //小陀螺自适应pid
 
@@ -273,7 +274,7 @@ public:
 	float lqr_yaw_kp = 0;
 	float lqr_yawSpeed_kp = 0;
 
-	float debug_feedforward = 0 * 14.48527f * 9.8f * 0.126807f;//0.5*mg*l
+	float feedforward_ratio = 0 * 14.48527f * 9.8f * 0.126807f;//0.5*mg*l
 	float distance_max = 0.0f;
 	int distance_count = 50; //目标距离设置计数
 	int distance_delay = 1;	 //距离环使能阈值，可用于距离环延迟执行（减小减速停车倒回问题）
