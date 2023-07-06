@@ -605,9 +605,6 @@ void Controller<LQR>::silder_control()
     float turn_out = silder_turn_kp * current_angularSpeed.yaw;
     slider_pos[0] += turn_out;
     slider_pos[1] -= turn_out;
-
-    slider_pos[0] = std_lib::constrain(slider_pos[1], -200.f, 200.f);
-    slider_pos[1] = std_lib::constrain(slider_pos[1], -200.f, 200.f);
 }
 
 /**
@@ -625,35 +622,28 @@ float rotation_omax = 3.f;
 bool leapState = false;
 float Controller<LQR>::self_adaption()
 {                                         //自适应环
-    static MeanFilter<10> speed_MF1;      //均值滤波
-    static MeanFilter<10> speed_MF2;      //均值滤波
-    static float last_sport_flag = false; //滞回比较器标志位
+    static MeanFilter<25> speed_MF1;      //均值滤波
     static float setpoint_adapt_out = 0.0f;
     float setpoint_ctrl_out = 0.0f;
     float speed = current_linearSpeed.y;
     float speed_mf1 = 0.0f;
-    float speed_mf2 = 0.0f;
     speed_MF1 << speed;
     speed_MF1 >> speed_mf1; //大滤波
-    speed_MF2 << speed_mf1;
-    speed_MF2 >> speed_mf2;
-    debug_out_G = speed_mf2;
 
     rotation_point_pid.SetPIDParam(rotation_kp, rotation_ki, 0, rotation_imax, rotation_omax);
 
-    if (fabsf(speed_mf2) > 0.6 && last_sport_flag == false)
+    if (fabsf(speed_mf1) > 0.6f && sport_flag == false)
     {
         sport_flag = true;
     }
-    else if (fabsf(speed_mf2) < 0.6 && last_sport_flag == true)
+    else if (fabsf(speed_mf1) < 0.6f && sport_flag == true)
     {
         sport_flag = false;
     }
-    last_sport_flag = sport_flag;
 
     if (sport_flag)
     {
-        if (fabsf(target_linearSpeed.y) < 0.1f * fabsf(speed_mf2) && abs(current_linearSpeed.y) < 2.5f)
+        if (fabsf(target_linearSpeed.y) < 0.1f * fabsf(speed_mf1) && abs(current_linearSpeed.y) < 2.5f)
         {
             break_flag = true;
         }
@@ -673,7 +663,6 @@ float Controller<LQR>::self_adaption()
         rotation_point_pid.Target = rotation_point;
         rotation_point_pid.Current = current_pos.pitch;
         rotation_point_pid.Adjust();
-        // return rotation_point;
         return rotation_point_pid.Out;
     }
     else
@@ -690,15 +679,6 @@ float Controller<LQR>::self_adaption()
         balance_point = -0.f;
     }
 
-    /*加速后制动一段时间才进入零点自适应*/
-    if (target_linearSpeed.y != 0 && !break_flag)
-    {
-        setpoint_adaption_flag = false;
-    }
-    else
-    {
-        setpoint_adaption_flag = true; //在摇杆回0的时候直接打开自适应辅助刹车
-    }
 
     /*负方向运动策略*/
     if (target_linearSpeed.y < -0.3f)
@@ -728,18 +708,18 @@ float Controller<LQR>::self_adaption()
         {
             setpoint_ctrl_out = 1.f;
 
-            if (current_linearSpeed.y < 0.9 * target_linearSpeed.y)
-            {
-                setpoint_ctrl_out = 2.7f;
-                if (is_unlimited)
+                if (current_linearSpeed.y < 0.9 * target_linearSpeed.y)
                 {
-                    setpoint_ctrl_out = 3.7f;
+                    setpoint_ctrl_out = 2.7f;
+                    if (is_unlimited)
+                    {
+                        setpoint_ctrl_out = 3.7f;
+                    }
+                    if (is_turn90degrees)
+                    {
+                        setpoint_ctrl_out = 0.f;
+                    }
                 }
-                if (is_turn90degrees)
-                {
-                    setpoint_ctrl_out = 0.f;
-                }
-            }
         }
     }
     /* 刹车 */
@@ -751,24 +731,36 @@ float Controller<LQR>::self_adaption()
     {
     }
 
-    if (is_leap)
+    // 没有做前后适应
+    // if (is_leap)
+    // {
+    //     if (current_linearSpeed.y > 3.0f && leapState == false)
+    //     {
+    //         leapState = true;
+    //     }
+    //     else if (current_linearSpeed.y < 1.5f && leapState == true)
+    //     {
+    //         leapState = false;
+    //     }
+    //     if (leapState == true)
+    //     {
+    //         setpoint_ctrl_out = -12.f;
+    //     }
+    //     else
+    //     {
+    //         setpoint_ctrl_out = 5.f;
+    //     }
+    //     return setpoint_ctrl_out;
+    // }
+
+     /*加速后制动一段时间才进入零点自适应*/
+    if (target_linearSpeed.y != 0 && !break_flag)
     {
-        if (current_linearSpeed.y > 3.0f && leapState == false)
-        {
-            leapState = true;
-        }
-        else if (current_linearSpeed.y < 1.5f && leapState == true)
-        {
-            leapState = false;
-        }
-        if (leapState == true)
-        {
-            setpoint_ctrl_out = -12.f;
-        }
-        else
-        {
-            setpoint_ctrl_out = 5.f;
-        }
+        setpoint_adaption_flag = false;
+    }
+    else
+    {
+        setpoint_adaption_flag = true; //在摇杆回0的时候直接打开自适应辅助刹车
     }
 
     if (setpoint_adaption_flag)
