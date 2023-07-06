@@ -256,7 +256,9 @@ public:
 
 	float set_point;					//车身定点目标值
 	float silder_bias = 0;		//滑块偏差
-	myPID silder_pid;					//滑块pid
+	float silder_speed_kp = 75;
+	float silder_distance_kp = 150;
+	
 	myPID set_point_pid;			//关乎参数调整
 	myPID rotation_point_pid; //小陀螺自适应pid
 

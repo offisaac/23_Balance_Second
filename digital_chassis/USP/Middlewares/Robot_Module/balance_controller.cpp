@@ -495,7 +495,8 @@ void Controller<PID>::reset_adjust()
  */
 Controller<LQR>::Controller()
 {
-    silder_pid.SetPIDParam(75.0f, 0.0f, 0.0f, 200.0f, 200.0f);
+    silder_speed_kp = 75;
+	silder_distance_kp = 150;
 
     set_point_pid.SetPIDParam(0.0f, 0, 0.0f, 3.0f, 8.0f);
     rotation_point_pid.SetPIDParam(0.f, 0.000001f, 0, 1, 3);
@@ -598,10 +599,8 @@ void Controller<LQR>::Controller_Adjust()
 void Controller<LQR>::silder_control()
 {
     static MeanFilter<50> speed_MF;      //均值滤波
-    silder_pid.Target = this->target_linearSpeed.y;
-    silder_pid.Current = speed_MF.f(this->current_linearSpeed.y);
-    silder_pid.Adjust();
-    slider_pos[0] = slider_pos[1] = silder_pid.Out + silder_bias;
+    float speed_error = target_linearSpeed.y - speed_MF.f(this->current_linearSpeed.y);
+    slider_pos[0] = slider_pos[1] = silder_bias + silder_distance_kp * (target_location.y - current_location.y) + silder_speed_kp * speed_error;
 }
 
 /**
