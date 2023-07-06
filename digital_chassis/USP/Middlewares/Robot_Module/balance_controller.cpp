@@ -495,12 +495,11 @@ void Controller<PID>::reset_adjust()
  */
 Controller<LQR>::Controller()
 {
-    silder_pid.DeadZone = 0.0f;
-    silder_pid.SetPIDParam(150.0f, 0.0f, 0.0f, 0.0f, 200.0f);
+    silder_pid.SetPIDParam(75.0f, 0.0f, 0.0f, 200.0f, 200.0f);
 
-    set_point_pid.SetPIDParam(-10.0f, 0, 0.0f, 3.0f, 8.0f);
+    set_point_pid.SetPIDParam(0.0f, 0, 0.0f, 3.0f, 8.0f);
     rotation_point_pid.SetPIDParam(0.f, 0.000001f, 0, 1, 3);
-    lqr_distance_kp = -6.f;
+    lqr_distance_kp = -1.5f;
     distance_max = 1.5f;
     distance_delay = 10;
     lqr_speed_kp = -2.2361f;
@@ -561,7 +560,7 @@ void Controller<LQR>::Controller_Adjust()
         /*距离环*/
         if (distance_flag && !is_rotation)
         {                         //每一次触发路程环都只设置一次目标值，延迟可以调
-            if (!distance_enable) //如果距离环被使能了，就不再更新距离目标值
+            if (distance_enable == false) //如果距离环被使能了，就不再更新距离目标值
             {
                 if (distance_count == distance_delay)
                 {
@@ -598,10 +597,11 @@ void Controller<LQR>::Controller_Adjust()
 
 void Controller<LQR>::silder_control()
 {
+    static MeanFilter<50> speed_MF;      //均值滤波
     silder_pid.Target = this->target_linearSpeed.y;
-    silder_pid.Current = this->current_linearSpeed.y;
+    silder_pid.Current = speed_MF.f(this->current_linearSpeed.y);
     silder_pid.Adjust();
-    slider_pos[0] = slider_pos[1] = silder_pid.Out;
+    slider_pos[0] = slider_pos[1] = silder_pid.Out + silder_bias;
 }
 
 /**
@@ -697,13 +697,11 @@ float Controller<LQR>::self_adaption()
     /*负方向运动策略*/
     if (target_linearSpeed.y < -0.3f)
     {
-        // slider_pos[0] = 200.f;
-        // slider_pos[1] = 200.f;
         if (fabsf(current_angularSpeed.yaw) < 30.0f)
         {
             setpoint_ctrl_out = -1.f;
 
-            if (current_linearSpeed.y > 0.9 * target_linearSpeed.y)
+            if (current_linearSpeed.y > 0.9f * target_linearSpeed.y)
             {
                 setpoint_ctrl_out = -2.f;
                 if (is_unlimited)
@@ -720,8 +718,6 @@ float Controller<LQR>::self_adaption()
     /* 正方向运动策略 */
     else if (target_linearSpeed.y > 0.3f)
     {
-        // slider_pos[0] = -200.f;
-        // slider_pos[1] = -200.f;
         if (fabsf(current_angularSpeed.yaw) < 30.0f)
         {
             setpoint_ctrl_out = 1.f;
@@ -743,14 +739,10 @@ float Controller<LQR>::self_adaption()
     /* 刹车 */
     else if (break_flag)
     {
-        // slider_pos[0] = setpoint_adapt_out * -25.f;
-        // slider_pos[1] = setpoint_adapt_out * -25.f;
         setpoint_ctrl_out = balance_point;
     }
     else
     {
-        // slider_pos[0] = 0;
-        // slider_pos[1] = 0;
     }
 
     if (is_leap)
@@ -786,7 +778,7 @@ float Controller<LQR>::self_adaption()
 
     if (setpoint_adaption_flag)
     {
-        if (!break_flag && abs(speed_mf1) < 1.0)
+        if (break_flag == false && abs(speed_mf1) < 1.0f)
         {
             distance_flag = true;
         }
