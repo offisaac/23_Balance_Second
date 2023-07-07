@@ -4,3 +4,6 @@
 [submodule "digital_chassis/USP/Middlewares/abstract_class_library"]
 	path = digital_chassis/USP/Middlewares/abstract_class_library
 	url = https://git.scutbot.cn/WhiteNight/abstract_class_library
+[submodule "abstract_class_library"]
+	path = abstract_class_library
+	url = https://git.scutbot.cn/WhiteNight/abstract_class_library.git
