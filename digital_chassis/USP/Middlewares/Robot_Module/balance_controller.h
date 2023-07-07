@@ -255,10 +255,11 @@ public:
 	void reset_adjust(); //控制器重置
 
 	float set_point;					//车身定点目标值
-	float silder_bias = 0;		//滑块偏差
-	float silder_speed_kp = 0;
-	float silder_distance_kp = 0;
-	float silder_turn_kp = 0;
+	float slider_bias = 0;		//滑块偏差
+	float slider_speed_kp = 0;
+	float slider_distance_kp = 0;
+	float slider_turn_kp = 0;
+	float slider_offset = 0;
 
 	myPID set_point_pid;			//关乎参数调整
 	myPID rotation_point_pid; //小陀螺自适应pid

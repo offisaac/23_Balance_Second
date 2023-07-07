@@ -495,11 +495,12 @@ void Controller<PID>::reset_adjust()
  */
 Controller<LQR>::Controller()
 {
-    silder_speed_kp = 75;
-	silder_distance_kp = 150;
-    silder_turn_kp = 10;
+    slider_speed_kp = 75;
+	slider_distance_kp = 150;
+    slider_turn_kp = 10;
+    slider_offset = -30;
 
-    set_point_pid.SetPIDParam(0.0f, 0, 0.0f, 3.0f, 8.0f);
+    set_point_pid.SetPIDParam(-9.0f, 0, 0.0f, 3.0f, 7.0f);
     rotation_point_pid.SetPIDParam(0.f, 0.000001f, 0, 1, 3);
     lqr_distance_kp = -1.5f;
     distance_max = 1.5f;
@@ -590,7 +591,7 @@ void Controller<LQR>::Controller_Adjust()
         output.turn_out = turn_scale * turn_adjust();
         // if (is_rotation == 0)
         // {
-            output.turn_out = std_lib::constrain(output.turn_out, -2.5f, 2.5f);
+            output.turn_out = std_lib::constrain(output.turn_out, -3.f, 3.f);
         // }
         /*前馈*/
         output.feedforward_out = stand_feedforward();
@@ -600,9 +601,11 @@ void Controller<LQR>::Controller_Adjust()
 void Controller<LQR>::silder_control()
 {
     static MeanFilter<50> speed_MF;      //均值滤波
+    static MeanFilter<15> turn_MF; //转向滤波
     float speed_error = target_linearSpeed.y - speed_MF.f(this->current_linearSpeed.y);
-    slider_pos[0] = slider_pos[1] = silder_bias + silder_distance_kp * (target_location.y - current_location.y) + silder_speed_kp * speed_error;
-    float turn_out = silder_turn_kp * current_angularSpeed.yaw;
+    //speed_error = std_lib::constrain(speed_error,speed_error-0.05f,speed_error + 0.05f);
+    slider_pos[0] = slider_pos[1] = slider_offset + slider_bias + slider_distance_kp * (target_location.y - current_location.y) + slider_speed_kp * speed_error;
+    float turn_out = slider_turn_kp * turn_MF.f(current_angularSpeed.yaw);
     slider_pos[0] += turn_out;
     slider_pos[1] -= turn_out;
 }
