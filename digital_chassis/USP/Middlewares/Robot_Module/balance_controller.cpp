@@ -603,11 +603,15 @@ void Controller<LQR>::silder_control()
     static MeanFilter<50> speed_MF;      //均值滤波
     static MeanFilter<15> turn_MF; //转向滤波
     float speed_error = target_linearSpeed.y - speed_MF.f(this->current_linearSpeed.y);
+		if(is_rotation)
+		{
+			speed_error = 0;
+		}
     //speed_error = std_lib::constrain(speed_error,speed_error-0.05f,speed_error + 0.05f);
     slider_pos[0] = slider_pos[1] = slider_offset + slider_bias + slider_distance_kp * (target_location.y - current_location.y) + slider_speed_kp * speed_error;
-    float turn_out = slider_turn_kp * turn_MF.f(current_angularSpeed.yaw);
-    slider_pos[0] += turn_out;
-    slider_pos[1] -= turn_out;
+//    float turn_out = slider_turn_kp * turn_MF.f(current_angularSpeed.yaw);
+//    slider_pos[0] += turn_out;
+//    slider_pos[1] -= turn_out;
 }
 
 /**
