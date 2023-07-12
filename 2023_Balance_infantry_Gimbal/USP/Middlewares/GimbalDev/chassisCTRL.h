@@ -70,7 +70,7 @@ public:
 	int rotateCnt; //记录云台旋转圈数
 	/*标志位*/
 	bool chassis_resetState; //遥控保护
-	uint8_t rotationState;	 //小陀螺
+	uint8_t rotationState = 0;	 //小陀螺
 	uint8_t keyboardState;	 //判断是否为键盘控制
 	bool bulletBayState;		 //弹舱开启时灵敏度下降
 private:

@@ -44,7 +44,7 @@
 void ChassisCTRL_Classdef::Status_Update(float _chassis_yaw_current,
 										 float _y_data,
 										 float _x_data,
-										 float _y_back_data, //使用键鼠时需要用来判断向后和左
+										 float _y_back_data, // 使用键鼠时需要用来判断向后和左
 										 float _x_back_data,
 										 bool *_chassis_resetState,
 										 uint8_t *_rotationState,
@@ -57,9 +57,20 @@ void ChassisCTRL_Classdef::Status_Update(float _chassis_yaw_current,
 	x_back_data = _x_back_data;
 	chassis_yaw_current = _chassis_yaw_current;
 	chassis_resetState = *_chassis_resetState;
-	rotationState = *_rotationState;
 	keyboardState = *_keyboardState;
 	bulletBayState = *_bulletBayState;
+	//rotationState = *_rotationState;
+	if (*_rotationState == 1)
+	{
+		rotationState = 1;
+	}
+	else
+	{
+		if (chassis_yawAngle.Error < -120 || chassis_yawAngle.Error > 120)
+		{
+			rotationState = 0;
+		}
+	}
 }
 /**
  * @brief 接口，处理底盘控制数据
@@ -129,9 +140,9 @@ void ChassisCTRL_Classdef::ChassisFollowOn(uint8_t _chassis_follow_flag)
 	}
 	/*关闭底盘跟随pid全置零*/
 	if (_chassis_follow_flag)
-		chassis_yawAngle.SetPIDParam(chassis_follow_para[0], chassis_follow_para[1], chassis_follow_para[2], chassis_follow_para[3], chassis_follow_para[4],chassis_follow_para[5]);
+		chassis_yawAngle.SetPIDParam(chassis_follow_para[0], chassis_follow_para[1], chassis_follow_para[2], chassis_follow_para[3], chassis_follow_para[4], chassis_follow_para[5]);
 	else
-		chassis_yawAngle.SetPIDParam(0, 0, 0, 0,0, 0);
+		chassis_yawAngle.SetPIDParam(0, 0, 0, 0, 0, 0);
 }
 /**
  * @brief 计算小陀螺圈数
@@ -156,7 +167,7 @@ void ChassisCTRL_Classdef::angleCNT()
  */
 void ChassisCTRL_Classdef::data_process()
 {
-	static int16_t velocity[4]; //键盘速度临时数据
+	static int16_t velocity[4]; // 键盘速度临时数据
 	/*键盘控制*/
 	if (keyboardState)
 	{
@@ -185,30 +196,33 @@ void ChassisCTRL_Classdef::data_process()
 
 		// speed_X = x_data * 1023 * arm_cos_f32(chassis_yaw_current / RAD * PI) - y_data * 1023 * arm_sin_f32(chassis_yaw_current / RAD * PI);
 
-		speed_Y = y_data*1023;
-		speed_X = x_data*1023;
+		speed_Y = y_data * 1023;
+		speed_X = x_data * 1023;
 	}
+
+	/*使底盘总是从最小角度跟随*/
+	if (chassis_yaw_current - rotateCnt * 360 > 180)
+	{
+		chassis_yawAngle.Current = chassis_yaw_current - rotateCnt * 360 - 360;
+	}
+	else if (chassis_yaw_current - rotateCnt * 360 < -180)
+	{
+		chassis_yawAngle.Current = chassis_yaw_current - rotateCnt * 360 + 360;
+	}
+	else
+	{
+		chassis_yawAngle.Current = chassis_yaw_current - rotateCnt * 360;
+	}
+	/*底盘跟随PID计算*/
+	chassis_yawAngle.Adjust();
+
 	if (rotationState)
 	{
 		speed_Z = 1023;
 	}
 	else
 	{
-		/*使底盘总是从最小角度跟随*/
-		if (chassis_yaw_current - rotateCnt * 360 > 180)
-		{
-			chassis_yawAngle.Current = chassis_yaw_current - rotateCnt * 360 - 360;
-		}
-		else if (chassis_yaw_current - rotateCnt * 360 < -180)
-		{
-			chassis_yawAngle.Current = chassis_yaw_current - rotateCnt * 360 + 360;
-		}
-		else
-		{
-			chassis_yawAngle.Current = chassis_yaw_current - rotateCnt * 360;
-		}
-		/*底盘跟随PID计算*/
-		speed_Z = chassis_yawAngle.Adjust();
+		speed_Z = chassis_yawAngle.Out;
 	}
 	chassis_yaw_current_full = chassis_yaw_current - rotateCnt * 360;
 }
@@ -232,7 +246,7 @@ void ChassisCTRL_Classdef::convert_to_spherical()
 {
 	(sqrtf(powf(speed_X, 2) + powf(speed_Y, 2) + powf(speed_Z, 2)) > 1023) ? (r = 1023) : (r = sqrtf(powf(speed_X, 2) + powf(speed_Y, 2) + powf(speed_Z, 2)));
 	alpha = acosf(speed_Z / sqrtf(powf(speed_X, 2) + powf(speed_Y, 2) + powf(speed_Z, 2))) / PI * 180 * 10;
-	theta = int16_t(atanf(speed_Y / (float)speed_X) / PI * 180 * 5); //强制转化成float时arctan角度小于1时能正常运算
+	theta = int16_t(atanf(speed_Y / (float)speed_X) / PI * 180 * 5); // 强制转化成float时arctan角度小于1时能正常运算
 	if (speed_X == 0)
 	{
 		theta = (speed_Y > 0) ? 90 * 5 : ((speed_Y < 0) ? 270 * 5 : theta);
