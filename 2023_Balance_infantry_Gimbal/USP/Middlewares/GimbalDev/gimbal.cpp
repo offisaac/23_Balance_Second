@@ -262,7 +262,7 @@ void Gimbal_Classdef::gimbal_pid_calculate()
 	
 
 	/*更新目标值*/
-	pitch_target = std_lib::constrain(pitch_target, -18.0f, 24.0f);
+	pitch_target = std_lib::constrain(pitch_target, -20.0f, 30.0f);
 	pitch_angleloop.Target = pitch_target;
 	yaw_angleloop.Target = yaw_target;
 	//pitch_speedloop.Target = pitch_angleloop.Adjust()+ pitch_anglekd*(0-angular_velocity_pitch);

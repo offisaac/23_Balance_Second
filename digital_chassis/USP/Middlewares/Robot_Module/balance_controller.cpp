@@ -495,10 +495,12 @@ void Controller<PID>::reset_adjust()
  */
 Controller<LQR>::Controller()
 {
-    slider_speed_kp = 75;
-	slider_distance_kp = 150;
+		slider_stand_kp = 100;//100
+    slider_speed_kp = 100;
+		slider_speed_ff = 40;
+		slider_distance_kp = 150;//150
     slider_turn_kp = 10;
-    slider_offset = -30;
+    slider_offset = 0;
 
     set_point_pid.SetPIDParam(-9.0f, 0, 0.0f, 3.0f, 7.0f);
     rotation_point_pid.SetPIDParam(0.f, 0.000001f, 0, 1, 3);
@@ -600,18 +602,34 @@ void Controller<LQR>::Controller_Adjust()
 
 void Controller<LQR>::silder_control()
 {
-    static MeanFilter<50> speed_MF;      //均值滤波
-    static MeanFilter<15> turn_MF; //转向滤波
-    float speed_error = target_linearSpeed.y - speed_MF.f(this->current_linearSpeed.y);
+		static MeanFilter<10> stand_MF;			 //直立滤波
+    static MeanFilter<100> speed_MF1;      //速度滤波
+		static MeanFilter<100> speed_MF2;
+		static MedianFilter<50> speed_MIF1;	//中值滤波
+		static MedianFilter<50> speed_MIF2;
+    static MeanFilter<15> turn_MF; 			 //转向滤波
+		float stand_error = target_pos.pitch - stand_MF.f(this->current_pos.pitch);
+    float speed_error = target_linearSpeed.y - speed_MF2.f(speed_MF1.f(this->current_linearSpeed.y));
+		//float speed_error = target_linearSpeed.y - speed_MIF1.f(this->current_linearSpeed.y);
+		static float last_speed_error = 0;
+		float speed_ff = slider_speed_ff * target_linearSpeed.y;
 		if(is_rotation)
 		{
 			speed_error = 0;
+			stand_error = 0;
+			speed_ff = 0;
 		}
-    //speed_error = std_lib::constrain(speed_error,speed_error-0.05f,speed_error + 0.05f);
-    slider_pos[0] = slider_pos[1] = slider_offset + slider_bias + slider_distance_kp * (target_location.y - current_location.y) + slider_speed_kp * speed_error;
+		else if(abs(current_linearSpeed.y)>1.2f && abs(turn_MF.f(current_angularSpeed.yaw))>1.2f)
+		{
+			speed_error = last_speed_error;
+			//speed_error = 0;
+		}
+			
+    slider_pos[0] = slider_pos[1] = slider_offset + slider_bias + slider_distance_kp * (target_location.y - current_location.y) + slider_speed_kp * speed_error + speed_ff + slider_stand_kp * stand_error;
 //    float turn_out = slider_turn_kp * turn_MF.f(current_angularSpeed.yaw);
 //    slider_pos[0] += turn_out;
 //    slider_pos[1] -= turn_out;
+		last_speed_error = speed_error;
 }
 
 /**

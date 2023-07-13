@@ -99,6 +99,7 @@ void tskDjiMotor(void *arg)
 void tskLPMS(void *arg)
 {
 	balance_infantry.LPMS.Data_Type_Config(DATA_16BIT);
+	//vTaskDelay(500);
  for(;;)
  { 
     if(balance_infantry.LPMS.is_init==false)

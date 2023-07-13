@@ -115,52 +115,52 @@ void UpperMonitor_Sent_Choose(float *data)
       // case 8: data[i]= (float)infantry.pc_vision.shoot_mode;
       // 		break;
 
-      //			case 0: data[i]= infantry.gimbal.pitch_angleloop.Target;
-      //         break;
-      //     case 1: data[i]= infantry.gimbal.pitch_angleloop.Current;
-      //         break;
-      //     case 2: data[i]= infantry.gimbal.pitch_angleloop.P_Term;
-      //         break;
-      //			case 3: data[i]= infantry.gimbal.pitch_angleloop.I_Term;
-      //         break;
-      //			case 4: data[i]= infantry.gimbal.pitch_speedloop.Target;//infantry.board_com.rx_pack1.heat_limit;
-      //         break;
-      //			case 5: data[i]= infantry.gimbal.pitch_speedloop.Current;//infantry.board_com.rx_pack1.booster_heat;
-      //         break;
-      //			case 6: data[i]= infantry.gimbal.pitch_angleloop.Out;
-      //					break;
-      //			case 7: data[i]= infantry.board_com.rx_pack1.booster_heat;
-      //					break;
-      //     case 8: data[i]= infantry.booster.turnplate_angleloop.Target;
-      //					break;
+ 			case 0: data[i]= infantry.gimbal.pitch_angleloop.Target;
+          break;
+      case 1: data[i]= infantry.gimbal.pitch_angleloop.Current;
+          break;
+      case 2: data[i]= infantry.gimbal.pitch_angleloop.P_Term;
+          break;
+ 			case 3: data[i]= infantry.gimbal.pitch_angleloop.I_Term;
+          break;
+ 			case 4: data[i]= infantry.gimbal.pitch_speedloop.Target;//infantry.board_com.rx_pack1.heat_limit;
+          break;
+ 			case 5: data[i]= infantry.gimbal.pitch_speedloop.Current;//infantry.board_com.rx_pack1.booster_heat;
+          break;
+ 			case 6: data[i]= infantry.gimbal.pitch_angleloop.Out;
+ 					break;
+ 			case 7: data[i]= infantry.board_com.rx_pack1.booster_heat;
+ 					break;
+      case 8: data[i]= infantry.booster.turnplate_angleloop.Target;
+ 					break;
 
-    case 0:
-      data[i] = infantry.gimbal.yaw_angleloop.Target;
-      break;
-    case 1:
-      data[i] = infantry.gimbal.yaw_angleloop.Current;
-      break;
-    case 2:
-      data[i] = infantry.gimbal.yaw_angleloop.P_Term;
-      break;
-    case 3:
-      data[i] = infantry.gimbal.yaw_angleloop.I_Term;
-      break;
-    case 4:
-      data[i] = infantry.gimbal.yaw_speedloop.Target; // infantry.board_com.rx_pack1.heat_limit;
-      break;
-    case 5:
-      data[i] = infantry.gimbal.yaw_speedloop.Current; // infantry.board_com.rx_pack1.booster_heat;
-      break;
-    case 6:
-      data[i] = infantry.gimbal.yaw_speedloop.P_Term;
-      break;
-    case 7:
-      data[i] = infantry.gimbal.yaw_speedloop.I_Term;
-      break;
-    case 8:
-      data[i] = yaw_out;
-      break;
+//    case 0:
+//      data[i] = infantry.gimbal.yaw_angleloop.Target;
+//      break;
+//    case 1:
+//      data[i] = infantry.gimbal.yaw_angleloop.Current;
+//      break;
+//    case 2:
+//      data[i] = infantry.gimbal.yaw_angleloop.P_Term;
+//      break;
+//    case 3:
+//      data[i] = infantry.gimbal.yaw_angleloop.I_Term;
+//      break;
+//    case 4:
+//      data[i] = infantry.gimbal.yaw_speedloop.Target; // infantry.board_com.rx_pack1.heat_limit;
+//      break;
+//    case 5:
+//      data[i] = infantry.gimbal.yaw_speedloop.Current; // infantry.board_com.rx_pack1.booster_heat;
+//      break;
+//    case 6:
+//      data[i] = infantry.gimbal.yaw_speedloop.P_Term;
+//      break;
+//    case 7:
+//      data[i] = infantry.gimbal.yaw_speedloop.I_Term;
+//      break;
+//    case 8:
+//      data[i] = yaw_out;
+//      break;
       /*debug,小发射测试*/
       //  case 0: data[i]= infantry.booster.left_fri_speedloop.Target;
       //      break;

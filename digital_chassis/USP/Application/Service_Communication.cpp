@@ -254,6 +254,7 @@ void Task_UsartReceive(void *arg)
       switch(Usart_RxCOB.port_num)
       {
 				case 1: balance_infantry.LPMS.LPMS_BE2_Get_Data((uint8_t *)Usart_RxCOB.address); break;
+				//case 2: balance_infantry.LPMS.LPMS_BE2_Get_Data((uint8_t *)Usart_RxCOB.address); break;
 				default:
 						break;
 									

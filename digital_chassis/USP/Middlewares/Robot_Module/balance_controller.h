@@ -256,7 +256,9 @@ public:
 
 	float set_point;					//车身定点目标值
 	float slider_bias = 0;		//滑块偏差
+	float slider_stand_kp = 0;
 	float slider_speed_kp = 0;
+	float slider_speed_ff = 0;	//在大滤波下提高滑块速度响应前馈量
 	float slider_distance_kp = 0;
 	float slider_turn_kp = 0;
 	float slider_offset = 0;

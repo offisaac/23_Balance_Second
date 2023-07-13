@@ -57,7 +57,7 @@ void LPMS_BE2_Typedef::LPMS_BE2_Init()
     //    LPMS_BE2_Data_Type(data_type);
     //    LPMS_BE2_Data_Range(gyr_range, acc_range, degrad_unit);
     //    LPMS_BE2_Filter_Mode(filter_mode, is_auto_cali, filter_mode);
-    //    goto_stream_mode();
+//        goto_stream_mode();
     is_init = true;
 }
 

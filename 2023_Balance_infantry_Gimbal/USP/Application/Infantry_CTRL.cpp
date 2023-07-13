@@ -698,7 +698,7 @@ void InfantryCTRL_Classdef::Actuate()
 	/*视觉*/
 	pc_vision.SendGimbleStatus();
 	/*底盘板间通信*/
-	//enable_cmd = false;
+	enable_cmd = false;
 #if BALANCE_INFANTRY
 	board_com.Set_BalanceInfanty_Flag(DR16.GetStatus(),
 																		cap_mode == UNLIMITED,
