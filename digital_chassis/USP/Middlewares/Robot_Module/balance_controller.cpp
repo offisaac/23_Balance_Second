@@ -495,10 +495,10 @@ void Controller<PID>::reset_adjust()
  */
 Controller<LQR>::Controller()
 {
-		slider_stand_kp = 100;//100
+    slider_stand_kp = 100; // 100
     slider_speed_kp = 100;
-		slider_speed_ff = 40;
-		slider_distance_kp = 150;//150
+    slider_speed_ff = 40;
+    slider_distance_kp = 150; // 150
     slider_turn_kp = 10;
     slider_offset = 0;
 
@@ -543,7 +543,7 @@ void Controller<LQR>::Controller_Adjust()
         output.speed_out = torque_scale * speed_adjust();
         if (break_flag)
         {
-            output.speed_out = std_lib::constrain(output.speed_out, -3.5f, 3.5f);
+            output.speed_out = std_lib::constrain(output.speed_out, -3.f, 3.f);
         }
         else
         {
@@ -551,7 +551,7 @@ void Controller<LQR>::Controller_Adjust()
         }
         /*距离环*/
         if (distance_flag && !is_rotation)
-        {                         //每一次触发路程环都只设置一次目标值，延迟可以调
+        {                                 //每一次触发路程环都只设置一次目标值，延迟可以调
             if (distance_enable == false) //如果距离环被使能了，就不再更新距离目标值
             {
                 if (distance_count == distance_delay)
@@ -578,10 +578,14 @@ void Controller<LQR>::Controller_Adjust()
         debug_out_A = output.distance_out;
         /*转向环*/
         output.turn_out = turn_scale * turn_adjust();
-        // if (is_rotation == 0)
-        // {
-            output.turn_out = std_lib::constrain(output.turn_out, -5.f, 5.f);
-        // }
+        //         if (is_rotation == 0)
+        //         {
+        //            output.turn_out = std_lib::constrain(output.turn_out, -5.f, 5.f);
+        //         }
+        //			   else
+        //				 {
+        output.turn_out = std_lib::constrain(output.turn_out, -3.f, 3.f);
+        //				 }
         /*前馈*/
         output.feedforward_out = stand_feedforward();
     }
@@ -589,34 +593,34 @@ void Controller<LQR>::Controller_Adjust()
 
 void Controller<LQR>::silder_control()
 {
-		static MeanFilter<10> stand_MF;			 //直立滤波
-    static MeanFilter<100> speed_MF1;      //速度滤波
-		static MeanFilter<100> speed_MF2;
-		static MedianFilter<50> speed_MIF1;	//中值滤波
-		static MedianFilter<50> speed_MIF2;
-    static MeanFilter<15> turn_MF; 			 //转向滤波
-		float stand_error = target_pos.pitch - stand_MF.f(this->current_pos.pitch);
+    static MeanFilter<10> stand_MF;   //直立滤波
+    static MeanFilter<100> speed_MF1; //速度滤波
+    static MeanFilter<100> speed_MF2;
+    static MedianFilter<50> speed_MIF1; //中值滤波
+    static MedianFilter<50> speed_MIF2;
+    static MeanFilter<15> turn_MF; //转向滤波
+    float stand_error = target_pos.pitch - stand_MF.f(this->current_pos.pitch);
     float speed_error = target_linearSpeed.y - speed_MF2.f(speed_MF1.f(this->current_linearSpeed.y));
-		//float speed_error = target_linearSpeed.y - speed_MIF1.f(this->current_linearSpeed.y);
-		static float last_speed_error = 0;
-		float speed_ff = slider_speed_ff * target_linearSpeed.y;
-		if(is_rotation)
-		{
-			speed_error = 0;
-			stand_error = 0;
-			speed_ff = 0;
-		}
-		else if(abs(current_linearSpeed.y)>1.2f && abs(turn_MF.f(current_angularSpeed.yaw))>1.2f)
-		{
-			speed_error = last_speed_error;
-			//speed_error = 0;
-		}
-			
+    // float speed_error = target_linearSpeed.y - speed_MIF1.f(this->current_linearSpeed.y);
+    static float last_speed_error = 0;
+    float speed_ff = slider_speed_ff * target_linearSpeed.y;
+    if (is_rotation)
+    {
+        speed_error = 0;
+        //stand_error = 0;
+        speed_ff = 0;
+    }
+    else if (abs(current_linearSpeed.y) > 1.2f && abs(turn_MF.f(current_angularSpeed.yaw)) > 1.2f)
+    {
+        speed_error = last_speed_error;
+        // speed_error = 0;
+    }
+
     slider_pos[0] = slider_pos[1] = slider_offset + slider_bias + slider_distance_kp * (target_location.y - current_location.y) + slider_speed_kp * speed_error + speed_ff + slider_stand_kp * stand_error;
-//    float turn_out = slider_turn_kp * turn_MF.f(current_angularSpeed.yaw);
-//    slider_pos[0] += turn_out;
-//    slider_pos[1] -= turn_out;
-		last_speed_error = speed_error;
+    //    float turn_out = slider_turn_kp * turn_MF.f(current_angularSpeed.yaw);
+    //    slider_pos[0] += turn_out;
+    //    slider_pos[1] -= turn_out;
+    last_speed_error = speed_error;
 }
 
 /**
@@ -628,8 +632,8 @@ void Controller<LQR>::silder_control()
  */
 bool leapState = false;
 float Controller<LQR>::self_adaption()
-{                                         //自适应环
-    static MeanFilter<25> speed_MF1;      //均值滤波
+{                                    //自适应环
+    static MeanFilter<25> speed_MF1; //均值滤波
     static float setpoint_adapt_out = 0.0f;
     float setpoint_ctrl_out = 0.0f;
     float speed = current_linearSpeed.y;
@@ -685,7 +689,6 @@ float Controller<LQR>::self_adaption()
         balance_point = -0.f;
     }
 
-
     /*负方向运动策略*/
     if (target_linearSpeed.y < -0.3f)
     {
@@ -714,18 +717,18 @@ float Controller<LQR>::self_adaption()
         {
             setpoint_ctrl_out = 1.f;
 
-                if (current_linearSpeed.y < 0.9f * target_linearSpeed.y)
+            if (current_linearSpeed.y < 0.9f * target_linearSpeed.y)
+            {
+                setpoint_ctrl_out = 2.7f;
+                if (is_unlimited)
                 {
-                    setpoint_ctrl_out = 2.7f;
-                    if (is_unlimited)
-                    {
-                        setpoint_ctrl_out = 3.7f;
-                    }
-                    if (is_turn90degrees)
-                    {
-                        setpoint_ctrl_out = 0.f;
-                    }
+                    setpoint_ctrl_out = 3.7f;
                 }
+                if (is_turn90degrees)
+                {
+                    setpoint_ctrl_out = 0.f;
+                }
+            }
         }
     }
     /* 刹车 */
@@ -759,7 +762,7 @@ float Controller<LQR>::self_adaption()
         return setpoint_ctrl_out;
     }
 
-     /*加速后制动一段时间才进入零点自适应*/
+    /*加速后制动一段时间才进入零点自适应*/
     if (target_linearSpeed.y != 0 && !break_flag)
     {
         setpoint_adaption_flag = false;

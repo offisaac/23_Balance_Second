@@ -16,7 +16,7 @@ extern float debug_out_G;
 extern float debug_out_H;
 extern float debug_out_I;
 
-const float ratio_degree2rad = PI/180.f;
+const float ratio_degree2rad = PI / 180.f;
 
 //指定枚举类型作用域并且内部变量类型为uint8_t
 enum Ctrl_Type
@@ -42,12 +42,12 @@ typedef struct _Linear
 typedef struct _Controller_Out
 {
 	//输出变量
-	float set_point_out;		 //定点环输出
-	float distance_out;			 //距离环输出
-	float stand_out;				 //直立环输出
-	float turn_out;					 //转向环输出
-	float speed_out;				 //速度环输出
-	float feedforward_out;	 //前馈环输出
+	float set_point_out;	 //定点环输出
+	float distance_out;		 //距离环输出
+	float stand_out;			 //直立环输出
+	float turn_out;				 //转向环输出
+	float speed_out;			 //速度环输出
+	float feedforward_out; //前馈环输出
 } Controller_Out;
 
 class Ctrl_Base
@@ -230,7 +230,7 @@ public:
 	bool last_sport_flag = false;
 	bool down_slope_flag = false;
 
-	bool weightless_flag = false; //失重检测标志位
+	bool weightless_flag = false;	 //失重检测标志位
 	int16_t weightless_delay = 80; //失重检测延时
 	int16_t real_count = 0;
 
@@ -254,11 +254,11 @@ public:
 
 	void reset_adjust(); //控制器重置
 
-	float set_point;					//车身定点目标值
-	float slider_bias = 0;		//滑块偏差
+	float set_point;			 //车身定点目标值
+	float slider_bias = 0; //滑块偏差
 	float slider_stand_kp = 0;
 	float slider_speed_kp = 0;
-	float slider_speed_ff = 0;	//在大滤波下提高滑块速度响应前馈量
+	float slider_speed_ff = 0; //在大滤波下提高滑块速度响应前馈量
 	float slider_distance_kp = 0;
 	float slider_turn_kp = 0;
 	float slider_offset = 0;
@@ -266,21 +266,21 @@ public:
 	myPID set_point_pid;			//关乎参数调整
 	myPID rotation_point_pid; //小陀螺自适应pid
 
-	uint8_t speed_pid_cnt = 0;				//速度环执行周期
+	uint8_t speed_pid_cnt = 0;		//速度环执行周期
 	uint8_t speed_pid_delay = 20; //速度环执行周期
 
 	/*lqr参数*/
 	float lqr_distance_kp = -1.5f;
 	float lqr_speed_kp = -2.2361f;
-    float lqr_pitch_kp = -13.6094f;     // 10.7222
-    float lqr_pitchSpeed_kp = -2.2507f; // 1.5485
-    float lqr_yaw_kp = 0.f;
-    float lqr_yawSpeed_kp = 2.5f;
+	float lqr_pitch_kp = -13.6094f;			// 10.7222
+	float lqr_pitchSpeed_kp = -2.2507f; // 1.5485
+	float lqr_yaw_kp = 0.f;
+	float lqr_yawSpeed_kp = 2.f;
 
-	float feedforward_ratio = 0 * 14.48527f * 9.8f * 0.126807f;//0.5*mg*l
+	float feedforward_ratio = 0 * 14.48527f * 9.8f * 0.126807f; // 0.5*mg*l
 	float distance_max = 1.5f;
 	int distance_count = 50; //目标距离设置计数
-	int distance_delay = 10;	 //距离环使能阈值，可用于距离环延迟执行（减小减速停车倒回问题）
+	int distance_delay = 10; //距离环使能阈值，可用于距离环延迟执行（减小减速停车倒回问题）
 
 	float torque_scale = 1.f; //力矩系数，用于抵消模型与实际
 	float turn_scale = 1.f;
