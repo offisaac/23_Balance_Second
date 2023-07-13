@@ -231,7 +231,7 @@ public:
 	bool down_slope_flag = false;
 
 	bool weightless_flag = false; //失重检测标志位
-	int16_t weightless_delay = 0; //失重检测延时
+	int16_t weightless_delay = 80; //失重检测延时
 	int16_t real_count = 0;
 
 	bool idling_flag = false;	 //空转检测
@@ -266,26 +266,27 @@ public:
 	myPID set_point_pid;			//关乎参数调整
 	myPID rotation_point_pid; //小陀螺自适应pid
 
-	uint8_t speed_pid_cnt;				//速度环执行周期
+	uint8_t speed_pid_cnt = 0;				//速度环执行周期
 	uint8_t speed_pid_delay = 20; //速度环执行周期
 
 	/*lqr参数*/
-	float lqr_distance_kp = 0;
-	float lqr_speed_kp = 0;
-	float lqr_pitch_kp = 0;
-	float lqr_pitchSpeed_kp = 0;
-	float lqr_yaw_kp = 0;
-	float lqr_yawSpeed_kp = 0;
+	float lqr_distance_kp = -1.5f;
+	float lqr_speed_kp = -2.2361f;
+    float lqr_pitch_kp = -13.6094f;     // 10.7222
+    float lqr_pitchSpeed_kp = -2.2507f; // 1.5485
+    float lqr_yaw_kp = 0.f;
+    float lqr_yawSpeed_kp = 2.5f;
 
 	float feedforward_ratio = 0 * 14.48527f * 9.8f * 0.126807f;//0.5*mg*l
-	float distance_max = 0.0f;
+	float distance_max = 1.5f;
 	int distance_count = 50; //目标距离设置计数
-	int distance_delay = 1;	 //距离环使能阈值，可用于距离环延迟执行（减小减速停车倒回问题）
+	int distance_delay = 10;	 //距离环使能阈值，可用于距离环延迟执行（减小减速停车倒回问题）
 
 	float torque_scale = 1.f; //力矩系数，用于抵消模型与实际
-	float turn_scale = 0.2f;
+	float turn_scale = 1.f;
 
 	float balance_point = 0.0f;
+	float rotation_point = -1.f;
 
 	/*小陀螺撞墙检测*/
 	float last_speed_z = 0.f;

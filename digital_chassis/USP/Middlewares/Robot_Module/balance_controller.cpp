@@ -503,23 +503,7 @@ Controller<LQR>::Controller()
     slider_offset = 0;
 
     set_point_pid.SetPIDParam(-9.0f, 0, 0.0f, 3.0f, 7.0f);
-    rotation_point_pid.SetPIDParam(0.f, 0.000001f, 0, 1, 3);
-    lqr_distance_kp = -1.5f;
-    distance_max = 1.5f;
-    distance_delay = 10;
-    lqr_speed_kp = -2.2361f;
-    lqr_pitch_kp = -13.6094f;     // 10.7222
-    lqr_pitchSpeed_kp = -2.2507f; // 1.5485
-    lqr_yaw_kp = 0.f;
-    lqr_yawSpeed_kp = 2.0f;
-    set_point = 0;
-    speed_pid_cnt = 0;
-
-    weightless_delay = 80;
-    idling_count = 10;
-
-    torque_scale = 1.f;
-    turn_scale = 1.f;
+    rotation_point_pid.SetPIDParam(0, 0.000001f, 0, 0.f, 3.f);
 }
 
 /**
@@ -545,10 +529,13 @@ void Controller<LQR>::Controller_Adjust()
         silder_control();       //滑块控制
         output.set_point_out = self_adaption() * ratio_degree2rad;
         debug_out_F = output.set_point_out;
-        target_pos.pitch = output.set_point_out; //自适应的输出设置为目标角度
         if (weightless_flag)
         {
             target_pos.pitch = balance_point;
+        }
+        else
+        {
+            target_pos.pitch = output.set_point_out; //自适应的输出设置为目标角度
         }
         /*直立环*/
         output.stand_out = torque_scale * stand_adjust();
@@ -593,7 +580,7 @@ void Controller<LQR>::Controller_Adjust()
         output.turn_out = turn_scale * turn_adjust();
         // if (is_rotation == 0)
         // {
-            output.turn_out = std_lib::constrain(output.turn_out, -3.f, 3.f);
+            output.turn_out = std_lib::constrain(output.turn_out, -5.f, 5.f);
         // }
         /*前馈*/
         output.feedforward_out = stand_feedforward();
@@ -639,11 +626,6 @@ void Controller<LQR>::silder_control()
  * @return  角度输出
  * @retval  None
  */
-float rotation_point = 0.f;
-float rotation_kp = 0.f;
-float rotation_ki = 0.000001f;
-float rotation_imax = 0.f;
-float rotation_omax = 3.f;
 bool leapState = false;
 float Controller<LQR>::self_adaption()
 {                                         //自适应环
@@ -654,8 +636,6 @@ float Controller<LQR>::self_adaption()
     float speed_mf1 = 0.0f;
     speed_MF1 << speed;
     speed_MF1 >> speed_mf1; //大滤波
-
-    rotation_point_pid.SetPIDParam(rotation_kp, rotation_ki, 0, rotation_imax, rotation_omax);
 
     if (fabsf(speed_mf1) > 0.6f && sport_flag == false)
     {
@@ -685,10 +665,11 @@ float Controller<LQR>::self_adaption()
     if (is_rotation)
     {
         distance_flag = false;
-        rotation_point_pid.Target = rotation_point;
-        rotation_point_pid.Current = current_pos.pitch;
-        rotation_point_pid.Adjust();
-        return rotation_point_pid.Out;
+        return rotation_point;
+        // rotation_point_pid.Target = rotation_point;
+        // rotation_point_pid.Current = current_pos.pitch;
+        // rotation_point_pid.Adjust();
+        // return rotation_point_pid.Out;
     }
     else
     {
@@ -733,7 +714,7 @@ float Controller<LQR>::self_adaption()
         {
             setpoint_ctrl_out = 1.f;
 
-                if (current_linearSpeed.y < 0.9 * target_linearSpeed.y)
+                if (current_linearSpeed.y < 0.9f * target_linearSpeed.y)
                 {
                     setpoint_ctrl_out = 2.7f;
                     if (is_unlimited)
@@ -756,27 +737,27 @@ float Controller<LQR>::self_adaption()
     {
     }
 
-    // 没有做前后适应
-    // if (is_leap)
-    // {
-    //     if (current_linearSpeed.y > 3.0f && leapState == false)
-    //     {
-    //         leapState = true;
-    //     }
-    //     else if (current_linearSpeed.y < 1.5f && leapState == true)
-    //     {
-    //         leapState = false;
-    //     }
-    //     if (leapState == true)
-    //     {
-    //         setpoint_ctrl_out = -12.f;
-    //     }
-    //     else
-    //     {
-    //         setpoint_ctrl_out = 5.f;
-    //     }
-    //     return setpoint_ctrl_out;
-    // }
+    //没有做前后适应
+    if (is_leap)
+    {
+        if (current_linearSpeed.y > 3.0f && leapState == false)
+        {
+            leapState = true;
+        }
+        else if (current_linearSpeed.y < 1.5f && leapState == true)
+        {
+            leapState = false;
+        }
+        if (leapState == true)
+        {
+            setpoint_ctrl_out = -12.f;
+        }
+        else
+        {
+            setpoint_ctrl_out = 5.f;
+        }
+        return setpoint_ctrl_out;
+    }
 
      /*加速后制动一段时间才进入零点自适应*/
     if (target_linearSpeed.y != 0 && !break_flag)
@@ -910,7 +891,7 @@ float Controller<LQR>::stand_feedforward()
  */
 void Controller<LQR>::weightless_check()
 {
-    if (current_linearAcc.x < -0.4f)
+    if (current_linearAcc.z < -0.4f)
     {
         real_count += 2;
     }
