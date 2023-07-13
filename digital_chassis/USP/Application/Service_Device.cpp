@@ -22,7 +22,6 @@
 #include <Middlewares/UpperMonitor/UpperMonitor.h>
 /* Private define ------------------------------------------------------------*/
 TaskHandle_t DjiMotor_Handle;	
-TaskHandle_t LPMS_Handle;
 TaskHandle_t Source_Handle;
 TaskHandle_t Referee_Handle;
 TaskHandle_t Referee_UI;
@@ -30,7 +29,6 @@ TaskHandle_t Openlog_send_Handle;
 TaskHandle_t Log_Handle;
 /* Private function declarations ---------------------------------------------*/
 void tskDjiMotor(void *arg);
-void tskLPMS(void *arg);
 void tskSource(void *arg);
 void tskRefereeRx(void *arg);
 void tskRefereeUI(void *arg);
@@ -47,7 +45,6 @@ void tskLog(void *arg);
 void Service_Devices_Init(void)
 {
   xTaskCreate(tskDjiMotor, 	"App.Motor",   Normal_Stack_Size, NULL, PriorityAboveNormal, &DjiMotor_Handle);
-	xTaskCreate(tskLPMS,      "App.LPMS", Normal_Stack_Size, NULL, PriorityAboveNormal,&LPMS_Handle);
 	xTaskCreate(tskSource,      "App.Source", Normal_Stack_Size, NULL, PriorityAboveNormal,&Source_Handle);
 	xTaskCreate(tskRefereeRx,			"App.Referee", Normal_Stack_Size,NULL, PriorityNormal,&Referee_Handle);
 	xTaskCreate(tskRefereeUI, "App.RefereeUI" , Normal_Stack_Size,NULL, PriorityBelowNormal,&Referee_UI);
@@ -78,6 +75,13 @@ void tskSource(void *arg)
 void tskDjiMotor(void *arg)
 {
 	/*	pre load for task	*/
+  HAL_UART_DeInit(&huart1);
+  vTaskDelay(200);
+  HAL_UART_Init(&huart1);
+
+  balance_infantry.LPMS.Data_Type_Config(DATA_16BIT);
+  balance_infantry.LPMS.LPMS_BE2_Init();
+
 	TickType_t xLastWakeTime_t;
   xLastWakeTime_t = xTaskGetTickCount();
 	balance_infantry.Load_Chassis_Queue(&CAN2_TxPort, &CAN1_TxPort);
@@ -91,27 +95,6 @@ void tskDjiMotor(void *arg)
 		balance_infantry.Chassis_Ctrl();
     
 	}
-}
-
-/**
-* @brief <freertos> 阿路比陀螺仪数据读取任务
-*/
-void tskLPMS(void *arg)
-{
-	balance_infantry.LPMS.Data_Type_Config(DATA_16BIT);
-	//vTaskDelay(500);
- for(;;)
- { 
-    if(balance_infantry.LPMS.is_init==false)
-    {
-      balance_infantry.LPMS.LPMS_BE2_Init();
-    }
-    else if(balance_infantry.LPMS.is_init==true)
-    {
-      balance_infantry.LPMS.LPMS_BE2_Data_Convert();
-    }
-   vTaskDelay(1);
- }
 }
 
 /**
