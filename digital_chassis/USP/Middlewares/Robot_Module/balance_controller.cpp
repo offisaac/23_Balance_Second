@@ -526,7 +526,7 @@ void Controller<LQR>::Controller_Adjust()
         idling_check();         //空转检测
         rotation_crash_check(); //小陀螺撞墙检测
                                 /*setpoint倾角辅助*/
-        silder_control();       //滑块控制
+        slider_control();       //滑块控制
         output.set_point_out = self_adaption() * ratio_degree2rad;
         debug_out_F = output.set_point_out;
         if (weightless_flag)
