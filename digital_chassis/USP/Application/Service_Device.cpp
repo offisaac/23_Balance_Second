@@ -78,6 +78,10 @@ void tskSource(void *arg)
 void tskDjiMotor(void *arg)
 {
 	/*	pre load for task	*/
+  HAL_UART_DeInit(&huart1);
+  vTaskDelay(200);
+  HAL_UART_Init(&huart1);
+
 	TickType_t xLastWakeTime_t;
   xLastWakeTime_t = xTaskGetTickCount();
 	balance_infantry.Load_Chassis_Queue(&CAN2_TxPort, &CAN1_TxPort);
@@ -109,7 +113,7 @@ void tskLPMS(void *arg)
     {
       balance_infantry.LPMS.LPMS_BE2_Data_Convert();
     }
-   vTaskDelay(1);
+   vTaskDelay(2);
  }
 }
 
