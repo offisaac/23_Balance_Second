@@ -591,7 +591,7 @@ void Controller<LQR>::Controller_Adjust()
     }
 }
 
-void Controller<LQR>::silder_control()
+void Controller<LQR>::slider_control()
 {
     static MeanFilter<10> stand_MF;   //直立滤波
     static MeanFilter<100> speed_MF1; //速度滤波

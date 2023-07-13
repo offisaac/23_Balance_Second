@@ -241,7 +241,7 @@ public:
 	float slider_pos[2] = {0, 0};
 
 public:
-	void silder_control();			 //滑块控制
+	void slider_control();			 //滑块控制
 	float self_adaption();			 //重心自适应
 	float distance_adjust();		 //距离环
 	float stand_adjust();				 //直立环
