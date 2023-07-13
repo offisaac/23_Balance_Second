@@ -94,7 +94,7 @@ void UpperMonitor_Sent_Choose(float *data)
     switch (USART0_Sent_Choose_Data[i])
     {
     case 0:
-      data[i] = balance_infantry.balance_controller.current_pos.pitch;
+      data[i] = balance_infantry.LPMS.get_data().Euler_Pitch;
       break;
     case 1:
       data[i] = balance_infantry.balance_controller.target_pos.pitch;
