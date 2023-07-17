@@ -79,6 +79,11 @@ public:
         absMotor.setMotorCurrentOut(speedLoop.Out);
     }
 
+    void setCurrentOut(float _out)
+    {
+        absMotor.setMotorCurrentOut(_out);
+    }
+
     void clearCommand()
     {
         // positionLoop.Target = 0;

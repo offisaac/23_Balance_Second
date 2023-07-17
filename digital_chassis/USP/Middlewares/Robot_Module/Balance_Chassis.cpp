@@ -398,6 +398,22 @@ void Balance_Infantry_Classdef::Update_Motor_Current(float _current)
 }
 
 /**
+ * @brief  更新滑块位置和转速
+ * @note
+ * @param
+ * @return
+ * @retval  None
+ */
+void Balance_Infantry_Classdef::Update_Slider_Params(float _s[2],float _sspeed[2])
+{
+    for(int i = 0; i < 2 ; i++)
+    {
+        balance_controller.current_sliderLocation[i].y = _s[i]/360.f*2.f*PI*0.05;
+        balance_controller.current_sliderSpeed[i].y = _sspeed[i]/60.f*2.f*PI*0.05;
+    }
+}
+
+/**
  * @brief  控制函数
  * @note
  * @param
@@ -409,6 +425,12 @@ void Balance_Infantry_Classdef::Chassis_Ctrl_Cal()
     //    static MeanFilter<50> speed_MF; //均值滤波
     static MeanFilter<20> turn_mf;
     static LowPassFilter turn_lf(0.5);
+    float slider_s[2];
+    float slider_sspeed[2];
+    slider_s[LEFT] = Slider_Ctrl.slider[LEFT].getCurrentPos();
+    slider_s[RIGHT] = Slider_Ctrl.slider[RIGHT].getCurrentPos();
+    slider_sspeed[LEFT] = Slider_Ctrl.slider[LEFT].getCurrentSpeed();
+    slider_sspeed[RIGHT] = Slider_Ctrl.slider[RIGHT].getCurrentSpeed();
 
     /*更新目标值*/
     Update_Target(gimbal_data.get_speed_y / 1000.0f, -gimbal_data.get_speed_z / 1000.0f, gimbal_data.get_speed_x / 1000.f);
@@ -419,14 +441,16 @@ void Balance_Infantry_Classdef::Chassis_Ctrl_Cal()
     Update_Current_Speed(current_speed, absLpms.getAngleVelData()->yaw, absLpms.getAngleVelData()->pitch);
     /*更新当前线性加速度*/
     Update_Current_Acc(absLpms.getAccData()->x, absLpms.getAccData()->y, absLpms.getAccData()->z);
+    /*更新当前滑块状态*/
+    Update_Slider_Params(slider_s,slider_sspeed);
     /*更新当前电机电流值*/
     Update_Motor_Current(Source_Current_Out);
     /*底盘控制*/
     balance_controller.Controller_Adjust();
 
     /* 输出合并，其中直立环和速度环互为反号 */
-    wheel_stand_out_theory[LEFT] = balance_controller.Get_Data().stand_out + balance_controller.Get_Data().feedforward_out + balance_controller.Get_Data().distance_out; //作为最后输出的一部分，直接转换成整数
-    wheel_stand_out_theory[RIGHT] = balance_controller.Get_Data().stand_out + balance_controller.Get_Data().feedforward_out + balance_controller.Get_Data().distance_out;
+    wheel_stand_out_theory[LEFT] = balance_controller.Get_Data().stand_out + balance_controller.Get_Data().feedforward_out + balance_controller.Get_Data().distance_out + balance_controller.Get_Data().slider_out; //作为最后输出的一部分，直接转换成整数
+    wheel_stand_out_theory[RIGHT] = balance_controller.Get_Data().stand_out + balance_controller.Get_Data().feedforward_out + balance_controller.Get_Data().distance_out + balance_controller.Get_Data().slider_out;
 
     wheel_speed_out_theory[LEFT] = balance_controller.Get_Data().speed_out - balance_controller.Get_Data().turn_out; //还需要做功率控制，先不转换类型
     wheel_speed_out_theory[RIGHT] = balance_controller.Get_Data().speed_out + balance_controller.Get_Data().turn_out;
@@ -607,13 +631,20 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
     {
         if (!gimbal_data.enable_cmd)
         {
-            balance_controller.slider_pos[RIGHT] = 0;
-            balance_controller.slider_pos[LEFT] = 0;
+            // balance_controller.slider_pos[RIGHT] = 0;
+            // balance_controller.slider_pos[LEFT] = 0;
+            balance_controller.output.sliderCtrl_out[RIGHT] = 0;
+            balance_controller.output.sliderCtrl_out[LEFT] = 0;
         }
-        Slider_Ctrl.update(balance_controller.slider_pos);
-        Slider_Ctrl.adjust();
-        Slider_Ctrl.acutate();
+//        balance_controller.output.sliderCtrl_out[RIGHT] = 0;
+//        balance_controller.output.sliderCtrl_out[LEFT] = 0;
+        // Slider_Ctrl.update(balance_controller.slider_pos);
+        // Slider_Ctrl.adjust();
+        // Slider_Ctrl.acutate();
+        Slider_Ctrl.setTorqueOut(balance_controller.output.sliderCtrl_out);
     }
+//    wheel_out[LEFT] = 0;
+//    wheel_out[RIGHT] = 0;
 
     absWheelMotor[LEFT].setMotorCurrentOut(std_lib::constrain(wheel_out[LEFT] * COM_9025_TORQUE_RATIO, -2000.f, 2000.f));
     absWheelMotor[RIGHT].setMotorCurrentOut(std_lib::constrain(wheel_out[RIGHT] * COM_9025_TORQUE_RATIO, -2000.f, 2000.f));
@@ -648,28 +679,28 @@ void Balance_Infantry_Classdef::Set_MaxSpeed(uint16_t _powerMax)
 {
     if (_powerMax <= 60)
     {
-        speed_scale = 2.2f;
+        speed_scale = 1.8f;
     }
     else if (_powerMax > 60 && _powerMax < 100)
     {
-        speed_scale = 2.4f;
+        speed_scale = 2.1f;
     }
     else if (_powerMax >= 100)
     {
-        speed_scale = 2.8f; // 0.5f
+        speed_scale = 2.4f; // 0.5f
     }
     else
     {
-        speed_scale = 2.5f;
+        speed_scale = 2.1f;
     }
     /*各种功率标志位*/
     if (gimbal_data.leap_state && Source_Cap_Voltage > 17.0f)
     {
-        speed_scale = 3.5f;
+        speed_scale = 3.0f;
     }
     else if (gimbal_data.unlimited_state && Source_Cap_Voltage > 17.0f)
     {
-        speed_scale += 0.2f;
+        speed_scale += 0.3f;
     }
     else
     {

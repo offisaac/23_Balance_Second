@@ -54,6 +54,8 @@ public:
     void adjust();
     void acutate();
     void clear();
+
+    void setTorqueOut(float _torque[2]);
 };
 
 #endif

@@ -495,15 +495,10 @@ void Controller<PID>::reset_adjust()
  */
 Controller<LQR>::Controller()
 {
-    slider_stand_kp = 100; // 100
-    slider_speed_kp = 100;
-    slider_speed_ff = 40;
-    slider_distance_kp = 150; // 150
-    slider_turn_kp = 10;
-    slider_offset = 0;
-
-    set_point_pid.SetPIDParam(-9.0f, 0, 0.0f, 3.0f, 7.0f);
+    set_point_pid.SetPIDParam(-10.0f, 0, 0.0f, 3.0f, 8.0f);
     rotation_point_pid.SetPIDParam(0, 0.000001f, 0, 0.f, 3.f);
+    // slider_follow_pid.SetPIDParam(1000.f, 0, 0.2f, 0, 20000.f);
+    slider_follow_pid.SetPIDParam(-25.f, 0, 0.f, 0, 1.f);
 }
 
 /**
@@ -588,27 +583,41 @@ void Controller<LQR>::Controller_Adjust()
         //				 }
         /*前馈*/
         output.feedforward_out = stand_feedforward();
+        /*滑块环*/
+        output.slider_out = slider_adjust();
     }
 }
 
 void Controller<LQR>::slider_control()
 {
-    static MeanFilter<10> stand_MF;   //直立滤波
-    static MeanFilter<100> speed_MF1; //速度滤波
+    static MeanFilter<20> distance_MF;   //距离滤波
+    static MeanFilter<10> pitch_MF;      //直立滤波
+    static MeanFilter<10> pitchSpeed_MF; //角速度滤波
+    static MeanFilter<100> speed_MF1;    //速度滤波
     static MeanFilter<100> speed_MF2;
     static MedianFilter<50> speed_MIF1; //中值滤波
     static MedianFilter<50> speed_MIF2;
-    static MeanFilter<15> turn_MF; //转向滤波
-    float stand_error = target_pos.pitch - stand_MF.f(this->current_pos.pitch);
+    static MeanFilter<20> turn_MF;
+
+    static MeanFilter<10> s_MF[2];
+    static MeanFilter<10> sspeed_MF[2];
+
+    static float last_speed_error = 0;
+
+    /*distance*/
+    float distance_error = target_location.y - distance_MF.f(current_location.y);
+    /*speed*/
     float speed_error = target_linearSpeed.y - speed_MF2.f(speed_MF1.f(this->current_linearSpeed.y));
     // float speed_error = target_linearSpeed.y - speed_MIF1.f(this->current_linearSpeed.y);
-    static float last_speed_error = 0;
-    float speed_ff = slider_speed_ff * target_linearSpeed.y;
+    /*pitch*/
+    float pitch_error = target_pos.pitch - pitch_MF.f(this->current_pos.pitch);
+    /*pitchSpeed*/
+    float pitchSpeed_error = 0 - pitchSpeed_MF.f(current_angularSpeed.pitch);
+
     if (is_rotation)
     {
         speed_error = 0;
-        //stand_error = 0;
-        speed_ff = 0;
+        // pitch_error = 0;
     }
     else if (abs(current_linearSpeed.y) > 1.2f && abs(turn_MF.f(current_angularSpeed.yaw)) > 1.2f)
     {
@@ -616,11 +625,26 @@ void Controller<LQR>::slider_control()
         // speed_error = 0;
     }
 
-    slider_pos[0] = slider_pos[1] = slider_offset + slider_bias + slider_distance_kp * (target_location.y - current_location.y) + slider_speed_kp * speed_error + speed_ff + slider_stand_kp * stand_error;
-    //    float turn_out = slider_turn_kp * turn_MF.f(current_angularSpeed.yaw);
-    //    slider_pos[0] += turn_out;
-    //    slider_pos[1] -= turn_out;
+    for (int i = 0; i < 2; i++)
+    {
+        /*s*/
+        float s_error = 0 - s_MF[i].f(current_sliderLocation[i].y);
+        /*sspeed*/
+        float sspeed_error = 0 - sspeed_MF[i].f(current_sliderSpeed[i].y);
+        output.sliderCtrl_out[i] = distance_error * slider_distance_kp +
+                                   speed_error * slider_speed_kp +
+                                   pitch_error * slider_pitch_kp +
+                                   pitchSpeed_error * slider_pitchSpeed_kp +
+                                   s_error * slider_sposition_kp +
+                                   sspeed_error * slider_sspeed_kp;
+    }
     last_speed_error = speed_error;
+
+    slider_follow_pid.Target = 0;
+    slider_follow_pid.Current = current_sliderLocation[0].y - current_sliderLocation[1].y;
+    slider_follow_pid.Adjust();
+    output.sliderCtrl_out[0] -= slider_follow_pid.Out;
+    output.sliderCtrl_out[1] += slider_follow_pid.Out;
 }
 
 /**
@@ -719,10 +743,10 @@ float Controller<LQR>::self_adaption()
 
             if (current_linearSpeed.y < 0.9f * target_linearSpeed.y)
             {
-                setpoint_ctrl_out = 2.7f;
+                setpoint_ctrl_out = 2.f;
                 if (is_unlimited)
                 {
-                    setpoint_ctrl_out = 3.7f;
+                    setpoint_ctrl_out = 3.f;
                 }
                 if (is_turn90degrees)
                 {
@@ -820,7 +844,7 @@ float Controller<LQR>::distance_adjust()
 {
     float distance_error = target_location.y - current_location.y;
     distance_error = std_lib::constrain(distance_error, -distance_max, distance_max);
-    float distance_out = distance_error * lqr_distance_kp;
+    float distance_out = distance_error * body_distance_kp;
     return distance_out;
 }
 
@@ -835,7 +859,7 @@ float Controller<LQR>::stand_adjust()
 {
     float pitch_error = target_pos.pitch - current_pos.pitch;
     float pitchSpeed_error = 0 - current_angularSpeed.pitch;
-    return pitch_error * lqr_pitch_kp + pitchSpeed_error * lqr_pitchSpeed_kp;
+    return pitch_error * body_pitch_kp + pitchSpeed_error * body_pitchSpeed_kp;
 }
 
 /**
@@ -848,7 +872,7 @@ float Controller<LQR>::stand_adjust()
 float Controller<LQR>::speed_adjust()
 {
     float speed_error = target_linearSpeed.y - current_linearSpeed.y;
-    return speed_error * lqr_speed_kp;
+    return speed_error * body_speed_kp;
 }
 
 /**
@@ -862,7 +886,7 @@ float Controller<LQR>::turn_adjust()
 {
     float yaw_error = target_pos.yaw - current_pos.yaw;
     float yawSpeed_error = target_angularSpeed.yaw - current_angularSpeed.yaw;
-    return yaw_error * lqr_yaw_kp + yawSpeed_error * lqr_yawSpeed_kp;
+    return yaw_error * body_yaw_kp + yawSpeed_error * body_yawSpeed_kp;
 }
 
 /**
@@ -883,6 +907,20 @@ float Controller<LQR>::stand_feedforward()
     {
         return feedforward_ratio * arm_sin_f32(fabsf(error));
     }
+}
+
+/**
+ * @brief  滑块机体控制
+ * @note
+ * @param
+ * @return  电流输出
+ * @retval  None
+ */
+float Controller<LQR>::slider_adjust()
+{
+    float s_error = 0 - 0.5f * (current_sliderLocation[0].y + current_sliderLocation[1].y);
+    float sspeed_error = 0 - 0.5f * (current_sliderSpeed[0].y + current_sliderSpeed[1].y);
+    return body_sposition_kp * s_error + body_sspeed_kp * sspeed_error;
 }
 
 /**

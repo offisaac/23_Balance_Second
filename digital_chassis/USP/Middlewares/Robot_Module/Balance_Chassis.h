@@ -175,6 +175,7 @@ public:
     void Update_Current_Speed(float _y, float _yaw, float _pitch);
     void Update_Current_Acc(float _x, float _y, float _z);
     void Update_Motor_Current(float _current);
+    void Update_Slider_Params(float _s[2],float _sspeed[2]);
     //功率控制部分
     float Source_Current_Out = 0;
     float Source_Cap_Voltage = 0;

@@ -146,8 +146,8 @@ SliderControllerClassdef<Motor_GM6020>::SliderControllerClassdef()
     slider[RIGHT_JOINT].speedLoop.I_SeparThresh = 50;
     slider[LEFT_JOINT].speedLoop.I_SeparThresh = 50;
 
-    slider[RIGHT_JOINT].setEncoderOffset(260);
-    slider[LEFT_JOINT].setEncoderOffset(810);
+    slider[RIGHT_JOINT].setEncoderOffset(600);
+    slider[LEFT_JOINT].setEncoderOffset(0);
 }
 
 void SliderControllerClassdef<Motor_GM6020>::init()
@@ -199,5 +199,12 @@ void SliderControllerClassdef<Motor_GM6020>::clear()
 {
     slider[0].clearCommand();
     slider[1].clearCommand();
+    acutate();
+}
+
+void SliderControllerClassdef<Motor_GM6020>::setTorqueOut(float _torque[2])
+{
+    slider[0].setCurrentOut(std_lib::constrain(_torque[0]*30000.f/1.2f,-30000.f,30000.f));
+    slider[1].setCurrentOut(std_lib::constrain(_torque[1]*30000.f/1.2f,-30000.f,30000.f));
     acutate();
 }

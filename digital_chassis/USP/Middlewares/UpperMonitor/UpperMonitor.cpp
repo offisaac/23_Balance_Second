@@ -102,6 +102,18 @@ void UpperMonitor_Sent_Choose(float *data)
     case 2:
       data[i] = balance_infantry.balance_controller.current_linearAcc.z;
       break;
+    case 3:
+      data[i] = balance_infantry.balance_controller.current_sliderLocation[0].y;
+      break;
+    case 4:
+      data[i] = balance_infantry.balance_controller.current_sliderLocation[1].y;
+      break;
+    case 5:
+      data[i] = balance_infantry.balance_controller.current_sliderSpeed[0].y;
+      break;
+    case 6:
+      data[i] = balance_infantry.balance_controller.current_sliderSpeed[1].y;
+      break;
       //      /* 腾空及空转检测 */
       //      case 0: data[i]= balance_infantry.balance_controller.current_linearSpeed.y;//直立环输出
       //      break;

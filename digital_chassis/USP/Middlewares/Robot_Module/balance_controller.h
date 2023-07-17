@@ -42,12 +42,14 @@ typedef struct _Linear
 typedef struct _Controller_Out
 {
 	//输出变量
-	float set_point_out;	 //定点环输出
-	float distance_out;		 //距离环输出
-	float stand_out;			 //直立环输出
-	float turn_out;				 //转向环输出
-	float speed_out;			 //速度环输出
-	float feedforward_out; //前馈环输出
+	float set_point_out;		 //定点环输出
+	float distance_out;			 //距离环输出
+	float stand_out;				 //直立环输出
+	float turn_out;					 //转向环输出
+	float speed_out;				 //速度环输出
+	float feedforward_out;	 //前馈环输出
+	float slider_out;				 //滑块环输出
+	float sliderCtrl_out[2]; //滑块力矩输出
 } Controller_Out;
 
 class Ctrl_Base
@@ -87,6 +89,10 @@ public:
 	Linear current_linearAcc;
 	Angular target_angularAcc;
 	Angular current_angularAcc;
+	Linear target_sliderLocation;
+	Linear current_sliderLocation[2];
+	Linear target_sliderSpeed;
+	Linear current_sliderSpeed[2];
 
 	Linear last_target_location;
 	Linear last_current_location;
@@ -238,44 +244,53 @@ public:
 	float motor_current = 0;	 //电机电流（用于空转检测）
 	int16_t idling_count = 10; //空转计数器
 
-	float slider_pos[2] = {0, 0};
+	// float slider_pos[2] = {0, 0};
 
 public:
-	void slider_control();			 //滑块控制
-	float self_adaption();			 //重心自适应
-	float distance_adjust();		 //距离环
-	float stand_adjust();				 //直立环
-	float turn_adjust();				 //转向环
-	float speed_adjust();				 //速度环
-	float stand_feedforward();	 //抵消重力矩前馈
+	void slider_control();		 //滑块控制（纯滑块控制）
+	float self_adaption();		 //重心自适应
+	float distance_adjust();	 //距离环
+	float stand_adjust();			 //直立环
+	float turn_adjust();			 //转向环
+	float speed_adjust();			 //速度环
+	float slider_adjust();		 //滑块环（机体控制）
+	float stand_feedforward(); //抵消重力矩前馈
+
 	void weightless_check();		 //腾空检测
 	void idling_check();				 //电机空转检测
 	void rotation_crash_check(); //小陀螺撞墙检测
 
 	void reset_adjust(); //控制器重置
 
-	float set_point;			 //车身定点目标值
-	float slider_bias = 0; //滑块偏差
-	float slider_stand_kp = 0;
-	float slider_speed_kp = 0;
-	float slider_speed_ff = 0; //在大滤波下提高滑块速度响应前馈量
-	float slider_distance_kp = 0;
-	float slider_turn_kp = 0;
-	float slider_offset = 0;
+	float set_point; //车身定点目标值
 
 	myPID set_point_pid;			//关乎参数调整
 	myPID rotation_point_pid; //小陀螺自适应pid
+	myPID slider_follow_pid;	//滑块并行控制pid
 
 	uint8_t speed_pid_cnt = 0;		//速度环执行周期
 	uint8_t speed_pid_delay = 20; //速度环执行周期
 
 	/*lqr参数*/
-	float lqr_distance_kp = -1.5f;
-	float lqr_speed_kp = -2.2361f;
-	float lqr_pitch_kp = -13.6094f;			// 10.7222
-	float lqr_pitchSpeed_kp = -2.2507f; // 1.5485
-	float lqr_yaw_kp = 0.f;
-	float lqr_yawSpeed_kp = 2.f;
+	float body_distance_kp = -1.5f;
+	float slider_distance_kp = 1.f;
+
+	float body_speed_kp = -2.790507e+00;
+	float body_pitch_kp = -1.286913e+01;
+	float body_pitchSpeed_kp = -2.105050e+00;
+	float body_sposition_kp = -8.943093e+00;
+	float body_sspeed_kp = -8.250009e-01;
+
+	float slider_speed_kp = 1.101433e+00;
+	float slider_pitch_kp = 3.063746e-01;
+	float slider_pitchSpeed_kp = -2.004553e-01;
+	float slider_sposition_kp = 8.546146e+00;
+	float slider_sspeed_kp = 1.189652e+00;
+
+	float body_yaw_kp = 0.f;
+	float body_yawSpeed_kp = 2.f;
+
+	float slider_bias = 0;
 
 	float feedforward_ratio = 0 * 14.48527f * 9.8f * 0.126807f; // 0.5*mg*l
 	float distance_max = 1.5f;
