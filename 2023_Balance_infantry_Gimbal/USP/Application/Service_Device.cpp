@@ -333,7 +333,11 @@ void tskOpenlog_send(void *arg)
 	{
 		/* wait for next circle */
 		vTaskDelayUntil(&xLastWakeTime_t, 2);
-		if(infantry.Get_pcVisionMode() == RUNE_V && DR16.IsKeyPress(DR16_MOUSE_R))
+//		if(infantry.Get_pcVisionMode() == RUNE_V && DR16.IsKeyPress(DR16_MOUSE_R))
+//		{
+//			openlog.Send();
+//		}
+		if(yaw_out != 0)
 		{
 			openlog.Send();
 		}
@@ -349,8 +353,8 @@ void tskLog(void *arg)
 	/* Pre-Load for task */
 	vTaskDelay(1000 * 3);
 	uint16_t time;
-	openlog.new_file("table_%d.csv", 4);
-	openlog.append_file("table_%d.csv", 4);
+	openlog.new_file("table_%d.csv", 2);
+	openlog.append_file("table_%d.csv", 2);
 	openlog.record("yaw_out,yaw_speed,yaw_angle,yaw_current\r");
 	openlog.push_buff();
 	openlog.Send();
@@ -363,7 +367,12 @@ void tskLog(void *arg)
 		vTaskDelayUntil(&xLastWakeTime_t, 2);
 		//vTaskDelay(2);
 		//time++;
-		if(infantry.Get_pcVisionMode() == RUNE_V && DR16.IsKeyPress(DR16_MOUSE_R))
+//		if(infantry.Get_pcVisionMode() == RUNE_V && DR16.IsKeyPress(DR16_MOUSE_R))
+//		{
+//			openlog.record("%d,%d,%d,%d\r", (int16_t)infantry.gimbal.yawMotor.Out, (int16_t)infantry.gimbal.yawMotor.getSpeed(), (int16_t)infantry.gimbal.yawMotor.getAngle(),(int16_t)infantry.gimbal.yawMotor.givenCurrent);
+//			openlog.push_buff();
+//		}
+		if(yaw_out != 0)
 		{
 			openlog.record("%d,%d,%d,%d\r", (int16_t)infantry.gimbal.yawMotor.Out, (int16_t)infantry.gimbal.yawMotor.getSpeed(), (int16_t)infantry.gimbal.yawMotor.getAngle(),(int16_t)infantry.gimbal.yawMotor.givenCurrent);
 			openlog.push_buff();

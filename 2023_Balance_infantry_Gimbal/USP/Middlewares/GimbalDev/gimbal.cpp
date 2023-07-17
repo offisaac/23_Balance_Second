@@ -227,6 +227,9 @@ float k1 = 36.74;
 float k2 = 118.4;
 float iq;
 float uq;
+float ta_o = 0;//三角波幅值
+uint16_t ta_f = 1;//频率
+int16_t ta_count = 0;
 void Gimbal_Classdef::gimbal_pid_calculate()
 {
 	/*更新当前值，并考虑切换不同的反馈通路*/
@@ -252,8 +255,32 @@ void Gimbal_Classdef::gimbal_pid_calculate()
 	pitch_speedloop.Current = angular_velocity_pitch;
 	yaw_speedloop.Current = angular_velocity_yaw;
 	
+	/*生成三角波*/
+	if(ta_o!=0)
+	{
+		ta_count++;
+	}
+	ta_count = std_lib::constrain(ta_count,(int16_t)0,(int16_t)(1000/ta_f));
+	if(ta_count>=(int16_t)(1000/ta_f))
+	{
+		ta_count = 0;
+	}
+	if(ta_count >= 0 && ta_count < (int16_t)(0.5*1000/ta_f))
+	{
+		yaw_out += ta_o/(float)(500/ta_f);
+	}
+	else if(ta_count >= (int16_t)(0.5*1000/ta_f) && ta_count < (int16_t)(1000/ta_f))
+	{
+		yaw_out -= ta_o/(float)(500/ta_f);
+	}
+	if(ta_o == 0)
+	{
+		yaw_out = 0;
+		ta_count = 0;
+	}
+	
 	/*前馈补偿量计算*/
-	yaw_out = 100 + 50*sinf(sim_o*Get_SystemTimer()*0.000005f);
+	//yaw_out = 100 + 50*sinf(sim_o*Get_SystemTimer()*0.000005f);
 	static float last_yaw_target = 0;
 	//float iq = k1*(yaw_target-last_yaw_target)/0.005 + k2*(yaw_target) + 900*yawMotor.getSpeed()/fabsf(yawMotor.getSpeed());
 	iq = k1*(yaw_target-last_yaw_target)/0.005 + k2*(yawMotor.getSpeed()) + 900*yawMotor.getSpeed()/fabsf(yawMotor.getSpeed());
@@ -273,8 +300,10 @@ void Gimbal_Classdef::gimbal_pid_calculate()
 	/*计算输出值*/
 	// pitchMotor.Out = pitch_speedloop.Adjust() + 83.994f * current_pitch - 1327.4f ;
 	// pitchMotor.Out = pitch_speedloop.Adjust() + 116.7360f * current_pitch + 668.5741f ;
-	pitchMotor.Out = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + 116.7360f * current_pitch + 668.5741f;
+//	pitchMotor.Out = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + 116.7360f * current_pitch + 668.5741f;//old
+	pitchMotor.Out = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + 51.38340f * current_pitch  - 438.2411f;//new
 	// pitchMotor.Out = pitch_speedloop.Adjust() - 0.0803f*powf(current_pitch,3) + 1.479f*powf(current_pitch,2) + 145.55f*current_pitch - 1031.48f + 2000.f;
+	//pitchMotor.Out = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + 73.32394f*powf(current_pitch,3) + 0.5094691f*powf(current_pitch,2) - 0.07910556f*current_pitch - 473.9127f;//new
 
 	// pitch前馈
 	yawMotor.Out = yaw_angleloop.Adjust_importDiff(angular_velocity_yaw);
