@@ -198,8 +198,8 @@ void RemoteCtrl_State::Handle_State()
 		switch (DR16.GetS2())
 		{
 		case DR16_SW_UP:
-			// context->cap_mode = LEAP;
-			context->cap_mode = UNLIMITED;
+			context->cap_mode = LEAP;
+			//context->cap_mode = UNLIMITED;
 			break;
 		case DR16_SW_MID:
 			context->cap_mode = NORMAL;
@@ -704,7 +704,7 @@ void InfantryCTRL_Classdef::Actuate()
 																		cap_mode == UNLIMITED,
 																		cap_mode == ASCENT,
 																		cap_mode == LEAP,
-																		rotation_state,
+																		chassisCTRL.rotationState,
 																		bulletBay_state,
 																		ui_reset_flag,
 																		vision_mode_flag1,
@@ -764,21 +764,19 @@ void InfantryCTRL_Classdef::Update_Data(CAN_COB CAN_RxMsg)
 		switch (board_com.rx_pack2.source_power_max)
 		{
 		case 50:
-			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 2.8, 0, 10000.0f, 10000.0f);
+			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 3., 0, 10000.0f, 10000.0f);
 			break;
 		case 60:
-			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 2.8, 0, 10000.0f, 10000.0f);
+			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 3., 0, 10000.0f, 10000.0f);
 			break;
 		case 80:
-			//			chassisCTRL.chassis_yawAngle.SetPIDParam(13, 0, 2.3, 0, 10000.0f);
-			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 2.8, 0, 10000.0f, 10000.0f);
+			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 3., 0, 10000.0f, 10000.0f);
 			break;
 		case 100:
-			// 2chassisCTRL.chassis_yawAngle.SetPIDParam(10, 0, 1.8, 0, 10000.0f);
-			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 2.8, 0, 10000.0f, 10000.0f);
+			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 3., 0, 10000.0f, 10000.0f);
 			break;
 		default:
-			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 2.8, 0, 10000.0f, 10000.0f);
+			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 3., 0, 10000.0f, 10000.0f);
 			break;
 		}
 	}

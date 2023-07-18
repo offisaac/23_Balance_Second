@@ -68,7 +68,7 @@ public:
 	void Update_Current_LinearAcc(float z = 0, float y = 0, float x = 0);
 	void Update_Target_AngularAcc(float yaw = 0, float pitch = 0, float roll = 0);
 	void Update_Current_AngularAcc(float yaw = 0, float pitch = 0, float roll = 0);
-	void Update_Flags(uint8_t _is_turn90degrees, uint8_t _is_rotation, uint8_t _is_reset, uint8_t _is_leap, uint8_t _is_unlimited);
+	void Update_Flags(uint8_t _is_turn90degrees, uint8_t _is_rotation, uint8_t _is_reset, uint8_t _is_leap, uint8_t _is_unlimited, uint8_t _is_slope);
 
 	float Value_Step(const float value, const float last_value, const float step, const float max, const float min); //防止数据跳变
 
@@ -114,6 +114,7 @@ public:
 	uint8_t is_reset = 0;
 	uint8_t is_leap = 0;
 	uint8_t is_unlimited = 0;
+	uint8_t is_slope = 0;
 };
 
 typedef struct _chassis_Params
@@ -275,17 +276,17 @@ public:
 	float body_distance_kp = -1.5f;
 	float slider_distance_kp = 1.f;
 
-	float body_speed_kp = -2.790507e+00;
-	float body_pitch_kp = -1.286913e+01;
-	float body_pitchSpeed_kp = -2.105050e+00;
-	float body_sposition_kp = -8.943093e+00;
-	float body_sspeed_kp = -8.250009e-01;
+	float body_speed_kp = -2.792492e+00;
+	float body_pitch_kp = -1.291920e+01;
+	float body_pitchSpeed_kp = -2.155213e+00;
+	float body_sposition_kp = -9.005021e+00;
+	float body_sspeed_kp = -8.327348e-01;
 
-	float slider_speed_kp = 1.101433e+00;
-	float slider_pitch_kp = 3.063746e-01;
-	float slider_pitchSpeed_kp = -2.004553e-01;
-	float slider_sposition_kp = 8.546146e+00;
-	float slider_sspeed_kp = 1.189652e+00;
+	float slider_speed_kp = 1.096392e+00;
+	float slider_pitch_kp = 2.638651e-01;
+	float slider_pitchSpeed_kp = -2.409101e-01;
+	float slider_sposition_kp = 8.512464e+00;
+	float slider_sspeed_kp = 1.185486e+00;
 
 	float body_yaw_kp = 0.f;
 	float body_yawSpeed_kp = 2.f;
@@ -301,7 +302,7 @@ public:
 	float turn_scale = 1.f;
 
 	float balance_point = 0.0f;
-	float rotation_point = -1.f;
+	float rotation_point = 0.f;
 
 	/*小陀螺撞墙检测*/
 	float last_speed_z = 0.f;

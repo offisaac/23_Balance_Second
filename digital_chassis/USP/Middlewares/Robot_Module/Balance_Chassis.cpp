@@ -235,7 +235,7 @@ void Balance_Infantry_Classdef:: Judge_State()
     {
     }
 
-    balance_controller.Update_Flags(gimbal_data.turn90degrees, gimbal_data.rotation_state, is_reset, gimbal_data.leap_state, gimbal_data.unlimited_state); //更新控制器标志位
+    balance_controller.Update_Flags(gimbal_data.turn90degrees, gimbal_data.rotation_state, is_reset, gimbal_data.leap_state, gimbal_data.unlimited_state, gimbal_data.ascent_state); //更新控制器标志位
 
     current_state->State_Handler();
 }
@@ -250,7 +250,7 @@ void Balance_Infantry_Classdef:: Judge_State()
 float debug_angle = 100;
 void Balance_Infantry_Classdef::Update_Target(float _y_speed, float _z_speed, float _x_speed)
 {
-    float rotation_speed = (540.f + rotation_scale * 360.f) * DEGREE_TO_RAD;
+    float rotation_speed = (360.f + rotation_scale * 360.f) * DEGREE_TO_RAD;
     // float rotation_speed = 360.f;
     // if (gimbal_data.unlimited_state)
     // {
@@ -696,12 +696,16 @@ void Balance_Infantry_Classdef::Set_MaxSpeed(uint16_t _powerMax)
     /*各种功率标志位*/
     if (gimbal_data.leap_state && Source_Cap_Voltage > 17.0f)
     {
-        speed_scale = 3.0f;
+        speed_scale = 4.f;
     }
     else if (gimbal_data.unlimited_state && Source_Cap_Voltage > 17.0f)
     {
-        speed_scale += 0.3f;
+        speed_scale += 0.4f;
     }
+		else if (gimbal_data.ascent_state && Source_Cap_Voltage > 17.0f)
+		{
+				speed_scale = 4.f;
+		}
     else
     {
     }

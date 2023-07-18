@@ -137,13 +137,14 @@ void Ctrl_Base::Update_Current_AngularAcc(float yaw, float pitch, float roll)
     current_angularAcc.pitch = pitch;
     current_angularAcc.roll = roll;
 }
-void Ctrl_Base::Update_Flags(uint8_t _is_turn90degrees, uint8_t _is_rotation, uint8_t _is_reset, uint8_t _is_leap, uint8_t _is_unlimited)
+void Ctrl_Base::Update_Flags(uint8_t _is_turn90degrees, uint8_t _is_rotation, uint8_t _is_reset, uint8_t _is_leap, uint8_t _is_unlimited, uint8_t _is_slope)
 {
     is_turn90degrees = _is_turn90degrees;
     is_rotation = _is_rotation;
     is_reset = _is_reset;
     is_leap = _is_leap;
     is_unlimited = _is_unlimited;
+		is_slope = _is_slope;
 }
 //用于限制变量增长率
 float Ctrl_Base::Value_Step(const float value, const float last_value, const float step, const float max, const float min)
@@ -495,10 +496,10 @@ void Controller<PID>::reset_adjust()
  */
 Controller<LQR>::Controller()
 {
-    set_point_pid.SetPIDParam(-10.0f, 0, 0.0f, 3.0f, 8.0f);
+    set_point_pid.SetPIDParam(-10.0f, 0, 0.0f, 3.0f, 5.0f);
     rotation_point_pid.SetPIDParam(0, 0.000001f, 0, 0.f, 3.f);
     // slider_follow_pid.SetPIDParam(1000.f, 0, 0.2f, 0, 20000.f);
-    slider_follow_pid.SetPIDParam(-25.f, 0, 0.f, 0, 1.f);
+    slider_follow_pid.SetPIDParam(-15.f, 0, 0.f, 0, 1.f);
 }
 
 /**
@@ -573,14 +574,14 @@ void Controller<LQR>::Controller_Adjust()
         debug_out_A = output.distance_out;
         /*转向环*/
         output.turn_out = turn_scale * turn_adjust();
-        //         if (is_rotation == 0)
-        //         {
-        //            output.turn_out = std_lib::constrain(output.turn_out, -5.f, 5.f);
-        //         }
-        //			   else
-        //				 {
-        output.turn_out = std_lib::constrain(output.turn_out, -3.f, 3.f);
-        //				 }
+        if (is_rotation == 0)
+        {
+           output.turn_out = std_lib::constrain(output.turn_out, -2.f, 2.f);
+        }
+        else
+        {
+					output.turn_out = std_lib::constrain(output.turn_out, -4.f, 4.f);
+        }
         /*前馈*/
         output.feedforward_out = stand_feedforward();
         /*滑块环*/
@@ -716,44 +717,34 @@ float Controller<LQR>::self_adaption()
     /*负方向运动策略*/
     if (target_linearSpeed.y < -0.3f)
     {
-        if (fabsf(current_angularSpeed.yaw) < 30.0f)
-        {
-            setpoint_ctrl_out = -1.f;
-
-            if (current_linearSpeed.y > 0.9f * target_linearSpeed.y)
-            {
-                setpoint_ctrl_out = -2.f;
-                if (is_unlimited)
-                {
-                    setpoint_ctrl_out = -3.f;
-                }
-                if (is_turn90degrees)
-                {
-                    setpoint_ctrl_out = -0.f;
-                }
-            }
+				if (current_linearSpeed.y > 0.9f * target_linearSpeed.y)
+				{
+						setpoint_ctrl_out = -2.f;
+						if (is_unlimited)
+						{
+								setpoint_ctrl_out = -3.f;
+						}
+						if (is_turn90degrees)
+						{
+								setpoint_ctrl_out = -0.f;
+						}
         }
     }
     /* 正方向运动策略 */
     else if (target_linearSpeed.y > 0.3f)
     {
-        if (fabsf(current_angularSpeed.yaw) < 30.0f)
-        {
-            setpoint_ctrl_out = 1.f;
-
-            if (current_linearSpeed.y < 0.9f * target_linearSpeed.y)
-            {
-                setpoint_ctrl_out = 2.f;
-                if (is_unlimited)
-                {
-                    setpoint_ctrl_out = 3.f;
-                }
-                if (is_turn90degrees)
-                {
-                    setpoint_ctrl_out = 0.f;
-                }
-            }
-        }
+				if (current_linearSpeed.y < 0.9f * target_linearSpeed.y)
+				{
+						setpoint_ctrl_out = 2.f;
+						if (is_unlimited)
+						{
+								setpoint_ctrl_out = 3.f;
+						}
+						if (is_turn90degrees)
+						{
+								setpoint_ctrl_out = 0.f;
+						}
+				}
     }
     /* 刹车 */
     else if (break_flag)
@@ -767,24 +758,30 @@ float Controller<LQR>::self_adaption()
     //没有做前后适应
     if (is_leap)
     {
-        if (current_linearSpeed.y > 3.0f && leapState == false)
-        {
-            leapState = true;
-        }
-        else if (current_linearSpeed.y < 1.5f && leapState == true)
-        {
-            leapState = false;
-        }
-        if (leapState == true)
-        {
-            setpoint_ctrl_out = -12.f;
-        }
-        else
-        {
-            setpoint_ctrl_out = 5.f;
-        }
-        return setpoint_ctrl_out;
+			if (current_linearSpeed.y > 3.0f && leapState == false)
+			{
+					leapState = true;
+			}
+			else if (current_linearSpeed.y < 1.5f && leapState == true)
+			{
+					leapState = false;
+			}
+			if (target_linearSpeed.y > 0.3f)
+			{
+				if (leapState == true)
+				{
+					setpoint_ctrl_out = -10.f;
+				}
+				else
+				{
+					setpoint_ctrl_out = 4.f;
+				}
+			}
     }
+		else if(is_slope)
+		{
+			setpoint_ctrl_out = 0.f;
+		}
 
     /*加速后制动一段时间才进入零点自适应*/
     if (target_linearSpeed.y != 0 && !break_flag)

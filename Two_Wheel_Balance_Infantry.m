@@ -15,7 +15,7 @@ Jbz = mb*L*L;   %车体对z轴惯量(pitch)
 % 车轮质量、惯量、轮半径、轮距
 mw = 0.5 + 0.8;
 Rw = 0.110;
-Jw = 0.5 * mw * Rw * Rw + (4656 * 10^-7);
+Jw = 0.5 * mw * Rw * Rw + (4656 * 10^-7);%加上了9025转子的惯量
 d = 0.21;
 
 %滑块参数（一块）
@@ -156,16 +156,13 @@ D = zeros(6,4); %零矩阵
     %参数1
     Q = eye(6);     %构建Q矩阵
     R = eye(4);          %构建R矩阵
-%     Q(1,1) = 10;   %设置权重，每个值对应状态空间矩阵当中的物理量
-%     Q(2,2) = 100;
-%     Q(3,3) = 40;
-%     Q(4,4) = 0.01;
-    Q(1,1) = 100;   %设置权重，每个值对应状态空间矩阵当中的物理量
+
+    Q(1,1) = 0.000000001;   %设置权重，每个值对应状态空间矩阵当中的物理量
     Q(2,2) = 20;
-    Q(3,3) = 48;
-    Q(4,4) = 12;
-    Q(5,5) = 1;
-    Q(6,6) = 1;
+    Q(3,3) = 40;
+    Q(4,4) = 4;
+    Q(5,5) = 70;
+    Q(6,6) = 4;
     
     R(1,1) = 1;
     R(2,2) = 1;
@@ -192,8 +189,20 @@ D = zeros(6,4); %零矩阵
     R2(4,4) = 1;
 
     K2 = lqr(A, B, Q2, R2); %lqr计算,A是状态矩阵，B是输入矩阵，对应整个状态空间矩阵
-    disp(K);
-    disp(K2);
+%     disp(K);
+%     disp(K2);
+    fprintf(sprintf("float body_speed_kp = %d;\n",K(1,2)));
+    fprintf(sprintf("float body_pitch_kp = %d;\n",K(1,3)));
+    fprintf(sprintf("float body_pitchSpeed_kp = %d;\n",K(1,4)));
+    fprintf(sprintf("float body_sposition_kp = %d;\n",K(1,5)));
+    fprintf(sprintf("float body_sspeed_kp = %d;\n\n",K(1,6)));
+    
+    fprintf(sprintf("float slider_speed_kp = %d;\n",K(3,2)));
+    fprintf(sprintf("float slider_pitch_kp = %d;\n",K(3,3)));
+    fprintf(sprintf("float slider_pitchSpeed_kp = %d;\n",K(3,4)));
+    fprintf(sprintf("float slider_sposition_kp = %d;\n",K(3,5)));
+    fprintf(sprintf("float slider_sspeed_kp = %d;\n\n",K(3,6)));
+
     fprintf(sprintf("float body_speed_kp = %d;\n",K2(1,2)));
     fprintf(sprintf("float body_pitch_kp = %d;\n",K2(1,3)));
     fprintf(sprintf("float body_pitchSpeed_kp = %d;\n",K2(1,4)));
