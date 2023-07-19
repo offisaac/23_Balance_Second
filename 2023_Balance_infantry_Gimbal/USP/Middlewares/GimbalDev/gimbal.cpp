@@ -230,8 +230,25 @@ float uq;
 float ta_o = 0;//三角波幅值
 uint16_t ta_f = 1;//频率
 int16_t ta_count = 0;
+
+//电流环调试
+float target_speed = 0;
+float target_current = 0;
+float current_kp = 0.25;
+float current_ki = 50;
+float current_kd = 0;
+float current_imax = 30000;
+float current_omax = 30000;
+float speed_kp = 170;
+float speed_para = 0.286;
+float av_pidout;
 void Gimbal_Classdef::gimbal_pid_calculate()
 {
+	static MeanFilter<100> PIDoutF1;
+	static MeanFilter<100> PIDoutF2;
+	yaw_currentloop.SetPIDParam(current_kp,current_ki,current_kd,current_imax,150000, 30000);
+	yaw_currentloop.I_SeparThresh = 120000;
+	yaw_speedloop.SetPIDParam(speed_kp,0,0,0,30000,30000);
 	/*更新当前值，并考虑切换不同的反馈通路*/
 	if (feedback_by == ENCODER)
 	{
@@ -254,6 +271,7 @@ void Gimbal_Classdef::gimbal_pid_calculate()
 	}
 	pitch_speedloop.Current = angular_velocity_pitch;
 	yaw_speedloop.Current = angular_velocity_yaw;
+	yaw_currentloop.Current = yawMotor.givenCurrent;//电流环
 	
 	/*生成三角波*/
 	if(ta_o!=0)
@@ -265,13 +283,17 @@ void Gimbal_Classdef::gimbal_pid_calculate()
 	{
 		ta_count = 0;
 	}
-	if(ta_count >= 0 && ta_count < (int16_t)(0.5*1000/ta_f))
+	if(ta_count >= 0 && ta_count < (int16_t)(0.25*1000/ta_f))
 	{
-		yaw_out += ta_o/(float)(500/ta_f);
+		yaw_out += ta_o/(float)(250/ta_f);
 	}
-	else if(ta_count >= (int16_t)(0.5*1000/ta_f) && ta_count < (int16_t)(1000/ta_f))
+	else if(ta_count >= (int16_t)(0.25*1000/ta_f) && ta_count < (int16_t)(0.75*1000/ta_f))
 	{
-		yaw_out -= ta_o/(float)(500/ta_f);
+		yaw_out -= ta_o/(float)(250/ta_f);
+	}
+	else
+	{
+		yaw_out += ta_o/(float)(250/ta_f);
 	}
 	if(ta_o == 0)
 	{
@@ -293,8 +315,9 @@ void Gimbal_Classdef::gimbal_pid_calculate()
 	pitch_angleloop.Target = pitch_target;
 	yaw_angleloop.Target = yaw_target;
 	//pitch_speedloop.Target = pitch_angleloop.Adjust()+ pitch_anglekd*(0-angular_velocity_pitch);
-	yaw_speedloop.Target = yaw_angleloop.Adjust_importDiff(angular_velocity_yaw);
-	//yaw_speedloop.Target = yaw_out;
+	//yaw_speedloop.Target = yaw_angleloop.Adjust_importDiff(angular_velocity_yaw);
+	yaw_speedloop.Target = yaw_out;
+	yaw_currentloop.Target = yaw_speedloop.Adjust() + 536 + speed_para * target_speed;
 	
 
 	/*计算输出值*/
@@ -309,6 +332,9 @@ void Gimbal_Classdef::gimbal_pid_calculate()
 	yawMotor.Out = yaw_angleloop.Adjust_importDiff(angular_velocity_yaw);
 	//yawMotor.Out = yaw_speedloop.Adjust();
 	//yawMotor.Out = yaw_out;
+	//yawMotor.Out = yaw_currentloop.Adjust() + (yaw_currentloop.Target + 55 * yawMotor.getSpeed()) / (0.75 - 0.0004 * yawMotor.getSpeed());
+	
+	av_pidout = PIDoutF1.f(PIDoutF2.f(yaw_currentloop.Out));
 }
 /**
  * @brief yaw角度计算
