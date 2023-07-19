@@ -156,18 +156,14 @@ void SliderControllerClassdef<Motor_GM6020>::init()
 
 void SliderControllerClassdef<Motor_GM6020>::update(float targetPos[2])
 {
-    for (int i = 0; i < 2; i++)
-    {
-        slider[i].update(targetPos[i]);
-    }
+    slider[0].update(targetPos[0]);
+    slider[1].update(targetPos[1]);
 }
 
 void SliderControllerClassdef<Motor_GM6020>::adjust()
 {
-    for (int i = 0; i < 2; i++)
-    {
-        slider[i].adjust();
-    }
+    slider[0].adjust();
+    slider[1].adjust();
 }
 
 void SliderControllerClassdef<Motor_GM6020>::acutate()
@@ -177,7 +173,7 @@ void SliderControllerClassdef<Motor_GM6020>::acutate()
         return;
     }
 
-    canTxPack = MotorMsgPack(canTxPack, slider[0].motor, slider[1].motor);
+    MotorMsgPack(canTxPack, slider[0].motor, slider[1].motor);
     xQueueSend(canTxPort, &(canTxPack.Id2ff), 0);
 }
 
@@ -204,7 +200,7 @@ void SliderControllerClassdef<Motor_GM6020>::clear()
 
 void SliderControllerClassdef<Motor_GM6020>::setTorqueOut(float _torque[2])
 {
-    slider[0].setCurrentOut(std_lib::constrain(_torque[0]*30000.f/1.2f,-30000.f,30000.f));
-    slider[1].setCurrentOut(std_lib::constrain(_torque[1]*30000.f/1.2f,-30000.f,30000.f));
+    slider[0].setTorqueOut(_torque[0]);
+    slider[1].setTorqueOut(_torque[1]);
     acutate();
 }
