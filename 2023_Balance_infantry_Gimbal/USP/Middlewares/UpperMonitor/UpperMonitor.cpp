@@ -142,10 +142,10 @@ void UpperMonitor_Sent_Choose(float *data)
       data[i] = infantry.gimbal.yaw_currentloop.Current;
       break;
     case 2:
-      data[i] = av_pidout;
+      data[i] = infantry.gimbal.yaw_currentloop.I_Term;
       break;
     case 3:
-      data[i] = yaw_out;
+      data[i] = infantry.gimbal.yawMotor.Out;
       break;
     case 4:
       data[i] = infantry.gimbal.yaw_speedloop.Target; // infantry.board_com.rx_pack1.heat_limit;
@@ -154,10 +154,10 @@ void UpperMonitor_Sent_Choose(float *data)
       data[i] = infantry.gimbal.yaw_speedloop.Current; // infantry.board_com.rx_pack1.booster_heat;
       break;
     case 6:
-      data[i] = infantry.gimbal.yaw_speedloop.P_Term;
+      data[i] = infantry.gimbal.yaw_angleloop.Target;
       break;
     case 7:
-      data[i] = infantry.gimbal.yaw_speedloop.I_Term;
+      data[i] = infantry.gimbal.yaw_angleloop.Current;
       break;
     case 8:
       data[i] = infantry.gimbal.yaw_currentloop.Out;

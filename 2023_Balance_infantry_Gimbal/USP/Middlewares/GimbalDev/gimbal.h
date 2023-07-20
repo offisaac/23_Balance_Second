@@ -113,7 +113,7 @@ public:
 
 	float pitch_target, yaw_target;
 
-private:
+public:
 	/*pitch、yaw相关变量*/
 	bool yawUpdate_is_init;				// yaw复位标志位,平衡步倒地自救用
 	bool gimbal_resetState;				//云台复位标志位

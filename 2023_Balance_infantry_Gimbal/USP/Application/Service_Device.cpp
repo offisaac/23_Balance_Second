@@ -337,10 +337,10 @@ void tskOpenlog_send(void *arg)
 //		{
 //			openlog.Send();
 //		}
-		if(yaw_out != 0)
-		{
-			openlog.Send();
-		}
+//		if(yaw_out != 0)
+//		{
+//			openlog.Send();
+//		}
 	}
 }
 /**
@@ -372,11 +372,11 @@ void tskLog(void *arg)
 //			openlog.record("%d,%d,%d,%d\r", (int16_t)infantry.gimbal.yawMotor.Out, (int16_t)infantry.gimbal.yawMotor.getSpeed(), (int16_t)infantry.gimbal.yawMotor.getAngle(),(int16_t)infantry.gimbal.yawMotor.givenCurrent);
 //			openlog.push_buff();
 //		}
-		if(yaw_out != 0)
-		{
-			openlog.record("%d,%d,%d,%d\r", (int16_t)infantry.gimbal.yaw_speedloop.Target, (int16_t)infantry.gimbal.yawMotor.getSpeed(), (int16_t)infantry.gimbal.yawMotor.Out,(int16_t)infantry.gimbal.yawMotor.givenCurrent);
-			openlog.push_buff();
-		}
+//		if(yaw_out != 0)
+//		{
+//			openlog.record("%d,%d,%d,%d\r", (int16_t)infantry.gimbal.yaw_speedloop.Target, (int16_t)infantry.gimbal.yawMotor.getSpeed(), (int16_t)infantry.gimbal.yawMotor.Out,(int16_t)infantry.gimbal.yawMotor.givenCurrent);
+//			openlog.push_buff();
+//		}
 	}
 }
 /************************ COPYRIGHT(C) SCUT-ROBOTLAB **************************/
