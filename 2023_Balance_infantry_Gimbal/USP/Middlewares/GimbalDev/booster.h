@@ -29,9 +29,9 @@
 #define ID_FRI_RIGHT (3)
 #define ID_Turnplate (1)
 /*摩擦轮射速宏定义*/
-const uint16_t BULLET_SPEED_15 = 4680;
-const uint16_t BULLET_SPEED_18 = 4940;
-const uint16_t BULLET_SPEED_30 = 6700;
+const uint16_t BULLET_SPEED_15 = 4300;
+const uint16_t BULLET_SPEED_18 = 4750;
+const uint16_t BULLET_SPEED_30 = 6900;
 /*热量上限阈值宏定义*/
 #define HEAT_OFFSET (30) // 20Hz射频时上限-38，15Hz、10Hz射频上限-28，2Hz射频上限-13
 /*弹舱盖开关限位*/
@@ -56,8 +56,10 @@ public:
 	myPID right_fri_speedloop;
 	myPID turnplate_angleloop;
 	myPID turnplate_speedloop;
-	myPID bullet_speedloop; // 射速自适应
-
+	//射速自适应
+	float bulletSpeed_adapt_gain = 0; // 射速自适应
+	float filter_bulletSpeed;
+	MeanFilter<100> bulletSpeed_filter;
 	/*接口*/
 	void Status_Update(bool *_friState,
 					   bool *_laserState,
@@ -77,7 +79,7 @@ public:
 	int friction_wheel_rpm, adaptive_fri_wheel_rpm = 6600; // 摩擦轮转速、自适应转速
 	int8_t heat_offset = HEAT_OFFSET;					   // 热量控制限制值
 	/*拨盘相关变量*/
-	int continuous_flag = 0;
+	uint16_t continuous_flag = 0;
 	int32_t turnplate_targetAngle;
 	float turnplate_frq = 10; // 拨盘射频
 	/*打符相关*/

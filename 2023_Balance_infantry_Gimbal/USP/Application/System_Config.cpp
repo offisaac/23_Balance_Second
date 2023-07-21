@@ -50,11 +50,9 @@ void System_Device_Init(void)
 //	Uart_Init(&huart4, Uart4_Rx_Buff, USART4_RX_BUFFER_SIZE, NULL);//openlog
 	Uart_Init(&huart3, Uart3_Rx_Buff, USART3_RX_BUFFER_SIZE, RecHandle);//上位机
 	/* System View */
-  SEGGER_SYSVIEW_Conf();
   /* Modules Init */
   System_Mpu_Init();
   myPIDTimer::getMicroTick_regist (Get_SystemTimer);
-  asuwave_init(&huart1, xTaskGetTickCount);
 	HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_2);
 }
 
@@ -69,8 +67,8 @@ void System_Task_Init(void)
   CAN1_RxPort 		= xQueueCreate(4, sizeof(CAN_COB));
   CAN2_TxPort 		= xQueueCreate(4, sizeof(CAN_COB));
   CAN2_RxPort 		= xQueueCreate(4, sizeof(CAN_COB));
-  USART_TxPort 		= xQueueCreate(2, sizeof(USART_COB));
-  DR16_QueueHandle 	= xQueueCreate(2, sizeof(USART_COB));
+  USART_TxPort 		= xQueueCreate(4, sizeof(USART_COB));
+  DR16_QueueHandle 	= xQueueCreate(4, sizeof(USART_COB));
   /* Semaphore Init */
   /* Mutex Init */
   DR16_mutex = xSemaphoreCreateMutex();

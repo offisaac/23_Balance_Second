@@ -62,8 +62,6 @@ void InfantryCTRL_Classdef::Infantry_Config()
 	booster.right_fri_speedloop.SetPIDParam(11.0f, 0.6f, 0.0f, 0, 30000.0f, 30000.0f);
 	booster.turnplate_speedloop.SetPIDParam(20.0f, 0.0f, 0.0f, 7000.0, 10000.0f, 8000.0f); // 20.0f,0.0f,0.0f,7000.0,8000.0f
 	booster.turnplate_angleloop.SetPIDParam(10.0f, 0.0f, 0.02f, 0, 10000.0f, 8000.0f);		 // 10.0f,0.0f,0.05f,0,8000.0f
-																																												 //	booster.bullet_speedloop.SetPIDParam(45, 0, 0, 0, 100);
-	booster.bullet_speedloop.SetPIDParam(0, 0, 0, 0, 15, 15);
 	/*云台pid参数*/
 	gimbal.yaw_anglekd = 0.6f; // 1.4
 	gimbal.pitch_anglekd = 0.0f;
