@@ -276,17 +276,17 @@ public:
 	float body_distance_kp = -1.5f;
 	float slider_distance_kp = 1.f;
 
-	float body_speed_kp = -2.792492e+00;
-	float body_pitch_kp = -1.291920e+01;
-	float body_pitchSpeed_kp = -2.155213e+00;
-	float body_sposition_kp = -9.005021e+00;
-	float body_sspeed_kp = -8.327348e-01;
+	float body_speed_kp = -2.858213e+00;
+	float body_pitch_kp = -1.310470e+01;
+	float body_pitchSpeed_kp = -2.178347e+00;
+	float body_sposition_kp = -9.860904e+00;
+	float body_sspeed_kp = -9.308788e-01;
 
-	float slider_speed_kp = 1.096392e+00;
-	float slider_pitch_kp = 2.638651e-01;
-	float slider_pitchSpeed_kp = -2.409101e-01;
-	float slider_sposition_kp = 8.512464e+00;
-	float slider_sspeed_kp = 1.185486e+00;
+	float slider_speed_kp = 9.114317e-01;
+	float slider_pitch_kp = 2.091452e-01;
+	float slider_pitchSpeed_kp = -2.182759e-01;
+	float slider_sposition_kp = 1.066194e+01;
+	float slider_sspeed_kp = 1.581372e+00;
 
 	float body_yaw_kp = 0.f;
 	float body_yawSpeed_kp = 2.f;
