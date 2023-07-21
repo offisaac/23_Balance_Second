@@ -63,10 +63,12 @@ void Booster_Classdef::Status_Update(bool *_friState,
 	coolingRate = *_coolingRate;
 	heatLimit = *_heatLimit;
 	maxSpeed = *_maxSpeed;
-
-	continuous_flag++;
 	turnplate_frq = std_lib::constrain(turnplate_frq, 0.1f, 20.0f); // 限制射频
-	continuous_flag = std_lib::constrain(continuous_flag, (int)0, (int)(1000 / turnplate_frq));
+	
+	if(continuous_flag < USHRT_MAX)
+	{
+		continuous_flag++;
+	}
 
 	if (!booster_resetState) // 掉线保护
 	{
@@ -115,10 +117,13 @@ void Booster_Classdef::Status_Update(bool *_friState,
  */
 void Booster_Classdef::Adjust()
 {
-	booster_pid_calculate();
 	if (booster_resetState)
 	{
 		booster_reset();
+	}
+	else
+	{
+		booster_pid_calculate();
 	}
 }
 /**
@@ -178,8 +183,6 @@ void Booster_Classdef::laser_on(bool _laser_state)
  * @param None
  * @retval None
  */
-int b_on = BULLETBAY_ON;
-int b_off = BULLETBAY_OFF;
 void Booster_Classdef::bulletBay_ctrl(bool _bulletBay_state)
 {
 	static int16_t bulletBay_delay = 0;
@@ -187,11 +190,11 @@ void Booster_Classdef::bulletBay_ctrl(bool _bulletBay_state)
 	{
 		if (_bulletBay_state)
 		{
-			__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2, b_on);
+			__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2, this->bulletBay_on);
 		}
 		else
 		{
-			__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2, b_off);
+			__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2, this->bulletBay_off);
 		}
 	}
 	// 降低舵机控制频率
@@ -205,7 +208,7 @@ void Booster_Classdef::bulletBay_ctrl(bool _bulletBay_state)
  */
 void Booster_Classdef::turnplate_ctrl(bool _turnplate_state)
 {
-	if (continuous_flag >= (int)(1000 / turnplate_frq) && _turnplate_state)
+	if (continuous_flag >= (1000 / turnplate_frq) && _turnplate_state)
 	{
 		turnplate_targetAngle -= 1296;
 		continuous_flag = 0;
@@ -264,33 +267,31 @@ bool Booster_Classdef::heat_ctrl()
  * @param None
  * @retval None
  */
-uint32_t debug_15rpm = 4300;
-uint32_t debug_18rpm = 4750;
-uint32_t debug_30rpm = 6900;
+uint16_t debug_15rpm = BULLET_SPEED_15;
+uint16_t debug_18rpm = BULLET_SPEED_18;
+uint16_t debug_30rpm = BULLET_SPEED_30;
 void Booster_Classdef::bulletVelocity_adjust()
 {
 	static int16_t lastMaxSpeed;
-	float target_friRPM, reference_friRPM /*参考转速*/;
+	float bulletSpeed_target = 0;
+	float reference_friRPM /*参考转速*/;
 	switch (maxSpeed)
 	{
 	case 15:
 		reference_friRPM = debug_15rpm;
-		//reference_friRPM = BULLET_SPEED_15;
-		bullet_speedloop.Target = maxSpeed - 1.0f;
+		bulletSpeed_target = maxSpeed - 1.0f;
 		break;
 	case 18:
 		reference_friRPM = debug_18rpm;
-		//reference_friRPM = BULLET_SPEED_18;
-		bullet_speedloop.Target = maxSpeed - 1.0f;
+		bulletSpeed_target = maxSpeed - 1.0f;
 		break;
 	case 30:
 		reference_friRPM = debug_30rpm;
-		//reference_friRPM = BULLET_SPEED_30;
-		bullet_speedloop.Target = maxSpeed - 3.5f; // 30射速小发射方差较大，要降低平均射速
+		bulletSpeed_target = maxSpeed - 3.f; // 30射速小发射方差较大，要降低平均射速
 		break;  
 	default:
 		reference_friRPM = debug_15rpm;
-		bullet_speedloop.Target = maxSpeed - 1.0f;
+		bulletSpeed_target = maxSpeed - 1.0f;
 		break;
 	}
 
@@ -302,13 +303,10 @@ void Booster_Classdef::bulletVelocity_adjust()
 
 	if (bulletSpeed != lastBulletSpeed) /*自适应转速,发一发子弹更新一次*/
 	{
-		bullet_speedloop.Current = bulletSpeed;
-		friRPM_accumulation += bullet_speedloop.Adjust();
+		filter_bulletSpeed = bulletSpeed_filter.f(bulletSpeed);
+		friRPM_accumulation += bulletSpeed_adapt_gain * (bulletSpeed_target - filter_bulletSpeed);
 	}
-	target_friRPM = reference_friRPM + friRPM_accumulation;
-	target_friRPM = std_lib::constrain(target_friRPM, 0.0f, 10000.0f); /*输出限幅，限制30m/s射速情况*/
-
-	adaptive_fri_wheel_rpm = target_friRPM;
+	adaptive_fri_wheel_rpm = reference_friRPM + friRPM_accumulation;
 }
 /**
  * @brief pid计算
@@ -324,7 +322,7 @@ void Booster_Classdef::booster_pid_calculate()
 	turnplate_speedloop.Current = turnplateMotor.getSpeed();
 
 	/*更新目标值*/
-	friction_wheel_rpm = std_lib::constrain(friction_wheel_rpm, 0, 9000); /*摩擦轮转速限幅*/
+	friction_wheel_rpm = std_lib::constrain(friction_wheel_rpm, (int16_t)0, (int16_t)9000); /*摩擦轮转速限幅*/
 	left_fri_speedloop.Target = friction_wheel_rpm;
 	right_fri_speedloop.Target = -friction_wheel_rpm;
 	turnplate_angleloop.Target = turnplate_targetAngle;

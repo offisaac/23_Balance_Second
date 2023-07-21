@@ -46,7 +46,7 @@
 #define USE_SRML_DR16                     1
 #define USE_SRML_MOTOR_AK80               0
 #define USE_SRML_MOTOR_DJI                1
-#define USE_SRML_REFEREE                  1
+#define USE_SRML_REFEREE                  0
 #define USE_SRML_VSEC                     0
 
 
@@ -60,7 +60,7 @@
 
 #define USE_SRML_SERIAL_LINE_IP           0
 
-#define USE_SRML_ASUWAVE                  1
+#define USE_SRML_ASUWAVE                  0
 #define USE_SRML_LIST                     0
 #define USE_SRML_MYASSERT                 0
 #define USE_SRML_SYSANALYSIS              0

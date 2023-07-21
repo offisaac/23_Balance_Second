@@ -69,10 +69,13 @@ void Gimbal_Classdef::MPUdata_Update(mpu_rec_s *p)
 void Gimbal_Classdef::Adjust()
 {
 	yaw_calculate();
-	gimbal_pid_calculate();
 	if (gimbal_resetState)
 	{
 		gimbal_reset();
+	}
+	else
+	{
+		gimbal_pid_calculate();
 	}
 }
 /**
@@ -351,6 +354,16 @@ void Gimbal_Classdef::gimbal_pid_calculate()
 	//yawMotor.Out = yaw_currentloop.Adjust() + (yaw_currentloop.Target + 55 * yawMotor.getSpeed()) / (0.75 - 0.0004 * yawMotor.getSpeed());
 
 	last_yawSpeed_t = yaw_speedloop.Target;
+
+	yaw_controller.angleLoop.SetPIDParam(angle_kp, 0, 0, 0, 500, 500);
+	yaw_controller.currentLoop.SetPIDParam(current_kp, current_ki, current_kd, current_imax, 150000, 30000);
+	yaw_controller.currentLoop.I_SeparThresh = 120000;
+	yaw_controller.speedLoop.SetPIDParam(speed_kp, speed_ki, 0, speed_imax, 30000, 30000);
+	yaw_controller.speedLoop.I_SeparThresh = 400;
+
+	yaw_controller.update_current_state(total_yaw, angular_velocity_yaw, yawMotor.givenCurrent, yawMotor.getSpeed());
+	yaw_controller.update_target_angle(yaw_target);
+	//yawMotor.Out = yaw_controller.adjust();
 }
 /**
  * @brief yaw角度计算

@@ -13,7 +13,6 @@
 #include "task.h"
 #include "queue.h"
 #include "semphr.h"
-#include "SEGGER_SYSVIEW.h"
 #include "Infantry_CTRL.h"
 #include "Middlewares/Utility/openlog.h"
 
