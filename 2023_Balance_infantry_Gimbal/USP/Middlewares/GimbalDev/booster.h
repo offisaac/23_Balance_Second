@@ -29,9 +29,9 @@
 #define ID_FRI_RIGHT (3)
 #define ID_Turnplate (1)
 /*摩擦轮射速宏定义*/
-const uint16_t BULLET_SPEED_15 = 4300;
-const uint16_t BULLET_SPEED_18 = 4750;
-const uint16_t BULLET_SPEED_30 = 6900;
+#define BULLET_SPEED_15 4300;
+#define BULLET_SPEED_18 4750;
+#define BULLET_SPEED_30 6900;
 /*热量上限阈值宏定义*/
 #define HEAT_OFFSET (30) // 20Hz射频时上限-38，15Hz、10Hz射频上限-28，2Hz射频上限-13
 /*弹舱盖开关限位*/
@@ -43,22 +43,19 @@ const uint16_t BULLET_SPEED_30 = 6900;
 class Booster_Classdef
 {
 public:
-	Booster_Classdef()
-	{
-	}
 	/*创建电机对象*/
 	Motor_C620 left_friWheel = Motor_C620(ID_FRI_LEFT);
 	Motor_C620 right_friWheel = Motor_C620(ID_FRI_RIGHT);
 	Motor_C610 turnplateMotor = Motor_C610(ID_Turnplate);
-
 	/*创建pid对象*/
 	myPID left_fri_speedloop;
 	myPID right_fri_speedloop;
 	myPID turnplate_angleloop;
 	myPID turnplate_speedloop;
-	//射速自适应
+	// 射速自适应
 	float bulletSpeed_adapt_gain = 0; // 射速自适应
-	float filter_bulletSpeed;
+	float filter_bulletSpeed = 0;
+	float friRPM_accumulation = 0; // 自适应累积转速
 	MeanFilter<100> bulletSpeed_filter;
 	/*接口*/
 	void Status_Update(bool *_friState,
@@ -76,24 +73,24 @@ public:
 	void Pack_CAN(Motor_CAN_COB *_CANX_pack);	 // 打包函数
 
 	/*摩擦轮相关变量*/
-	int friction_wheel_rpm, adaptive_fri_wheel_rpm = 6600; // 摩擦轮转速、自适应转速
-	int8_t heat_offset = HEAT_OFFSET;					   // 热量控制限制值
+	int16_t friction_wheel_rpm, adaptive_fri_wheel_rpm; // 摩擦轮转速、自适应转速
+	int8_t heat_offset = HEAT_OFFSET;					// 热量控制限制值
 	/*拨盘相关变量*/
 	uint16_t continuous_flag = 0;
 	int32_t turnplate_targetAngle;
 	float turnplate_frq = 10; // 拨盘射频
 	/*打符相关*/
 	uint8_t auto_fire;
-
-public:
 	/*裁判系统相关变量*/
 	float bulletSpeed, lastBulletSpeed;				  // 裁判系统传入
 	float heat;										  // 当前热量
-	float friRPM_accumulation;						  // 自适应累积转速
 	int16_t heatRf, coolingRate, heatLimit, maxSpeed; // 裁判系统传入
 	int16_t bulletcounter;							  // 计算发射弹丸数,未使用
+private:
 	/*小发射复位标志位*/
 	bool booster_resetState;
+	/* 弹仓盖开关PWM值 */
+	uint16_t bulletBay_on = BULLETBAY_ON, bulletBay_off = BULLETBAY_OFF;
 
 	/*摩擦轮相关函数*/
 	bool fri_on(bool _fri_state);

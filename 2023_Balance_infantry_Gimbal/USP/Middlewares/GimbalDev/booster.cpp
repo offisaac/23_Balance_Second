@@ -183,8 +183,6 @@ void Booster_Classdef::laser_on(bool _laser_state)
  * @param None
  * @retval None
  */
-int b_on = BULLETBAY_ON;
-int b_off = BULLETBAY_OFF;
 void Booster_Classdef::bulletBay_ctrl(bool _bulletBay_state)
 {
 	static int16_t bulletBay_delay = 0;
@@ -192,11 +190,11 @@ void Booster_Classdef::bulletBay_ctrl(bool _bulletBay_state)
 	{
 		if (_bulletBay_state)
 		{
-			__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2, b_on);
+			__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2, this->bulletBay_on);
 		}
 		else
 		{
-			__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2, b_off);
+			__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2, this->bulletBay_off);
 		}
 	}
 	// 降低舵机控制频率
@@ -324,7 +322,7 @@ void Booster_Classdef::booster_pid_calculate()
 	turnplate_speedloop.Current = turnplateMotor.getSpeed();
 
 	/*更新目标值*/
-	friction_wheel_rpm = std_lib::constrain(friction_wheel_rpm, 0, 9000); /*摩擦轮转速限幅*/
+	friction_wheel_rpm = std_lib::constrain(friction_wheel_rpm, (int16_t)0, (int16_t)9000); /*摩擦轮转速限幅*/
 	left_fri_speedloop.Target = friction_wheel_rpm;
 	right_fri_speedloop.Target = -friction_wheel_rpm;
 	turnplate_angleloop.Target = turnplate_targetAngle;
