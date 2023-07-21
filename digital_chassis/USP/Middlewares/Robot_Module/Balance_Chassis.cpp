@@ -550,8 +550,6 @@ void Balance_Infantry_Classdef::Source_Adjust()
  * @return
  * @retval  None
  */
-float right_angle = -60;
-float left_angle = -60;
 void Balance_Infantry_Classdef::Chassis_Adjust()
 {
     float wheel_out[2];
@@ -621,6 +619,7 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
         }
     }
 
+		float rotation_slider_pos[2] = {-10,-10}; 
     if (gimbal_data.remote_ctrl_state == false)
     {
         wheel_out[LEFT] = 0;
@@ -631,28 +630,23 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
     {
         if (!gimbal_data.enable_cmd)
         {
-            // balance_controller.slider_pos[RIGHT] = 0;
-            // balance_controller.slider_pos[LEFT] = 0;
             balance_controller.output.sliderCtrl_out[RIGHT] = 0;
             balance_controller.output.sliderCtrl_out[LEFT] = 0;
         }
-//        balance_controller.output.sliderCtrl_out[RIGHT] = 0;
-//        balance_controller.output.sliderCtrl_out[LEFT] = 0;
-        // Slider_Ctrl.update(balance_controller.slider_pos);
-        // Slider_Ctrl.adjust();
-        // Slider_Ctrl.acutate();
-        Slider_Ctrl.setTorqueOut(balance_controller.output.sliderCtrl_out);
+				if(gimbal_data.rotation_state)
+				{
+					 Slider_Ctrl.update(rotation_slider_pos);
+           Slider_Ctrl.adjust();
+           Slider_Ctrl.acutate();
+				}
+				else
+				{
+					Slider_Ctrl.setTorqueOut(balance_controller.output.sliderCtrl_out);
+				}
     }
-//    wheel_out[LEFT] = 0;
-//    wheel_out[RIGHT] = 0;
 
     absWheelMotor[LEFT].setMotorCurrentOut(std_lib::constrain(wheel_out[LEFT] * COM_9025_TORQUE_RATIO, -2000.f, 2000.f));
     absWheelMotor[RIGHT].setMotorCurrentOut(std_lib::constrain(wheel_out[RIGHT] * COM_9025_TORQUE_RATIO, -2000.f, 2000.f));
-
-    // debug
-//    absWheelMotor[LEFT].setMotorCurrentOut(0);
-//    absWheelMotor[RIGHT].setMotorCurrentOut(0);
-    // Slider_Ctrl.clear();
 
     /* 发送CAN包到云台 */
     Board_Com.gimbal_rx_pack2.chassis_flags &= 0xFFFE; //发送标志位除了第一位全部置1
