@@ -66,7 +66,7 @@ void ChassisCTRL_Classdef::Status_Update(float _chassis_yaw_current,
 	}
 	else
 	{
-		if (chassis_yawAngle.Error < -120 || chassis_yawAngle.Error > 120)
+		if (chassis_yawAngle.Error < -120 && chassis_yawAngle.Error > -140)
 		{
 			rotationState = 0;
 		}

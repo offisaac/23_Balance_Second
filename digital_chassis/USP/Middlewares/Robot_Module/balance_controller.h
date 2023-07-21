@@ -273,23 +273,24 @@ public:
 	uint8_t speed_pid_delay = 20; //速度环执行周期
 
 	/*lqr参数*/
-	float body_distance_kp = -1.5f;
+	float body_distance_kp = -2.f;
 	float slider_distance_kp = 1.f;
 
-	float body_speed_kp = -2.858213e+00;
-	float body_pitch_kp = -1.310470e+01;
-	float body_pitchSpeed_kp = -2.178347e+00;
-	float body_sposition_kp = -9.860904e+00;
-	float body_sspeed_kp = -9.308788e-01;
+	
+float body_speed_kp = -2.910092e+00;
+float body_pitch_kp = -1.316679e+01;
+float body_pitchSpeed_kp = -2.183343e+00;
+float body_sposition_kp = -1.010244e+01;
+float body_sspeed_kp = -9.259462e-01;
 
-	float slider_speed_kp = 9.114317e-01;
-	float slider_pitch_kp = 2.091452e-01;
-	float slider_pitchSpeed_kp = -2.182759e-01;
-	float slider_sposition_kp = 1.066194e+01;
-	float slider_sspeed_kp = 1.581372e+00;
+float slider_speed_kp = 7.290078e-01;
+float slider_pitch_kp = -9.975249e-02;
+float slider_pitchSpeed_kp = -2.607826e-01;
+float slider_sposition_kp = 1.253946e+01;
+float slider_sspeed_kp = 1.428755e+00;
 
 	float body_yaw_kp = 0.f;
-	float body_yawSpeed_kp = 2.f;
+	float body_yawSpeed_kp = 1.6f;
 
 	float slider_bias = 0;
 

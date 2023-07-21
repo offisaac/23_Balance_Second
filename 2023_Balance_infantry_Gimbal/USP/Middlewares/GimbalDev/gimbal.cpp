@@ -230,40 +230,26 @@ float sin_w = 3.1415926f;
 float ta_o = 0;		 //三角波幅值
 uint16_t ta_f = 1; //频率
 int16_t ta_count = 0;
-float k1_ = 4.4;//相当于调整目标值变化对加速度的影响大小，调信号跟踪性能
-
-//电流环调试
-float target_speed = 0;
-float target_current = 0;
-float current_kp = 0.25;
-float current_ki = 50;
-float current_kd = 0;
-float current_imax = 3000;
-float current_omax = 26000;
-float speed_kp = 85; // 100
-float speed_ki = 10000;
-float speed_imax = 700;
-float speed_para = 3.72;//相当于影响平均前馈输入，调平均转速
 float t = 0;
-float angle_kp = 25;
-float speed_errormax = 10;
 void Gimbal_Classdef::gimbal_pid_calculate()
 {
-	static DiffCalculator<1> speed_tDiff;
-	static float last_yawSpeed_t = 0;
-	yaw_currentloop.SetPIDParam(current_kp, current_ki, current_kd, current_imax, 150000, 30000);
-	yaw_currentloop.I_SeparThresh = 120000;
-	yaw_speedloop.SetPIDParam(speed_kp, speed_ki, 0, speed_imax, 30000, 30000);
-	yaw_speedloop.I_SeparThresh = 400;
-	//yaw_angleloop.SetPIDParam(angle_kp, 0, 0, 0, 500, 500);
-
 	t = Get_SystemTimer() * 0.000001f;
 	/*更新当前值，并考虑切换不同的反馈通路*/
 	if (feedback_by == ENCODER)
 	{
 		pitch_angleloop.Current = -pitchMotor.getAngle();
 		/*以最小角度跟随*/
+		yaw_controller.update_current_state(int(yawMotor.getAngle()) % 360, angular_velocity_yaw, yawMotor.givenCurrent, yawMotor.getSpeed());
 		yaw_angleloop.Current = int(yawMotor.getAngle()) % 360;
+		if (yaw_controller.angleLoop.Current > 180)
+		{
+			yaw_controller.angleLoop.Current -= 360;
+		}
+		else if (yaw_controller.angleLoop.Current < -180)
+		{
+			yaw_controller.angleLoop.Current += 360;
+		}
+		
 		if (yaw_angleloop.Current > 180)
 		{
 			yaw_angleloop.Current -= 360;
@@ -276,11 +262,23 @@ void Gimbal_Classdef::gimbal_pid_calculate()
 	else
 	{
 		pitch_angleloop.Current = current_pitch;
+		yaw_controller.update_current_state(total_yaw, angular_velocity_yaw, yawMotor.givenCurrent, yawMotor.getSpeed());
 		yaw_angleloop.Current = total_yaw;
 	}
 	pitch_speedloop.Current = angular_velocity_pitch;
-	yaw_speedloop.Current = angular_velocity_yaw;
-	yaw_currentloop.Current = yawMotor.givenCurrent; //电流环
+
+	/*更新目标值*/
+	pitch_target = std_lib::constrain(pitch_target, -20.0f, 30.0f);
+	pitch_angleloop.Target = pitch_target;
+	yaw_angleloop.Target = yaw_target;
+	yaw_controller.update_target_angle(yaw_target);
+
+	/*计算输出值*/
+	pitchMotor.Out = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + 116.7360f * current_pitch + 668.5741f; // old
+	//	pitchMotor.Out = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + 51.38340f * current_pitch  - 438.2411f;//new
+
+	//yawMotor.Out = yaw_angleloop.Adjust_importDiff(angular_velocity_yaw);
+	yawMotor.Out = yaw_controller.adjust();
 
 	// /*生成三角波*/
 	// if(ta_o!=0)
@@ -311,59 +309,8 @@ void Gimbal_Classdef::gimbal_pid_calculate()
 	// }
 
 	/*生成正弦波*/
-	//yaw_out = 200 + 50 * sinf(3 * sin_w * t) + 100 * sinf(sin_w * t);
-	//yaw_out = 150 * sinf(5*sin_w * t);
-
-
-	/*更新目标值*/
-	pitch_target = std_lib::constrain(pitch_target, -20.0f, 30.0f);
-	pitch_angleloop.Target = pitch_target;
-	yaw_angleloop.Target = yaw_target;
-	// pitch_speedloop.Target = pitch_angleloop.Adjust()+ pitch_anglekd*(0-angular_velocity_pitch);
-	// yaw_speedloop.Target = yaw_angleloop.Adjust_importDiff(angular_velocity_yaw);
-//	if (target_speed > 0)
-	//yaw_speedloop.Target = yaw_out;
-//	else
-//		yaw_speedloop.Target = 0;
-
-	yaw_speedloop.Target = yaw_angleloop.Adjust();
-	
-	yaw_speedloop.Target = std_lib::constrain(yaw_speedloop.Target , last_yawSpeed_t - speed_errormax , last_yawSpeed_t + speed_errormax);
-	if (yawMotor.getSpeed() == 0)
-		yaw_currentloop.Target = yaw_speedloop.Adjust() + (yaw_speedloop.Target + yawMotor.getSpeed() - angular_velocity_yaw / 6) / speed_para + k1_ * (speed_tDiff.calc(yaw_speedloop.Target));
-	else
-		yaw_currentloop.Target = yaw_speedloop.Adjust() + 536 * yawMotor.getSpeed() / fabsf(yawMotor.getSpeed()) + (yaw_speedloop.Target + yawMotor.getSpeed() - angular_velocity_yaw / 6) / speed_para + k1_ * (speed_tDiff.calc(yaw_speedloop.Target));
-
-	// if (yawMotor.getSpeed() == 0)
-	// 	yaw_currentloop.Target = yaw_speedloop.Adjust() + yawMotor.getSpeed() / speed_para + k1_ * (50 * sin_w * cosf(sin_w * t) + 75 * sin_w * cosf(sin_w * 3 * t));
-	// else
-	// 	yaw_currentloop.Target = yaw_speedloop.Adjust() + 536 * yawMotor.getSpeed() / fabsf(yawMotor.getSpeed()) + yawMotor.getSpeed() / speed_para + k1_ * (50 * sin_w * cosf(sin_w * t) + 75 * sin_w * cosf(sin_w * 3 * t));
-
-	/*计算输出值*/
-	// pitchMotor.Out = pitch_speedloop.Adjust() + 83.994f * current_pitch - 1327.4f ;
-	// pitchMotor.Out = pitch_speedloop.Adjust() + 116.7360f * current_pitch + 668.5741f ;
-	pitchMotor.Out = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + 116.7360f * current_pitch + 668.5741f; // old
-	//	pitchMotor.Out = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + 51.38340f * current_pitch  - 438.2411f;//new
-	// pitchMotor.Out = pitch_speedloop.Adjust() - 0.0803f*powf(current_pitch,3) + 1.479f*powf(current_pitch,2) + 145.55f*current_pitch - 1031.48f + 2000.f;
-	// pitchMotor.Out = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + 73.32394f*powf(current_pitch,3) + 0.5094691f*powf(current_pitch,2) - 0.07910556f*current_pitch - 473.9127f;//new
-
-	// pitch前馈
-	 yawMotor.Out = yaw_angleloop.Adjust_importDiff(angular_velocity_yaw);
-	// yawMotor.Out = yaw_speedloop.Adjust();
-	// yawMotor.Out = yaw_out;
-	//yawMotor.Out = yaw_currentloop.Adjust() + (yaw_currentloop.Target + 55 * yawMotor.getSpeed()) / (0.75 - 0.0004 * yawMotor.getSpeed());
-
-	last_yawSpeed_t = yaw_speedloop.Target;
-
-	yaw_controller.angleLoop.SetPIDParam(angle_kp, 0, 0, 0, 500, 500);
-	yaw_controller.currentLoop.SetPIDParam(current_kp, current_ki, current_kd, current_imax, 150000, 30000);
-	yaw_controller.currentLoop.I_SeparThresh = 120000;
-	yaw_controller.speedLoop.SetPIDParam(speed_kp, speed_ki, 0, speed_imax, 30000, 30000);
-	yaw_controller.speedLoop.I_SeparThresh = 400;
-
-	yaw_controller.update_current_state(total_yaw, angular_velocity_yaw, yawMotor.givenCurrent, yawMotor.getSpeed());
-	yaw_controller.update_target_angle(yaw_target);
-	//yawMotor.Out = yaw_controller.adjust();
+	// yaw_out = 200 + 50 * sinf(3 * sin_w * t) + 100 * sinf(sin_w * t);
+	// yaw_out = 50 * sinf(sin_w * t);
 }
 /**
  * @brief yaw角度计算

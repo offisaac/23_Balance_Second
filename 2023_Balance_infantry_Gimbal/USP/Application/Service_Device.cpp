@@ -332,7 +332,8 @@ void tskOpenlog_send(void *arg)
 	for (;;)
 	{
 		/* wait for next circle */
-		vTaskDelayUntil(&xLastWakeTime_t, 2);
+		vTaskDelayUntil(&xLastWakeTime_t, 5);
+		Sent_Contorl(&huart3);
 //		if(infantry.Get_pcVisionMode() == RUNE_V && DR16.IsKeyPress(DR16_MOUSE_R))
 //		{
 //			openlog.Send();

@@ -124,7 +124,9 @@ public:
 
     virtual void clearCommand() override
     {
-        absMotor.setMotorVoltageOut(0);
+        //absMotor.setMotorTorqueOut(0);
+				absMotor.setMotorVoltageOut(0);
+				absMotor.clearCurrentLoop();
     }
 };
 #endif

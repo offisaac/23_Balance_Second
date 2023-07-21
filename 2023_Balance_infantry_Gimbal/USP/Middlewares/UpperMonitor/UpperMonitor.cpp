@@ -53,6 +53,7 @@ extern float debug_pitch_angle;
 extern float debug_yaw_angle;
 extern float yaw_out;
 extern float av_pidout;
+extern float blpf_out;
 
 /**
  * @brief
@@ -142,7 +143,7 @@ void UpperMonitor_Sent_Choose(float *data)
       data[i] = infantry.gimbal.yaw_currentloop.Current;
       break;
     case 2:
-      data[i] = infantry.gimbal.yaw_currentloop.I_Term;
+      data[i] = yaw_out;
       break;
     case 3:
       data[i] = infantry.gimbal.yawMotor.Out;

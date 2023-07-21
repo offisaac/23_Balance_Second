@@ -25,6 +25,7 @@
 #include "srml_std_lib.h"
 #include "math.h"
 #include "DiffCalculator.h"
+#include "SecondButterworthLPF.h"
 /* Private macros ------------------------------------------------------------*/
 #define ID_PITCH (2)
 #define ID_YAW (4)
@@ -72,16 +73,25 @@ class gimbal_motor_newController
 {
 private:
 	DiffCalculator<1> speed_target_Diff;
-	float last_speed_target = 0;
+	SecondOrderButterworthLPF speed_target_lpf;
+	// float last_speed_target = 0;
 	float motor_speed = 0;
+
 public:
+	gimbal_motor_newController() : speed_target_lpf(20, 1000) {}
+
 	myPID angleLoop;
 	myPID speedLoop;
 	myPID currentLoop;
 	/** 控制器参数 **/
-	float speed_para = 3.72;//相当于影响平均前馈输入，调平均转速
-	float k1_ = 4.4;//相当于调整目标值变化对加速度的影响大小，调信号跟踪性能
-	float speed_errormax = 10;
+	//电流环前馈
+	float m_r = 55;			 //电机电阻对应线性化参数
+	float m_l = 0.0004f; //电机电容对应线性化参数
+	//速度环前馈
+	float f_c = 536;	//补偿摩擦力
+	float f_k = 3.72; //补偿摩擦力
+	float a_k = 4.4;	//用于补偿转动惯量的加速力矩，调信号跟踪性能
+	// float speed_errormax = 10;
 
 	float Out = 0;
 
@@ -98,22 +108,34 @@ public:
 		angleLoop.Target = target_angle;
 	}
 
+	void SetAngleloopParams(float kp, float omax)
+	{
+		angleLoop.SetPIDParam(kp, 0, 0, 0, omax, omax);
+	}
+
+	void SetSpeedloopParams(float kp, float ki, float imax, float omax, float ist)
+	{
+		speedLoop.SetPIDParam(kp, ki, 0, imax, omax, omax);
+		speedLoop.I_SeparThresh = ist;
+	}
+
+	void SetCurrentloopParams(float kp,float ki, float imax,float omax, float ist)
+	{
+		currentLoop.SetPIDParam(kp,ki,0,imax,omax,omax);
+		currentLoop.I_SeparThresh = ist;
+	}
+
 	float adjust()
 	{
-		speedLoop.Target = angleLoop.Adjust();
-		speedLoop.Target = std_lib::constrain(speedLoop.Target , last_speed_target - speed_errormax , last_speed_target + speed_errormax);
-		last_speed_target = speedLoop.Target;
+		speedLoop.Target = speed_target_lpf.f(angleLoop.Adjust());
+		// speedLoop.Target = std_lib::constrain(speedLoop.Target , last_speed_target - speed_errormax , last_speed_target + speed_errormax);
+		// last_speed_target = speedLoop.Target;
 
 		if (motor_speed == 0)
-			currentLoop.Target = speedLoop.Adjust() 
-								+ (speedLoop.Target + motor_speed - speedLoop.Current / 6) / speed_para 
-								+ k1_ * (speed_target_Diff.calc(speedLoop.Target));
+			currentLoop.Target = speedLoop.Adjust() + (speedLoop.Target + motor_speed - speedLoop.Current / 6) / f_k + a_k * (speed_target_Diff.calc(speedLoop.Target));
 		else
-			currentLoop.Target = speedLoop.Adjust() 
-								+ 536 * motor_speed / fabsf(motor_speed) 
-								+ (speedLoop.Target + motor_speed - speedLoop.Current / 6) / speed_para 
-								+ k1_ * (speed_target_Diff.calc(speedLoop.Target));
-		Out = currentLoop.Adjust() + (currentLoop.Target + 55 * motor_speed) / (0.75f - 0.0004f * motor_speed);
+			currentLoop.Target = speedLoop.Adjust() + f_c * motor_speed / fabsf(motor_speed) + (speedLoop.Target + motor_speed - speedLoop.Current / 6) / f_k + a_k * (speed_target_Diff.calc(speedLoop.Target));
+		Out = currentLoop.Adjust() + (currentLoop.Target + m_r * motor_speed) / (0.75f - m_l * motor_speed);
 		return Out;
 	}
 };
@@ -138,40 +160,38 @@ public:
 	myPID yaw_currentloop; // 电流环
 
 	gimbal_motor_newController yaw_controller;
-	
-	float pitch_anglekd;
-	float yaw_anglekd;
+
 	/*接口*/
 	void Status_Update(float *_pitchData, float *_yawData, bool *_resetState);
 	void MPUdata_Update(mpu_rec_s *p); // pitch yaw角度更新，包括初始角度偏置
 	void Adjust();
 	void Pack_CAN(int8_t _CAN_number, Motor_CAN_COB *_CANX_pack); // 打包函数
 	/*获取当前值*/
-	float Get_PitchTarget();			// pitch目标值
-	float Get_PitchCurrent();			// pitch陀螺仪当前值
-	float Get_YawTotal();				// 云台yaw当前值
-	float Get_YawMotorAngle();			// yaw码盘电机值
-	float Get_YawTarget();				// yaw目标值
+	float Get_PitchTarget();						// pitch目标值
+	float Get_PitchCurrent();						// pitch陀螺仪当前值
+	float Get_YawTotal();								// 云台yaw当前值
+	float Get_YawMotorAngle();					// yaw码盘电机值
+	float Get_YawTarget();							// yaw目标值
 	float Get_Angular_Velocity_Pitch(); // pitch角速度
-	float Get_Angular_Velocity_Yaw();	// yaw角速度
+	float Get_Angular_Velocity_Yaw();		// yaw角速度
 	/*设置目标值*/
 	void Set_PitchTarget(float _pitch_target);
 	void Set_YawTarget(float _yaw_target);
 	void Set_FeedbackSource(E_PitchYaw_FeedbackBy); // 设置反馈来源
-	void Reset_YawUpdateFlag();						// 平衡步用，陀螺仪计算角度复位
+	void Reset_YawUpdateFlag();											// 平衡步用，陀螺仪计算角度复位
 	/*pid相关*/
 	void PidParaInit(E_PitchYawPidType _type, float _kp, float _ki, float _kd, float _ki_max, float _pi_max, float _out_max, float _I_SeparThresh);
 	// pid参数初始化
 	void LoadPidPara(myPID *_pidloop, S_PidPara _pid_para); // 加载pid参数进pid对象
-	void Switch2VisionPid(uint8_t _vision_pid_mode);		// 切换到视觉pid
-	S_PidPara pid_para[12];									// pid各环参数
+	void Switch2VisionPid(uint8_t _vision_pid_mode);				// 切换到视觉pid
+	S_PidPara pid_para[12];																	// pid各环参数
 
 	float pitch_target, yaw_target;
 
 public:
 	/*pitch、yaw相关变量*/
-	bool yawUpdate_is_init;		  // yaw复位标志位,平衡步倒地自救用
-	bool gimbal_resetState;		  // 云台复位标志位
+	bool yawUpdate_is_init;				// yaw复位标志位,平衡步倒地自救用
+	bool gimbal_resetState;				// 云台复位标志位
 	float pitch_scale, yaw_scale; // pitch、yaw灵敏度
 	float total_yaw;
 
