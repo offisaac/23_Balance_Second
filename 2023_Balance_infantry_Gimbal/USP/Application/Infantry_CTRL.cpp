@@ -70,6 +70,7 @@ void InfantryCTRL_Classdef::Infantry_Config()
 	/*地面目标pid*/
 	gimbal.PidParaInit(PITCH_ANGLE_1, -3000, -80000, 200, 3000, 100000, 30000, 80000);
 	gimbal.PidParaInit(YAW_ANGLE_1, 5000, 45000, -400, 3000, 150000, 30000, 120000);
+	gimbal.PidParaInit(YAW_CURRENT_1, 0.25, 50, 0, 30000, 150000, 30000, 120000);
 	// gimbal.PidParaInit(YAW_SPEED_1, 300, 0, 0, 4000, 30000, 30000, 4000);
 //	gimbal.PidParaInit(YAW_ANGLE_1, 25, 0, -1, 0, 15000, 15000, 300000);
 //	gimbal.PidParaInit(YAW_SPEED_1, 300, 850, 0, 10000, 30000, 30000, 300000);
@@ -84,6 +85,7 @@ void InfantryCTRL_Classdef::Infantry_Config()
 	gimbal.LoadPidPara(&gimbal.pitch_angleloop, gimbal.pid_para[PITCH_ANGLE_1]);
 	gimbal.LoadPidPara(&gimbal.yaw_speedloop, gimbal.pid_para[YAW_SPEED_1]);
 	gimbal.LoadPidPara(&gimbal.yaw_angleloop, gimbal.pid_para[YAW_ANGLE_1]);
+	gimbal.LoadPidPara(&gimbal.yaw_currentloop,gimbal.pid_para[YAW_CURRENT_1]);
 
 	gimbal.pitch_angleloop.I_SeparThresh = 5;
 	gimbal.yaw_angleloop.I_SeparThresh = 5;
@@ -172,6 +174,7 @@ float normal_yaw_angle_kd = -420;
 float normal_yaw_angle_imax = 3000;
 float normal_yaw_angle_pimax = 150000;
 float normal_yaw_angle_Ist = 5;
+
 /**
  * @brief 遥控控制状态机Handle
  * @parma None
@@ -251,6 +254,7 @@ void RemoteCtrl_State::Handle_State()
 	context->gimbal.yaw_angleloop.SetPIDParam(normal_yaw_angle_kp, normal_yaw_angle_ki, normal_yaw_angle_kd, normal_yaw_angle_imax, normal_yaw_angle_pimax, 30000);
 	context->gimbal.pitch_angleloop.I_SeparThresh = normal_pitch_angle_Ist;
 	context->gimbal.yaw_angleloop.I_SeparThresh = normal_yaw_angle_Ist;
+	
 }
 /**
  * @brief 键盘控制状态机Handle

@@ -52,6 +52,7 @@
 extern float debug_pitch_angle;
 extern float debug_yaw_angle;
 extern float yaw_out;
+extern float av_pidout;
 
 /**
  * @brief
@@ -134,33 +135,33 @@ void UpperMonitor_Sent_Choose(float *data)
 //      case 8: data[i]= infantry.booster.turnplate_angleloop.Target;
 // 					break;
 
-//    case 0:
-//      data[i] = infantry.gimbal.yaw_angleloop.Target;
-//      break;
-//    case 1:
-//      data[i] = infantry.gimbal.yaw_angleloop.Current;
-//      break;
-//    case 2:
-//      data[i] = infantry.gimbal.yaw_angleloop.P_Term;
-//      break;
-//    case 3:
-//      data[i] = infantry.gimbal.yaw_angleloop.I_Term;
-//      break;
-//    case 4:
-//      data[i] = infantry.gimbal.yaw_speedloop.Target; // infantry.board_com.rx_pack1.heat_limit;
-//      break;
-//    case 5:
-//      data[i] = infantry.gimbal.yaw_speedloop.Current; // infantry.board_com.rx_pack1.booster_heat;
-//      break;
-//    case 6:
-//      data[i] = infantry.gimbal.yaw_speedloop.P_Term;
-//      break;
-//    case 7:
-//      data[i] = infantry.gimbal.yaw_speedloop.I_Term;
-//      break;
-//    case 8:
-//      data[i] = yaw_out;
-//      break;
+    case 0:
+      data[i] = infantry.gimbal.yaw_currentloop.Target;
+      break;
+    case 1:
+      data[i] = infantry.gimbal.yaw_currentloop.Current;
+      break;
+    case 2:
+      data[i] = infantry.gimbal.yaw_currentloop.I_Term;
+      break;
+    case 3:
+      data[i] = infantry.gimbal.yawMotor.Out;
+      break;
+    case 4:
+      data[i] = infantry.gimbal.yaw_speedloop.Target; // infantry.board_com.rx_pack1.heat_limit;
+      break;
+    case 5:
+      data[i] = infantry.gimbal.yaw_speedloop.Current; // infantry.board_com.rx_pack1.booster_heat;
+      break;
+    case 6:
+      data[i] = infantry.gimbal.yaw_angleloop.Target;
+      break;
+    case 7:
+      data[i] = infantry.gimbal.yaw_angleloop.Current;
+      break;
+    case 8:
+      data[i] = infantry.gimbal.yaw_currentloop.Out;
+      break;
       /*debug,小发射测试*/
       //  case 0: data[i]= infantry.booster.left_fri_speedloop.Target;
       //      break;
@@ -237,24 +238,24 @@ void UpperMonitor_Sent_Choose(float *data)
                //      case 1: data[i]= infantry.gimbal.pitchMotor.Out;
                //          break;
 
-     case 0:
-       data[i] = infantry.gimbal.yawMotor.Out;
-       break;
-     case 1:
-       data[i] = infantry.gimbal.yawMotor.getSpeed();
-       break;
-     case 2:
-       data[i] = infantry.gimbal.yawMotor.getAngle();
-       break;
-     case 3:
-     	data[i] = infantry.gimbal.yawMotor.givenCurrent;
-       break;
-     case 4:
-       data[i] = infantry.gimbal.yawMotor.Out * 0.75f - infantry.gimbal.yawMotor.getSpeed()*(37 + infantry.gimbal.yawMotor.Out * 0.0006f);
-       break;
-		 case 5:
-			 data[i] = yaw_out;
-			 break;
+//     case 0:
+//       data[i] = infantry.gimbal.yawMotor.Out;
+//       break;
+//     case 1:
+//       data[i] = infantry.gimbal.yawMotor.getSpeed();
+//       break;
+//     case 2:
+//       data[i] = infantry.gimbal.yawMotor.getAngle();
+//       break;
+//     case 3:
+//     	data[i] = infantry.gimbal.yawMotor.givenCurrent;
+//       break;
+//     case 4:
+//       data[i] = infantry.gimbal.yawMotor.Out * 0.75f - infantry.gimbal.yawMotor.getSpeed()*(37 + infantry.gimbal.yawMotor.Out * 0.0006f);
+//       break;
+//		 case 5:
+//			 data[i] = yaw_out;
+//			 break;
     default:
       break;
       /* 以上部分用于观察参数曲线 */
