@@ -233,11 +233,15 @@ int16_t ta_count = 0;
 float t = 0;
 void Gimbal_Classdef::gimbal_pid_calculate()
 {
+	pitch_controller.SetAngleloopParams(25,300);
+	pitch_controller.SetSpeedloopParams(150,2000,1000,30000,400);
+	pitch_controller.SetCurrentloopParams(0.25,50,3000,30000,120000);
 	t = Get_SystemTimer() * 0.000001f;
 	/*更新当前值，并考虑切换不同的反馈通路*/
 	if (feedback_by == ENCODER)
 	{
 		pitch_angleloop.Current = -pitchMotor.getAngle();
+		pitch_controller.update_current_state(-pitchMotor.getAngle(),angular_velocity_pitch,pitchMotor.givenCurrent,yawMotor.getSpeed());
 		/*以最小角度跟随*/
 		yaw_controller.update_current_state(int(yawMotor.getAngle()) % 360, angular_velocity_yaw, yawMotor.givenCurrent, yawMotor.getSpeed());
 		yaw_angleloop.Current = int(yawMotor.getAngle()) % 360;
@@ -262,6 +266,7 @@ void Gimbal_Classdef::gimbal_pid_calculate()
 	else
 	{
 		pitch_angleloop.Current = current_pitch;
+		pitch_controller.update_current_state(current_pitch,angular_velocity_pitch,pitchMotor.givenCurrent,yawMotor.getSpeed());
 		yaw_controller.update_current_state(total_yaw, angular_velocity_yaw, yawMotor.givenCurrent, yawMotor.getSpeed());
 		yaw_angleloop.Current = total_yaw;
 	}
@@ -270,12 +275,14 @@ void Gimbal_Classdef::gimbal_pid_calculate()
 	/*更新目标值*/
 	pitch_target = std_lib::constrain(pitch_target, -20.0f, 30.0f);
 	pitch_angleloop.Target = pitch_target;
+	pitch_controller.update_target_angle(pitch_target);
 	yaw_angleloop.Target = yaw_target;
 	yaw_controller.update_target_angle(yaw_target);
 
 	/*计算输出值*/
 	pitchMotor.Out = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + 116.7360f * current_pitch + 668.5741f; // old
 	//	pitchMotor.Out = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + 51.38340f * current_pitch  - 438.2411f;//new
+	//pitchMotor.Out = pitch_controller.adjust() + 116.7360f * current_pitch + 668.5741f;
 
 	//yawMotor.Out = yaw_angleloop.Adjust_importDiff(angular_velocity_yaw);
 	yawMotor.Out = yaw_controller.adjust();

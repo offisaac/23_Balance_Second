@@ -148,6 +148,10 @@ public:
 		/*底盘跟随角度初始化*/
 		yawMotor.setEncoderOffset(_yaw_offset);
 		pitchMotor.setEncoderOffset(_pitch_offset);
+
+		pitch_controller.f_c = 0;
+		pitch_controller.f_k = 0;
+		pitch_controller.a_k = 0;
 	}
 	/*创建电机对象*/
 	Motor_GM6020 pitchMotor = Motor_GM6020(ID_PITCH);
@@ -160,6 +164,7 @@ public:
 	myPID yaw_currentloop; // 电流环
 
 	gimbal_motor_newController yaw_controller;
+	gimbal_motor_newController pitch_controller;
 
 	/*接口*/
 	void Status_Update(float *_pitchData, float *_yawData, bool *_resetState);

@@ -145,9 +145,9 @@ void LostCtrl_State::Handle_State()
 }
 
 //单环参数
-float normal_pitch_angle_kp = -3000;
-float normal_pitch_angle_ki = -72000; // 320
-float normal_pitch_angle_kd = 200;
+float normal_pitch_angle_kp = -2500;
+float normal_pitch_angle_ki = -40000; // 320
+float normal_pitch_angle_kd = 175;
 float normal_pitch_angle_imax = 3000; // 16
 float normal_pitch_angle_pimax = 100000;
 float normal_pitch_angle_Ist = 400;
@@ -468,9 +468,9 @@ void KeyboardCtrl_State::Handle_State()
  */
 //单环参数
 // 视觉模式pid参数（非打符模式）
-float pitch_angle_kp = -2800;
+float pitch_angle_kp = -2700;
 float pitch_angle_ki = -40000; // 320
-float pitch_angle_kd = 200;
+float pitch_angle_kd = 190;
 float pitch_angle_imax = 4500; // 16
 float pitch_angle_pimax = 100000;
 float pitch_angle_outmax = 30000;
@@ -504,10 +504,10 @@ float fc_current_kp = 0.25;
 float fc_current_ki = 50;
 float fc_current_imax = 3000;
 float fc_current_omax = 26000;
-float fc_speed_kp = 150; // 150
+float fc_speed_kp = 100; // 150
 float fc_speed_ki = 1000;
 float fc_speed_imax = 300;
-float fc_angle_kp = 25; // 25
+float fc_angle_kp = 20; // 25
 //打符
 float fr_current_kp = 0.25;
 float fr_current_ki = 50;
