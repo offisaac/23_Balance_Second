@@ -33,7 +33,7 @@
 #include "booster.h"
 #include <Middlewares/UpperMonitor/UpperMonitor.h>
 /* Exported macros -----------------------------------------------------------*/
-extern TIM_HandleTypeDef htim2;		// 弹舱盖用
+extern TIM_HandleTypeDef htim2;	  // 弹舱盖用
 extern UART_HandleTypeDef huart3; // 小发射测试用
 /* Private define ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -64,7 +64,6 @@ void Booster_Classdef::Status_Update(bool *_friState,
 	heatLimit = *_heatLimit;
 	maxSpeed = *_maxSpeed;
 	turnplate_frq = std_lib::constrain(turnplate_frq, 0.1f, 20.0f); // 限制射频
-	
 	if(continuous_flag < USHRT_MAX)
 	{
 		continuous_flag++;
@@ -117,13 +116,10 @@ void Booster_Classdef::Status_Update(bool *_friState,
  */
 void Booster_Classdef::Adjust()
 {
+	booster_pid_calculate();
 	if (booster_resetState)
 	{
 		booster_reset();
-	}
-	else
-	{
-		booster_pid_calculate();
 	}
 }
 /**
@@ -190,11 +186,11 @@ void Booster_Classdef::bulletBay_ctrl(bool _bulletBay_state)
 	{
 		if (_bulletBay_state)
 		{
-			__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2, this->bulletBay_on);
+			__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2, bulletBay_on);
 		}
 		else
 		{
-			__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2, this->bulletBay_off);
+			__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2, bulletBay_off);
 		}
 	}
 	// 降低舵机控制频率
@@ -208,7 +204,7 @@ void Booster_Classdef::bulletBay_ctrl(bool _bulletBay_state)
  */
 void Booster_Classdef::turnplate_ctrl(bool _turnplate_state)
 {
-	if (continuous_flag >= (1000 / turnplate_frq) && _turnplate_state)
+	if (continuous_flag >= (int)(1000 / turnplate_frq) && _turnplate_state)
 	{
 		turnplate_targetAngle -= 1296;
 		continuous_flag = 0;
@@ -224,7 +220,7 @@ void Booster_Classdef::bulletJam_protection()
 	if ((turnplate_angleloop.Current - turnplate_targetAngle) > 360 * 3.6 * 1.9)
 	{
 		turnplate_targetAngle = turnplate_angleloop.Current + 1296; // 方案一：拨盘回拨一格
-																																//		Turnplate_targetAngle = TurnplateAngleloop.Current; //方案二：拨盘电流为零
+																	//		Turnplate_targetAngle = TurnplateAngleloop.Current; //方案二：拨盘电流为零
 	}
 }
 /**
@@ -272,6 +268,7 @@ uint16_t debug_18rpm = BULLET_SPEED_18;
 uint16_t debug_30rpm = BULLET_SPEED_30;
 void Booster_Classdef::bulletVelocity_adjust()
 {
+	static uint8_t shoot_cnt = 0;
 	static int16_t lastMaxSpeed;
 	float bulletSpeed_target = 0;
 	float reference_friRPM /*参考转速*/;
@@ -279,32 +276,56 @@ void Booster_Classdef::bulletVelocity_adjust()
 	{
 	case 15:
 		reference_friRPM = debug_15rpm;
-		bulletSpeed_target = maxSpeed - 1.0f;
+		bulletSpeed_target = maxSpeed - 1.4f;
 		break;
 	case 18:
 		reference_friRPM = debug_18rpm;
-		bulletSpeed_target = maxSpeed - 1.0f;
+		bulletSpeed_target = maxSpeed - 1.8f;
 		break;
 	case 30:
 		reference_friRPM = debug_30rpm;
-		bulletSpeed_target = maxSpeed - 3.f; // 30射速小发射方差较大，要降低平均射速
-		break;  
+		bulletSpeed_target = maxSpeed - 4.f; // 30射速小发射方差较大，要降低平均射速
+		break;
 	default:
 		reference_friRPM = debug_15rpm;
-		bulletSpeed_target = maxSpeed - 1.0f;
+		bulletSpeed_target = maxSpeed - 1.4f;
 		break;
 	}
 
 	if (lastMaxSpeed != maxSpeed) /*更新最大转速时重置累积值*/
 	{
 		friRPM_accumulation = 0;
+		//清空滤波器
+		shoot_cnt = 0;
+		for (int i = 0;i<SHOOT_FILTER_STEP;i++)
+		{
+			bulletSpeed_meanfilter << 0;
+		}
 	}
 	lastMaxSpeed = maxSpeed;
 
 	if (bulletSpeed != lastBulletSpeed) /*自适应转速,发一发子弹更新一次*/
 	{
-		filter_bulletSpeed = bulletSpeed_filter.f(bulletSpeed);
-		friRPM_accumulation += bulletSpeed_adapt_gain * (bulletSpeed_target - filter_bulletSpeed);
+		bulletSpeed_filter_out = bulletSpeed_meanfilter.f(bulletSpeed);
+		if (bulletSpeed > maxSpeed && maxSpeed!=-1)
+		{
+			friRPM_accumulation -= over_bulletSpeed_punish;//超射速直接给予惩罚
+			if (shoot_cnt < SHOOT_FILTER_STEP)
+			{
+				shoot_cnt++;
+			}
+		}
+		else
+		{
+			if (shoot_cnt < SHOOT_FILTER_STEP)//滤波器未满时不进行修正
+			{
+				shoot_cnt++;
+			}
+			else
+			{
+				friRPM_accumulation += bulletSpeed_adapt_gain * (bulletSpeed_target - bulletSpeed_filter_out);
+			}
+		}
 	}
 	adaptive_fri_wheel_rpm = reference_friRPM + friRPM_accumulation;
 }

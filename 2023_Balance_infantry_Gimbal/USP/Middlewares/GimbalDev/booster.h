@@ -37,6 +37,8 @@
 /*弹舱盖开关限位*/
 #define BULLETBAY_ON (500)
 #define BULLETBAY_OFF (2225)
+/* 弹速自适应滤波长度 */
+#define SHOOT_FILTER_STEP 20
 /* Private type --------------------------------------------------------------*/
 /* Exported macros -----------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -53,10 +55,11 @@ public:
 	myPID turnplate_angleloop;
 	myPID turnplate_speedloop;
 	// 射速自适应
-	float bulletSpeed_adapt_gain = 0; // 射速自适应
-	float filter_bulletSpeed = 0;
+	float over_bulletSpeed_punish = 50;// 超射速惩罚值
+	float bulletSpeed_adapt_gain = 10; // 弹速自适应增益
+	float bulletSpeed_filter_out = 0;//滤波后弹速
 	float friRPM_accumulation = 0; // 自适应累积转速
-	MeanFilter<100> bulletSpeed_filter;
+	MeanFilter<SHOOT_FILTER_STEP> bulletSpeed_meanfilter;
 	/*接口*/
 	void Status_Update(bool *_friState,
 					   bool *_laserState,
@@ -91,6 +94,7 @@ private:
 	bool booster_resetState;
 	/* 弹仓盖开关PWM值 */
 	uint16_t bulletBay_on = BULLETBAY_ON, bulletBay_off = BULLETBAY_OFF;
+
 
 	/*摩擦轮相关函数*/
 	bool fri_on(bool _fri_state);
