@@ -289,7 +289,7 @@ float slider_sposition_kp = 1.258258e+01;
 float slider_sspeed_kp = 1.514036e+00;
 
 	float body_yaw_kp = 0.f;
-	float body_yawSpeed_kp = 1.6f;
+	float body_yawSpeed_kp = 2.f;
 
 	float slider_bias = 0;
 

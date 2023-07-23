@@ -1,5 +1,6 @@
 #include "balance_controller.h"
 #include "math.h"
+#include "SecondButterworthLPF.h"
 
 myPID Cap_Charge_Pid;
 myPID Power_Limit_Pid;
@@ -496,10 +497,10 @@ void Controller<PID>::reset_adjust()
  */
 Controller<LQR>::Controller()
 {
-    set_point_pid.SetPIDParam(-10.0f, 0, 0.0f, 3.0f, 7.f);
+    set_point_pid.SetPIDParam(-10.0f, 0, 0.0f, 3.0f, 8.f);
     rotation_point_pid.SetPIDParam(0, 0.000001f, 0, 0.f, 3.f);
     // slider_follow_pid.SetPIDParam(1000.f, 0, 0.2f, 0, 20000.f);
-    slider_follow_pid.SetPIDParam(-0.f, 0, 0.f, 0, 1.f);
+    slider_follow_pid.SetPIDParam(-5.f, 0, 0.f, 0, 1.f);
 }
 
 /**
@@ -591,7 +592,7 @@ void Controller<LQR>::Controller_Adjust()
 
 void Controller<LQR>::slider_control()
 {
-    static MeanFilter<20> distance_MF;   //距离滤波
+    static MeanFilter<100> distance_MF;   //距离滤波
     static MeanFilter<10> pitch_MF;      //直立滤波
     static MeanFilter<10> pitchSpeed_MF; //角速度滤波
     static MeanFilter<100> speed_MF1;    //速度滤波
@@ -599,21 +600,27 @@ void Controller<LQR>::slider_control()
     static MedianFilter<50> speed_MIF1; //中值滤波
     static MedianFilter<50> speed_MIF2;
     static MeanFilter<20> turn_MF;
-
-    static MeanFilter<10> s_MF[2];
+		static MeanFilter<10> s_MF[2];
     static MeanFilter<10> sspeed_MF[2];
+		
+		static SecondOrderButterworthLPF speed_lpf(10,500);
+		static SecondOrderButterworthLPF distance_lpf(10,500);
+		static SecondOrderButterworthLPF pitch_lpf(10,500);
+		static SecondOrderButterworthLPF pitchSpeed_lpf(10,500);
+		static SecondOrderButterworthLPF s_lpf[2] = {SecondOrderButterworthLPF(10,500),SecondOrderButterworthLPF(10,500)};
+		static SecondOrderButterworthLPF sspeed_lpf[2] = {SecondOrderButterworthLPF(10,500),SecondOrderButterworthLPF(10,500)};
 
     static float last_speed_error = 0;
 
     /*distance*/
-    float distance_error = target_location.y - distance_MF.f(current_location.y);
+    float distance_error = distance_lpf.f(target_location.y - current_location.y);
     /*speed*/
-    float speed_error = target_linearSpeed.y - speed_MF2.f(speed_MF1.f(this->current_linearSpeed.y));
+    float speed_error = speed_lpf.f(target_linearSpeed.y - current_linearSpeed.y);
     // float speed_error = target_linearSpeed.y - speed_MIF1.f(this->current_linearSpeed.y);
     /*pitch*/
-    float pitch_error = target_pos.pitch - pitch_MF.f(this->current_pos.pitch);
+    float pitch_error = pitch_lpf.f(target_pos.pitch - current_pos.pitch);
     /*pitchSpeed*/
-    float pitchSpeed_error = 0 - pitchSpeed_MF.f(current_angularSpeed.pitch);
+    float pitchSpeed_error = 0 - pitchSpeed_lpf.f(current_angularSpeed.pitch);
 
     if (is_rotation)
     {
@@ -629,9 +636,9 @@ void Controller<LQR>::slider_control()
     for (int i = 0; i < 2; i++)
     {
         /*s*/
-        float s_error = 0 - s_MF[i].f(current_sliderLocation[i].y);
+        float s_error = 0 - s_lpf[i].f(current_sliderLocation[i].y);
         /*sspeed*/
-        float sspeed_error = 0 - sspeed_MF[i].f(current_sliderSpeed[i].y);
+        float sspeed_error = 0 - sspeed_lpf[i].f(current_sliderSpeed[i].y);
         output.sliderCtrl_out[i] = distance_error * slider_distance_kp +
                                    speed_error * slider_speed_kp +
                                    pitch_error * slider_pitch_kp +

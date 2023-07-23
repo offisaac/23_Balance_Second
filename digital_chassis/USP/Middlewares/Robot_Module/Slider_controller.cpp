@@ -204,3 +204,10 @@ void SliderControllerClassdef<Motor_GM6020>::setTorqueOut(float _torque[2])
     slider[1].setTorqueOut(_torque[1]);
     acutate();
 }
+
+void SliderControllerClassdef<Motor_GM6020>::setVoltageOut(float _voltage[2])
+{
+		slider[0].setVoltageOut(_voltage[0]/1.2*26000);
+		slider[1].setVoltageOut(_voltage[1]/1.2*26000);
+		acutate();
+}

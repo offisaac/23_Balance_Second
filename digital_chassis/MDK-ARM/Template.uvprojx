@@ -336,7 +336,7 @@
               <MiscControls>--cpp11</MiscControls>
               <Define>USE_HAL_DRIVER,STM32F405xx,ARM_MATH_CM4,__CC_ARM,USE_REFEREE_UI</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Include;../Drivers/CMSIS/DSP/Include;../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../SRML;../USP;../USP/Drivers/Lpms_Be2;../USP/Drivers/MF9025_v2;../USP/Middlewares/Robot_Module;../USP/Middlewares/abstract_class_library;../../digital_Power_LibraryFile</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Include;../Drivers/CMSIS/DSP/Include;../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../SRML;../USP;../USP/Drivers/Lpms_Be2;../USP/Drivers/MF9025_v2;../USP/Middlewares/Robot_Module;../USP/Middlewares/abstract_class_library;../../digital_Power_LibraryFile;..\USP\Middlewares\ButterworthLPF_2</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1673,6 +1673,11 @@
               <FileName>Slider_controller.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\USP\Middlewares\Robot_Module\Slider_controller.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>SecondButterworthLPF.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\USP\Middlewares\ButterworthLPF_2\SecondButterworthLPF.h</FilePath>
             </File>
           </Files>
         </Group>

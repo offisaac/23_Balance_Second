@@ -132,9 +132,9 @@ public:
 		// last_speed_target = speedLoop.Target;
 
 		if (motor_speed == 0)
-			currentLoop.Target = speedLoop.Adjust() + (speedLoop.Target + motor_speed - speedLoop.Current / 6) / f_k + a_k * (speed_target_Diff.calc(speedLoop.Target));
+			currentLoop.Target = speedLoop.Adjust() + (speedLoop.Target + motor_speed * 6 - speedLoop.Current) / f_k + a_k * (speed_target_Diff.calc(speedLoop.Target));
 		else
-			currentLoop.Target = speedLoop.Adjust() + f_c * motor_speed / fabsf(motor_speed) + (speedLoop.Target + motor_speed - speedLoop.Current / 6) / f_k + a_k * (speed_target_Diff.calc(speedLoop.Target));
+			currentLoop.Target = speedLoop.Adjust() + f_c * motor_speed / fabsf(motor_speed) + (speedLoop.Target + motor_speed * 6 - speedLoop.Current) / f_k + a_k * (speed_target_Diff.calc(speedLoop.Target));
 		Out = currentLoop.Adjust() + (currentLoop.Target + m_r * motor_speed) / (0.75f - m_l * motor_speed);
 		return Out;
 	}

@@ -641,7 +641,8 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
 				}
 				else
 				{
-					Slider_Ctrl.setTorqueOut(balance_controller.output.sliderCtrl_out);
+					//Slider_Ctrl.setTorqueOut(balance_controller.output.sliderCtrl_out);
+					Slider_Ctrl.setVoltageOut(balance_controller.output.sliderCtrl_out);
 				}
     }
 

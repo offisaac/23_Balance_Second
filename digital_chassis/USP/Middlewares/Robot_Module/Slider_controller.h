@@ -56,6 +56,7 @@ public:
     void clear();
 
     void setTorqueOut(float _torque[2]);
+		void setVoltageOut(float _voltage[2]);
 };
 
 #endif

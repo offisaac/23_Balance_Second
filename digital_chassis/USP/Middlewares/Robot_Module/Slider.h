@@ -127,7 +127,7 @@ public:
     {
         // absMotor.setMotorTorqueOut(0);
         absMotor.setMotorVoltageOut(0);
-        // absMotor.clearCurrentLoop();
+        absMotor.clearCurrentLoop();
     }
 };
 #endif
