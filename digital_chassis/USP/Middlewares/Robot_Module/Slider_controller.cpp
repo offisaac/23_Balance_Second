@@ -147,7 +147,7 @@ SliderControllerClassdef<Motor_GM6020>::SliderControllerClassdef()
     slider[LEFT_JOINT].speedLoop.I_SeparThresh = 50;
 
     slider[RIGHT_JOINT].setEncoderOffset(4500);
-    slider[LEFT_JOINT].setEncoderOffset(7150);
+    slider[LEFT_JOINT].setEncoderOffset(7000);
 }
 
 void SliderControllerClassdef<Motor_GM6020>::init()
