@@ -258,7 +258,7 @@ void RemoteCtrl_State::Handle_State()
 void KeyboardCtrl_State::Handle_State()
 {
 	context->state_machine = KEYBOARDCTRL;
-	static uint8_t ascent_state, unlimited_state, temp_unlimited, temp_leap; // 底盘判断标志位
+	static uint8_t leap_state, unlimited_state, temp_unlimited, temp_leap; // 底盘判断标志位
 	static uint8_t temp_bulletBay;																					 // 小发射判断标志位
 	static uint8_t temp_turnBack, temp_turn90degrees;												 // 云台判断标志位
 	static uint8_t temp_ws, temp_ad;																				 //辅助车身方向检测
@@ -313,7 +313,7 @@ void KeyboardCtrl_State::Handle_State()
 	}
 
 	/*运动策略*/
-	ascent_state = context->LogicJudge(ascent_state, DR16.IsKeyPress(DR16_KEY_Z), &temp_leap);
+	leap_state = context->LogicJudge(leap_state, DR16.IsKeyPress(DR16_KEY_Z), &temp_leap);
 	unlimited_state = context->LogicJudge(unlimited_state, DR16.IsKeyPress(DR16_KEY_C), &temp_unlimited);
 
 	if (context->board_com.rx_pack2.cap_voltage < 16.0f) // 低电容模式
@@ -328,7 +328,7 @@ void KeyboardCtrl_State::Handle_State()
 		}
 		else
 		{
-			context->cap_mode = (E_CapMode)(ascent_state << 1 | unlimited_state);
+			//context->cap_mode = (E_CapMode)(leap_state << 1 | unlimited_state);
 		}
 	}
 

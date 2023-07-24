@@ -464,6 +464,7 @@ void Balance_Infantry_Classdef::Chassis_Ctrl_Cal()
     debug_C = balance_controller.Get_Data().distance_out;
     debug_D = balance_controller.Get_Data().speed_out;
     debug_E = balance_controller.Get_Data().turn_out;
+		debug_F = slider_s[0];
 }
 
 /**

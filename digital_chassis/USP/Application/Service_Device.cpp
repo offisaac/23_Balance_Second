@@ -205,7 +205,7 @@ void tskOpenlog_send(void *arg)
 	{
 		/* wait for next circle */
 		vTaskDelayUntil(&xLastWakeTime_t, 250);
-		openlog.Send();
+//		openlog.Send();
 	}
 }
 
@@ -222,15 +222,15 @@ void tskLog(void *arg)
 	{
 		/* wait for next circle */
 		vTaskDelay(200);
-    openlog.record("%d,%d,%d,%d,%d,%d,%d,%d\r",Get_SystemTimer()/1000000,
-                                              (int16_t)digital_Power.power.pow_Charge,
-                                              (int8_t)digital_Power.unit_DPW_data.Vcap,
-                                              (int8_t)balance_infantry.gimbal_data.rotation_state,
-                                              (int16_t)(balance_infantry.balance_controller.current_angularSpeed.yaw / ratio_degree_to_rad),
-                                              balance_infantry.Referee.PowerHeatData.chassis_power_buffer,
-                                              balance_infantry.Referee.PowerHeatData.shooter_id1_17mm_cooling_heat,
-                                              (int16_t)balance_infantry.Referee.ShootData.bullet_speed*1000.0f);
-		openlog.push_buff();
+//    openlog.record("%d,%d,%d,%d,%d,%d,%d,%d\r",Get_SystemTimer()/1000000,
+//                                              (int16_t)digital_Power.power.pow_Charge,
+//                                              (int8_t)digital_Power.unit_DPW_data.Vcap,
+//                                              (int8_t)balance_infantry.gimbal_data.rotation_state,
+//                                              (int16_t)(balance_infantry.balance_controller.current_angularSpeed.yaw / ratio_degree_to_rad),
+//                                              balance_infantry.Referee.PowerHeatData.chassis_power_buffer,
+//                                              balance_infantry.Referee.PowerHeatData.shooter_id1_17mm_cooling_heat,
+//                                              (int16_t)balance_infantry.Referee.ShootData.bullet_speed*1000.0f);
+//		openlog.push_buff();
 	}
 }
 

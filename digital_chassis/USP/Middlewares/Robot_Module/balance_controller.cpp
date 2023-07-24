@@ -525,7 +525,6 @@ void Controller<LQR>::Controller_Adjust()
                                 /*setpoint倾角辅助*/
         slider_control();       //滑块控制
         output.set_point_out = self_adaption() * ratio_degree2rad;
-        debug_out_F = output.set_point_out;
         if (weightless_flag)
         {
             target_pos.pitch = balance_point;
@@ -572,7 +571,6 @@ void Controller<LQR>::Controller_Adjust()
             distance_enable = false;
         }
         output.distance_out = torque_scale * distance_adjust();
-        debug_out_A = output.distance_out;
         /*转向环*/
         output.turn_out = turn_scale * turn_adjust();
         if (is_rotation == 0)
@@ -592,7 +590,7 @@ void Controller<LQR>::Controller_Adjust()
 
 void Controller<LQR>::slider_control()
 {
-    static MeanFilter<100> distance_MF;   //距离滤波
+    static MeanFilter<50> distance_MF;   //距离滤波
     static MeanFilter<10> pitch_MF;      //直立滤波
     static MeanFilter<10> pitchSpeed_MF; //角速度滤波
     static MeanFilter<100> speed_MF1;    //速度滤波
@@ -605,22 +603,25 @@ void Controller<LQR>::slider_control()
 		
 		static SecondOrderButterworthLPF speed_lpf(10,500);
 		static SecondOrderButterworthLPF distance_lpf(10,500);
-		static SecondOrderButterworthLPF pitch_lpf(10,500);
-		static SecondOrderButterworthLPF pitchSpeed_lpf(10,500);
-		static SecondOrderButterworthLPF s_lpf[2] = {SecondOrderButterworthLPF(10,500),SecondOrderButterworthLPF(10,500)};
-		static SecondOrderButterworthLPF sspeed_lpf[2] = {SecondOrderButterworthLPF(10,500),SecondOrderButterworthLPF(10,500)};
+		static SecondOrderButterworthLPF pitch_lpf(5,500);
+		static SecondOrderButterworthLPF pitchSpeed_lpf(5,500);
+		static SecondOrderButterworthLPF s_lpf[2] = {SecondOrderButterworthLPF(5,500),SecondOrderButterworthLPF(5,500)};
+		static SecondOrderButterworthLPF sspeed_lpf[2] = {SecondOrderButterworthLPF(5,500),SecondOrderButterworthLPF(5,500)};
 
     static float last_speed_error = 0;
 
     /*distance*/
-    float distance_error = distance_lpf.f(target_location.y - current_location.y);
+    float distance_error = distance_MF.f(target_location.y - current_location.y);
     /*speed*/
     float speed_error = speed_lpf.f(target_linearSpeed.y - current_linearSpeed.y);
     // float speed_error = target_linearSpeed.y - speed_MIF1.f(this->current_linearSpeed.y);
     /*pitch*/
     float pitch_error = pitch_lpf.f(target_pos.pitch - current_pos.pitch);
     /*pitchSpeed*/
-    float pitchSpeed_error = 0 - pitchSpeed_lpf.f(current_angularSpeed.pitch);
+    float pitchSpeed_error = pitchSpeed_lpf.f(0 - current_angularSpeed.pitch);
+		
+		float s_error;
+		float sspeed_error;
 
     if (is_rotation)
     {
@@ -636,9 +637,9 @@ void Controller<LQR>::slider_control()
     for (int i = 0; i < 2; i++)
     {
         /*s*/
-        float s_error = 0 - s_lpf[i].f(current_sliderLocation[i].y);
+        s_error = 0 - s_MF[i].f(current_sliderLocation[i].y);
         /*sspeed*/
-        float sspeed_error = 0 - sspeed_lpf[i].f(current_sliderSpeed[i].y);
+        sspeed_error = 0 - sspeed_MF[i].f(current_sliderSpeed[i].y);
         output.sliderCtrl_out[i] = distance_error * slider_distance_kp +
                                    speed_error * slider_speed_kp +
                                    pitch_error * slider_pitch_kp +
@@ -653,6 +654,13 @@ void Controller<LQR>::slider_control()
     slider_follow_pid.Adjust();
     output.sliderCtrl_out[0] -= slider_follow_pid.Out;
     output.sliderCtrl_out[1] += slider_follow_pid.Out;
+		
+		debug_out_A = distance_error;
+		debug_out_B = speed_error;
+		debug_out_C = pitch_error;
+		debug_out_D = pitchSpeed_error;
+		debug_out_F = s_error;
+		debug_out_G = sspeed_error;
 }
 
 /**
@@ -765,11 +773,11 @@ float Controller<LQR>::self_adaption()
     //没有做前后适应
     if (is_leap)
     {
-			if (current_linearSpeed.y > 3.0f && leapState == false)
+			if (current_linearSpeed.y > 2.8f && leapState == false)
 			{
 					leapState = true;
 			}
-			else if (current_linearSpeed.y < 1.5f && leapState == true)
+			else if (current_linearSpeed.y < 1.4f && leapState == true)
 			{
 					leapState = false;
 			}

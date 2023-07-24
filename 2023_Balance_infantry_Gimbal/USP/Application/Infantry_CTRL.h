@@ -134,8 +134,8 @@ enum E_CapMode
 {
 	NORMAL = 0,
 	UNLIMITED = 1, // 超功率
-	ASCENT = 2,	   // 上坡
-	LEAP = 3,	   // 飞坡
+	LEAP = 2,	   // 飞坡
+	ASCENT = 3,	   // 上坡
 };
 
 /*视觉模式*/

@@ -93,27 +93,27 @@ void UpperMonitor_Sent_Choose(float *data)
   {
     switch (USART0_Sent_Choose_Data[i])
     {
-    case 0:
-      data[i] = balance_infantry.LPMS.get_data().Euler_Pitch;
-      break;
-    case 1:
-      data[i] = balance_infantry.balance_controller.target_pos.pitch;
-      break;
-    case 2:
-      data[i] = balance_infantry.balance_controller.current_linearAcc.z;
-      break;
-    case 3:
-      data[i] = balance_infantry.balance_controller.current_sliderLocation[0].y;
-      break;
-    case 4:
-      data[i] = balance_infantry.balance_controller.current_sliderLocation[1].y;
-      break;
-    case 5:
-      data[i] = balance_infantry.balance_controller.current_sliderSpeed[0].y;
-      break;
-    case 6:
-      data[i] = balance_infantry.balance_controller.current_sliderSpeed[1].y;
-      break;
+    // case 0:
+    //   data[i] = balance_infantry.LPMS.get_data().Euler_Pitch;
+    //   break;
+    // case 1:
+    //   data[i] = balance_infantry.balance_controller.target_pos.pitch;
+    //   break;
+    // case 2:
+    //   data[i] = balance_infantry.balance_controller.current_linearAcc.z;
+    //   break;
+    // case 3:
+    //   data[i] = balance_infantry.balance_controller.current_sliderLocation[0].y;
+    //   break;
+    // case 4:
+    //   data[i] = balance_infantry.balance_controller.current_sliderLocation[1].y;
+    //   break;
+    // case 5:
+    //   data[i] = balance_infantry.balance_controller.current_sliderSpeed[0].y;
+    //   break;
+    // case 6:
+    //   data[i] = balance_infantry.balance_controller.current_sliderSpeed[1].y;
+    //   break;
       //      /* 腾空及空转检测 */
       //      case 0: data[i]= balance_infantry.balance_controller.current_linearSpeed.y;//直立环输出
       //      break;
@@ -214,6 +214,28 @@ void UpperMonitor_Sent_Choose(float *data)
       //			case 8: data[i] = balance_infantry.balance_controller.angle_error;
       //				break;
       //			default:break;
+
+      case 0: data[i] = debug_out_A;
+          break;
+      case 1: data[i] = debug_out_B;
+          break;
+      case 2: data[i] = debug_out_C;
+          break;
+      case 3: data[i] = debug_out_D;
+          break;
+      case 4: data[i] = debug_out_E;
+          break;
+      case 5: data[i] = debug_out_F;
+          break;
+      case 6: data[i] = debug_out_G;
+          break;
+			case 7: data[i] = balance_infantry.balance_controller.current_sliderLocation[0].y;
+					break;
+			case 8: data[i] = debug_F;
+					break;
+
+      default:
+          break;
 
       /* 以上部分用于观察参数曲线 */
     }
