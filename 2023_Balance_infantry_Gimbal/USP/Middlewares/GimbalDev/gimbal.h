@@ -157,6 +157,7 @@ public:
 	Motor_GM6020 pitchMotor = Motor_GM6020(ID_PITCH);
 	Motor_GM6020 yawMotor = Motor_GM6020(ID_YAW);
 	/*创建pid对象*/
+	myPID pitch_currentloop;
 	myPID pitch_speedloop;
 	myPID pitch_angleloop;
 	myPID yaw_speedloop;

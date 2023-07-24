@@ -598,8 +598,8 @@ void Controller<LQR>::slider_control()
     static MedianFilter<50> speed_MIF1; //中值滤波
     static MedianFilter<50> speed_MIF2;
     static MeanFilter<20> turn_MF;
-		static MeanFilter<10> s_MF[2];
-    static MeanFilter<10> sspeed_MF[2];
+		static MeanFilter<25> s_MF[2];
+    static MeanFilter<25> sspeed_MF[2];
 		
 		static SecondOrderButterworthLPF speed_lpf(10,500);
 		static SecondOrderButterworthLPF distance_lpf(10,500);

@@ -231,6 +231,15 @@ float ta_o = 0;		 //三角波幅值
 uint16_t ta_f = 1; //频率
 int16_t ta_count = 0;
 float t = 0;
+uint8_t debug_switch = 0;
+
+float m_r = 53.f;
+float m_l = 0.0004f;
+//速度环
+float speed_kp = -150;
+float speed_ki = -1000;
+float speed_imax = 1000;
+float speed_omax = 17000;
 void Gimbal_Classdef::gimbal_pid_calculate()
 {
 	pitch_controller.SetAngleloopParams(25,300);
@@ -318,6 +327,20 @@ void Gimbal_Classdef::gimbal_pid_calculate()
 	/*生成正弦波*/
 	// yaw_out = 200 + 50 * sinf(3 * sin_w * t) + 100 * sinf(sin_w * t);
 	// yaw_out = 50 * sinf(sin_w * t);
+	if(debug_switch)
+	{
+		pitch_speedloop.Target = yaw_out;
+	}
+	else
+	{
+		pitch_speedloop.Target = 0;
+	}
+	pitch_speedloop.Current = angular_velocity_pitch;
+	pitch_speedloop.SetPIDParam(speed_kp,speed_ki,0,speed_imax,speed_omax,speed_omax);
+	pitch_currentloop.Target = pitch_speedloop.Adjust() + 116.2253f * current_pitch - 994.4664f;
+	pitch_currentloop.Current = pitchMotor.givenCurrent;
+	pitch_currentloop.SetPIDParam(0.25,50,0,3000,30000,30000);
+	//pitchMotor.Out = pitch_currentloop.Adjust() + (pitch_currentloop.Target + m_r * pitchMotor.getSpeed()) / (0.75f - m_l * pitchMotor.getSpeed());
 }
 /**
  * @brief yaw角度计算
