@@ -178,7 +178,7 @@ public:
 	bool reset_state, ui_reset_flag, gg_flag, vision_mode_flag1 = 1, vision_mode_flag2 = 1; // 通用：  遥控保护标志位、刷新ui标志位、手动复位标志位、视觉模式1，视觉模式2
 	bool fri_state = 0, laser_state = 0, turnplate_state = 0, bulletBay_state = 0;	// 小发射：摩擦轮、激光、拨盘、弹舱盖标志位
 	uint8_t rotation_state = 0, keyboard_state = 0;									// 底盘：  小陀螺、键盘操控标志位
-	uint8_t turn90degrees, self_rescue_state, sliding_remake;						// 平衡步：侧身90°标志位，固连自救标志位、滑块复位键
+	uint8_t turn90degrees,turn_way, self_rescue_state, sliding_remake;						// 平衡步：侧身90°标志位，固连自救标志位、滑块复位键
 
 	/*视觉实际发射指令*/
 	uint8_t fact_vision_can_shoot = 0;

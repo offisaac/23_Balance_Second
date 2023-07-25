@@ -598,8 +598,8 @@ void Controller<LQR>::slider_control()
     static MedianFilter<50> speed_MIF1; //中值滤波
     static MedianFilter<50> speed_MIF2;
     static MeanFilter<20> turn_MF;
-		static MeanFilter<25> s_MF[2];
-    static MeanFilter<25> sspeed_MF[2];
+		static MeanFilter<40> s_MF[2];
+    static MeanFilter<40> sspeed_MF[2];
 		
 		static SecondOrderButterworthLPF speed_lpf(10,500);
 		static SecondOrderButterworthLPF distance_lpf(10,500);
@@ -616,9 +616,9 @@ void Controller<LQR>::slider_control()
     float speed_error = speed_lpf.f(target_linearSpeed.y - current_linearSpeed.y);
     // float speed_error = target_linearSpeed.y - speed_MIF1.f(this->current_linearSpeed.y);
     /*pitch*/
-    float pitch_error = pitch_lpf.f(target_pos.pitch - current_pos.pitch);
+    float pitch_error = pitch_MF.f(target_pos.pitch - current_pos.pitch);
     /*pitchSpeed*/
-    float pitchSpeed_error = pitchSpeed_lpf.f(0 - current_angularSpeed.pitch);
+    float pitchSpeed_error = pitchSpeed_MF.f(0 - current_angularSpeed.pitch);
 		
 		float s_error;
 		float sspeed_error;

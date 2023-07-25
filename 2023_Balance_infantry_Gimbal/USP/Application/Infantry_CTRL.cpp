@@ -63,8 +63,8 @@ void InfantryCTRL_Classdef::Infantry_Config()
 	booster.turnplate_speedloop.SetPIDParam(20.0f, 0.0f, 0.0f, 7000.0, 10000.0f, 8000.0f); // 20.0f,0.0f,0.0f,7000.0,8000.0f
 	booster.turnplate_angleloop.SetPIDParam(10.0f, 0.0f, 0.02f, 0, 10000.0f, 8000.0f);		 // 10.0f,0.0f,0.05f,0,8000.0f
 	/*云台pid参数*/
-	gimbal.pitch_angleloop.SetPIDParam(-3000,-72000,200,3000,10000,30000);
-	gimbal.yaw_angleloop.SetPIDParam(6000,30000,-420,3000,150000,30000);
+	gimbal.pitch_angleloop.SetPIDParam(-3000, -72000, 200, 3000, 10000, 30000);
+	gimbal.yaw_angleloop.SetPIDParam(6000, 30000, -420, 3000, 150000, 30000);
 	gimbal.yaw_controller.SetAngleloopParams(18, 500);
 	gimbal.yaw_controller.SetSpeedloopParams(120, 1000, 300, 30000, 400);
 	gimbal.yaw_controller.SetCurrentloopParams(0.25, 50, 3000, 30000, 120000);
@@ -259,9 +259,10 @@ void KeyboardCtrl_State::Handle_State()
 {
 	context->state_machine = KEYBOARDCTRL;
 	static uint8_t leap_state, unlimited_state, temp_unlimited, temp_leap; // 底盘判断标志位
-	static uint8_t temp_bulletBay;																					 // 小发射判断标志位
-	static uint8_t temp_turnBack, temp_turn90degrees;												 // 云台判断标志位
-	static uint8_t temp_ws, temp_ad;																				 //辅助车身方向检测
+	static uint8_t last_leap, last_unlimited;
+	static uint8_t temp_bulletBay;										// 小发射判断标志位
+	static uint8_t temp_turnBack, temp_turn90degrees; // 云台判断标志位
+	static uint8_t temp_ws, temp_ad;									//辅助车身方向检测
 	static uint8_t temp_self_rescue;
 	static int16_t gg_mode, gimbal_gg_delay_cnt = 0; // 云台延时复位，确保gg_flag下发到底盘
 
@@ -306,10 +307,36 @@ void KeyboardCtrl_State::Handle_State()
 	if (context->LogicJudge(0, DR16.IsKeyPress(DR16_KEY_W) || DR16.IsKeyPress(DR16_KEY_S), &temp_ws))
 	{
 		context->turn90degrees = false;
+		context->turn_way = 1;
 	}
 	else if (context->LogicJudge(0, DR16.IsKeyPress(DR16_KEY_A) || DR16.IsKeyPress(DR16_KEY_D), &temp_ad))
 	{
+		if (context->turn90degrees == false)
+		{
+			if (DR16.IsKeyPress(DR16_KEY_A))
+				context->turn_way = 1;
+			else if (DR16.IsKeyPress(DR16_KEY_D))
+				context->turn_way = 0;
+		}
 		context->turn90degrees = true;
+	}
+	/*按V，平衡步侧身90°*/
+	context->turn90degrees = context->LogicJudge(context->turn90degrees, DR16.IsKeyPress(DR16_KEY_V), &temp_turn90degrees);
+	if (context->turn90degrees && context->self_rescue_state == false)
+	{
+		// context->y_data = DR16.IsKeyPress(DR16_KEY_D);
+		// context->y_back_data = DR16.IsKeyPress(DR16_KEY_A);
+		// context->gimbal.yawMotor.setEncoderOffset((YAW_OFFSET + 2048) % 8192); // 确保不会超出8192
+		if (context->turn_way == 1)
+			context->chassisCTRL.chassis_yawAngle.Target = -90;
+		else
+			context->chassisCTRL.chassis_yawAngle.Target = 90;
+	}
+	else
+	{
+		// context->gimbal.yawMotor.setEncoderOffset(YAW_OFFSET);
+
+		context->chassisCTRL.chassis_yawAngle.Target = 0;
 	}
 
 	/*运动策略*/
@@ -328,26 +355,22 @@ void KeyboardCtrl_State::Handle_State()
 		}
 		else
 		{
-			//context->cap_mode = (E_CapMode)(leap_state << 1 | unlimited_state);
+			// context->cap_mode = (E_CapMode)(leap_state << 1 | unlimited_state);
+			if (leap_state != last_leap)
+			{
+				context->cap_mode = (E_CapMode)(leap_state << 1);
+				unlimited_state = false;
+			}
+			else if (unlimited_state != last_unlimited)
+			{
+				context->cap_mode = (E_CapMode)(unlimited_state);
+				leap_state = false;
+			}
 		}
 	}
+	last_leap = leap_state;
+	last_unlimited = unlimited_state;
 
-	/*按V，平衡步侧身90°*/
-	context->turn90degrees = context->LogicJudge(context->turn90degrees, DR16.IsKeyPress(DR16_KEY_V), &temp_turn90degrees);
-	if (context->turn90degrees && context->self_rescue_state == false)
-	{
-		// context->y_data = DR16.IsKeyPress(DR16_KEY_D);
-		// context->y_back_data = DR16.IsKeyPress(DR16_KEY_A);
-		// context->gimbal.yawMotor.setEncoderOffset((YAW_OFFSET + 2048) % 8192); // 确保不会超出8192
-
-		context->chassisCTRL.chassis_yawAngle.Target = 90;
-	}
-	else
-	{
-		// context->gimbal.yawMotor.setEncoderOffset(YAW_OFFSET);
-
-		context->chassisCTRL.chassis_yawAngle.Target = 0;
-	}
 	/*按ctrl+s，滑块软件复位*/
 	context->sliding_remake = (DR16.IsKeyPress(DR16_KEY_Z) && DR16.IsKeyPress(DR16_KEY_CTRL));
 	/*按ctrl+c，开启固连自救*/
@@ -729,7 +752,7 @@ void InfantryCTRL_Classdef::Actuate()
 	/*视觉*/
 	pc_vision.SendGimbleStatus();
 	/*底盘板间通信*/
-	//enable_cmd = false;
+	// enable_cmd = false;
 #if BALANCE_INFANTRY
 	board_com.Set_BalanceInfanty_Flag(DR16.GetStatus(),
 																		cap_mode == UNLIMITED,
