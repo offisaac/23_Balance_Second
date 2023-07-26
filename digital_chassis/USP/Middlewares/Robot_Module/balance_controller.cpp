@@ -590,7 +590,7 @@ void Controller<LQR>::Controller_Adjust()
 
 void Controller<LQR>::slider_control()
 {
-    static MeanFilter<50> distance_MF;   //距离滤波
+    static MeanFilter<30> distance_MF;   //距离滤波
     static MeanFilter<10> pitch_MF;      //直立滤波
     static MeanFilter<10> pitchSpeed_MF; //角速度滤波
     static MeanFilter<100> speed_MF1;    //速度滤波
@@ -598,8 +598,8 @@ void Controller<LQR>::slider_control()
     static MedianFilter<50> speed_MIF1; //中值滤波
     static MedianFilter<50> speed_MIF2;
     static MeanFilter<20> turn_MF;
-		static MeanFilter<40> s_MF[2];
-    static MeanFilter<40> sspeed_MF[2];
+		static MeanFilter<10> s_MF[2];
+    static MeanFilter<10> sspeed_MF[2];
 		
 		static SecondOrderButterworthLPF speed_lpf(10,500);
 		static SecondOrderButterworthLPF distance_lpf(10,500);
@@ -613,7 +613,7 @@ void Controller<LQR>::slider_control()
     /*distance*/
     float distance_error = distance_MF.f(target_location.y - current_location.y);
     /*speed*/
-    float speed_error = speed_lpf.f(target_linearSpeed.y - current_linearSpeed.y);
+    float speed_error = std_lib::constrain(speed_lpf.f(target_linearSpeed.y - current_linearSpeed.y),-2.5f,2.5f);
     // float speed_error = target_linearSpeed.y - speed_MIF1.f(this->current_linearSpeed.y);
     /*pitch*/
     float pitch_error = pitch_MF.f(target_pos.pitch - current_pos.pitch);

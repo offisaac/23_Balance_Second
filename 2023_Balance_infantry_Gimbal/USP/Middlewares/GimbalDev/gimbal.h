@@ -73,27 +73,39 @@ class gimbal_motor_newController
 {
 private:
 	DiffCalculator<1> speed_target_Diff;
-	SecondOrderButterworthLPF speed_target_lpf;
-	// float last_speed_target = 0;
+	SecondOrderButterworthLPF *angle_target_lpf = nullptr;
+	SecondOrderButterworthLPF *speed_target_lpf = nullptr;
 	float motor_speed = 0;
 
 public:
-	gimbal_motor_newController() : speed_target_lpf(20, 1000) {}
+	gimbal_motor_newController() {}
 
 	myPID angleLoop;
 	myPID speedLoop;
 	myPID currentLoop;
 	/** 控制器参数 **/
+	//重力矩前馈
+	float mg_k = 0; //斜率
+	float mg_c = 0; //截距
 	//电流环前馈
 	float m_r = 55;			 //电机电阻对应线性化参数
 	float m_l = 0.0004f; //电机电容对应线性化参数
 	//速度环前馈
-	float f_c = 536;	//补偿摩擦力
-	float f_k = 3.72; //补偿摩擦力
-	float a_k = 4.4;	//用于补偿转动惯量的加速力矩，调信号跟踪性能
-	// float speed_errormax = 10;
+	float f_c = 536;			//补偿摩擦力
+	float f_k = 1 / 3.72; //补偿摩擦力
+	float a_k = 4.4;			//用于补偿转动惯量的加速力矩，调信号跟踪性能
 
 	float Out = 0;
+
+	void LoadAngleLPF(SecondOrderButterworthLPF *_lpf)
+	{
+		angle_target_lpf = _lpf;
+	}
+
+	void LoadSpeedLPF(SecondOrderButterworthLPF *_lpf)
+	{
+		speed_target_lpf = _lpf;
+	}
 
 	void update_current_state(float current_angle, float current_angle_speed, float current_motor_current, float _motor_speed)
 	{
@@ -105,7 +117,33 @@ public:
 
 	void update_target_angle(float target_angle)
 	{
-		angleLoop.Target = target_angle;
+		if (angle_target_lpf != nullptr)
+		{
+			angleLoop.Target = angle_target_lpf->f(target_angle);
+		}
+		else
+		{
+			angleLoop.Target = target_angle;
+		}
+	}
+
+	void SetCurrentFeedForward(float _m_r, float _m_l)
+	{
+		m_r = _m_r;
+		m_l = _m_l;
+	}
+
+	void SetSpeedFeedForward(float _f_c, float _f_k, float _a_k)
+	{
+		f_c = _f_c;
+		f_k = _f_k;
+		a_k = _a_k;
+	}
+
+	void SetMgFeedForward(float _mg_k, float _mg_c)
+	{
+		mg_k = _mg_k;
+		mg_c = _mg_c;
 	}
 
 	void SetAngleloopParams(float kp, float omax)
@@ -119,22 +157,34 @@ public:
 		speedLoop.I_SeparThresh = ist;
 	}
 
-	void SetCurrentloopParams(float kp,float ki, float imax,float omax, float ist)
+	void SetCurrentloopParams(float kp, float ki, float imax, float omax, float ist)
 	{
-		currentLoop.SetPIDParam(kp,ki,0,imax,omax,omax);
+		currentLoop.SetPIDParam(kp, ki, 0, imax, omax, omax);
 		currentLoop.I_SeparThresh = ist;
 	}
 
 	float adjust()
 	{
-		speedLoop.Target = speed_target_lpf.f(angleLoop.Adjust());
-		// speedLoop.Target = std_lib::constrain(speedLoop.Target , last_speed_target - speed_errormax , last_speed_target + speed_errormax);
-		// last_speed_target = speedLoop.Target;
+		if (speed_target_lpf != nullptr)
+		{
+			speedLoop.Target = speed_target_lpf->f(angleLoop.Adjust());
+		}
+		else
+		{
+			speedLoop.Target = angleLoop.Adjust();
+		}
 
 		if (motor_speed == 0)
-			currentLoop.Target = speedLoop.Adjust() + (speedLoop.Target + motor_speed * 6 - speedLoop.Current) / f_k + a_k * (speed_target_Diff.calc(speedLoop.Target));
+			currentLoop.Target = speedLoop.Adjust() + 
+														f_k * (speedLoop.Target + motor_speed * 6 - speedLoop.Current) + 
+														a_k * (speed_target_Diff.calc(speedLoop.Target)) +
+														mg_k * angleLoop.Current + mg_c;
 		else
-			currentLoop.Target = speedLoop.Adjust() + f_c * motor_speed / fabsf(motor_speed) + (speedLoop.Target + motor_speed * 6 - speedLoop.Current) / f_k + a_k * (speed_target_Diff.calc(speedLoop.Target));
+			currentLoop.Target = speedLoop.Adjust() + 
+														f_c * motor_speed / fabsf(motor_speed) + 
+														f_k * (speedLoop.Target + motor_speed * 6 - speedLoop.Current) + 
+														a_k * (speed_target_Diff.calc(speedLoop.Target)) +
+														mg_k * angleLoop.Current + mg_c;
 		Out = currentLoop.Adjust() + (currentLoop.Target + m_r * motor_speed) / (0.75f - m_l * motor_speed);
 		return Out;
 	}
@@ -149,9 +199,16 @@ public:
 		yawMotor.setEncoderOffset(_yaw_offset);
 		pitchMotor.setEncoderOffset(_pitch_offset);
 
-		pitch_controller.f_c = 0;
-		pitch_controller.f_k = 0;
-		pitch_controller.a_k = 0;
+		pitch_controller.LoadAngleLPF(&pitchAngleLPF);
+		pitch_controller.LoadSpeedLPF(&pitchSpeedLPF);
+		pitch_controller.SetCurrentFeedForward(53, 0.0004f);
+		pitch_controller.SetSpeedFeedForward(240, 4.8f, 2.15f);
+		pitch_controller.SetMgFeedForward(116.2253f, - 994.4664f + 231.1759f);
+
+		yaw_controller.LoadAngleLPF(&yawAngleLPF);
+		yaw_controller.LoadSpeedLPF(&yawSpeedLPF);
+		yaw_controller.SetCurrentFeedForward(55, 0.0004f);
+		yaw_controller.SetSpeedFeedForward(536, 1 / 3.72f, 4.4f);
 	}
 	/*创建电机对象*/
 	Motor_GM6020 pitchMotor = Motor_GM6020(ID_PITCH);
@@ -166,6 +223,12 @@ public:
 
 	gimbal_motor_newController yaw_controller;
 	gimbal_motor_newController pitch_controller;
+
+	/*控制滤波器*/
+	SecondOrderButterworthLPF pitchAngleLPF = {SecondOrderButterworthLPF(5, 1000)};
+	SecondOrderButterworthLPF pitchSpeedLPF = {SecondOrderButterworthLPF(10, 1000)};
+	SecondOrderButterworthLPF yawAngleLPF = {SecondOrderButterworthLPF(5, 1000)};
+	SecondOrderButterworthLPF yawSpeedLPF = {SecondOrderButterworthLPF(20, 1000)};
 
 	/*接口*/
 	void Status_Update(float *_pitchData, float *_yawData, bool *_resetState);
