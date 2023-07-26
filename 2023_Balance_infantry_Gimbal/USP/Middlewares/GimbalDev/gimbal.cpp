@@ -233,24 +233,33 @@ int16_t ta_count = 0;
 float t = 0;
 uint8_t debug_switch = 0;
 
-float m_r = 53.f;
-float m_l = 0.0004f;
-//速度环
-float speed_kp = -150;
-float speed_ki = -1000;
-float speed_imax = 1000;
-float speed_omax = 17000;
+// float m_r = 53.f;
+// float m_l = 0.0004f;
+// //速度环
+// float speed_kp = 80;
+// float speed_ki = 6000;
+// float speed_imax = 400;
+// float speed_omax = 17000;
+// float f_k = 4.8f;//粘滞摩擦力斜率补偿(4.6
+// float f_c = 240;//静摩擦补偿(230
+// float a_k = 2.15f;//转动惯量补偿
+// //float f_k = 4.f;//粘滞摩擦力斜率补偿(4.6
+// //float f_c = 200;//静摩擦补偿(230
+// //float a_k = 4.f;//转动惯量补偿
+// //角度环
+// float angle_kp = -17;
+// float angle_omax = 500;
+//粘滞摩擦系数辨识
+float safe_angle = 24.f;//安全区域，也就是openlog记录的范围
+float stop_angle = 26.f;//停车位置，云台停转
 void Gimbal_Classdef::gimbal_pid_calculate()
 {
-	pitch_controller.SetAngleloopParams(25,300);
-	pitch_controller.SetSpeedloopParams(150,2000,1000,30000,400);
-	pitch_controller.SetCurrentloopParams(0.25,50,3000,30000,120000);
 	t = Get_SystemTimer() * 0.000001f;
 	/*更新当前值，并考虑切换不同的反馈通路*/
 	if (feedback_by == ENCODER)
 	{
 		pitch_angleloop.Current = -pitchMotor.getAngle();
-		pitch_controller.update_current_state(-pitchMotor.getAngle(),angular_velocity_pitch,pitchMotor.givenCurrent,yawMotor.getSpeed());
+		pitch_controller.update_current_state(-pitchMotor.getAngle(),-angular_velocity_pitch,pitchMotor.givenCurrent,yawMotor.getSpeed());
 		/*以最小角度跟随*/
 		yaw_controller.update_current_state(int(yawMotor.getAngle()) % 360, angular_velocity_yaw, yawMotor.givenCurrent, yawMotor.getSpeed());
 		yaw_angleloop.Current = int(yawMotor.getAngle()) % 360;
@@ -275,7 +284,7 @@ void Gimbal_Classdef::gimbal_pid_calculate()
 	else
 	{
 		pitch_angleloop.Current = current_pitch;
-		pitch_controller.update_current_state(current_pitch,angular_velocity_pitch,pitchMotor.givenCurrent,yawMotor.getSpeed());
+		pitch_controller.update_current_state(current_pitch,-angular_velocity_pitch,pitchMotor.givenCurrent,yawMotor.getSpeed());
 		yaw_controller.update_current_state(total_yaw, angular_velocity_yaw, yawMotor.givenCurrent, yawMotor.getSpeed());
 		yaw_angleloop.Current = total_yaw;
 	}
@@ -289,9 +298,9 @@ void Gimbal_Classdef::gimbal_pid_calculate()
 	yaw_controller.update_target_angle(yaw_target);
 
 	/*计算输出值*/
-	pitchMotor.Out = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + 116.7360f * current_pitch + 668.5741f; // old
+	//pitchMotor.Out = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + 116.7360f * current_pitch - 763.2905f; // old
 	//	pitchMotor.Out = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + 51.38340f * current_pitch  - 438.2411f;//new
-	//pitchMotor.Out = pitch_controller.adjust() + 116.7360f * current_pitch + 668.5741f;
+	pitchMotor.Out = pitch_controller.adjust();
 
 	//yawMotor.Out = yaw_angleloop.Adjust_importDiff(angular_velocity_yaw);
 	yawMotor.Out = yaw_controller.adjust();
@@ -324,23 +333,56 @@ void Gimbal_Classdef::gimbal_pid_calculate()
 	// 	ta_count = 0;
 	// }
 
+	// static DiffCalculator<1> speed_target_Diff;
+	// static SecondOrderButterworthLPF angle_t_lpf(5,1000);
+	// static SecondOrderButterworthLPF angleOut_lpf(10,1000);
 	/*生成正弦波*/
 	// yaw_out = 200 + 50 * sinf(3 * sin_w * t) + 100 * sinf(sin_w * t);
-	// yaw_out = 50 * sinf(sin_w * t);
-	if(debug_switch)
-	{
-		pitch_speedloop.Target = yaw_out;
-	}
-	else
-	{
-		pitch_speedloop.Target = 0;
-	}
-	pitch_speedloop.Current = angular_velocity_pitch;
-	pitch_speedloop.SetPIDParam(speed_kp,speed_ki,0,speed_imax,speed_omax,speed_omax);
-	pitch_currentloop.Target = pitch_speedloop.Adjust() + 116.2253f * current_pitch - 994.4664f;
-	pitch_currentloop.Current = pitchMotor.givenCurrent;
-	pitch_currentloop.SetPIDParam(0.25,50,0,3000,30000,30000);
-	//pitchMotor.Out = pitch_currentloop.Adjust() + (pitch_currentloop.Target + m_r * pitchMotor.getSpeed()) / (0.75f - m_l * pitchMotor.getSpeed());
+//	yaw_out = 200 * sinf(4 * sin_w * t);//30 2	20 3
+//	if(debug_switch)
+//	{
+//		pitch_speedloop.Target = -yaw_out;
+//	}
+//	else
+//	{
+//		pitch_speedloop.Target = 0;
+//	}
+	// pitch_angleloop.SetPIDParam(angle_kp,0,0,0,angle_omax,angle_omax);
+	// pitch_angleloop.Target = angle_t_lpf.f(pitch_target);
+	// //pitch_angleloop.Target = pitch_target;
+	// pitch_angleloop.Current = current_pitch;
+	// pitch_speedloop.Target = angleOut_lpf.f(pitch_angleloop.Adjust());
+	// pitch_speedloop.Current = -angular_velocity_pitch;//陀螺仪与电机极性相反，参数都为正时，目标值和当前值为正输入取反
+	// pitch_speedloop.SetPIDParam(speed_kp,speed_ki,0,speed_imax,speed_omax,speed_omax);
+	// //pitch_speedloop.SetPIDParam(0,0,0,0,0,0);
+	// if(pitchMotor.getSpeed() == 0)
+	// {
+	// 	pitch_currentloop.Target = pitch_speedloop.Adjust() +
+	// 														116.2253f * current_pitch - 994.4664f + 231.1759f +	//重力矩补偿
+	// 														f_k * (pitch_speedloop.Target + pitchMotor.getSpeed() * 6 - pitch_speedloop.Current) +	//动态粘滞摩擦补偿
+	// 														a_k * (speed_target_Diff.calc(pitch_speedloop.Target));
+	// }
+	// else
+	// {
+	// 	pitch_currentloop.Target = pitch_speedloop.Adjust() +
+	// 														116.2253f * current_pitch - 994.4664f + 231.1759f +	//重力矩补偿
+	// 														f_c * pitchMotor.getSpeed()/abs(pitchMotor.getSpeed()) +	//库仑静摩擦补偿
+	// 														f_k * (pitch_speedloop.Target + pitchMotor.getSpeed() * 6 - pitch_speedloop.Current) +	//动态粘滞摩擦补偿
+	// 														a_k * (speed_target_Diff.calc(pitch_speedloop.Target));
+	// }
+	// pitch_currentloop.Current = pitchMotor.givenCurrent;
+	// pitch_currentloop.SetPIDParam(0.25,50,0,3000,26000,26000);
+	// pitchMotor.Out = pitch_currentloop.Adjust() + (pitch_currentloop.Target + m_r * pitchMotor.getSpeed()) / (0.75f - m_l * pitchMotor.getSpeed());
+	// if(current_pitch > safe_angle)
+	// {
+	// 		debug_switch = 0;
+	// 		pitch_angleloop.Target = stop_angle;
+	// 		pitchMotor.Out = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + 116.7360f * current_pitch + 668.5741f; // old
+	// }
+	// else
+	// {
+	// 		pitchMotor.Out = pitch_currentloop.Adjust() + (pitch_currentloop.Target + m_r * pitchMotor.getSpeed()) / (0.75f - m_l * pitchMotor.getSpeed());
+	// }
 }
 /**
  * @brief yaw角度计算

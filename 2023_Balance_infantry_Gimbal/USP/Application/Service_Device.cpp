@@ -27,6 +27,7 @@ TaskHandle_t DeviceIndicator_Handle;
 TaskHandle_t Openlog_send_Handle;
 TaskHandle_t Log_Handle;
 extern float yaw_out;
+extern uint8_t debug_switch;
 /* Private function declarations ---------------------------------------------*/
 void tskIMU(void *arg);
 void tskDR16(void *arg);
@@ -342,6 +343,10 @@ void tskOpenlog_send(void *arg)
 //		{
 //			openlog.Send();
 //		}
+//		if(debug_switch)
+//		{
+//			openlog.Send();
+//		}
 	}
 }
 /**
@@ -356,7 +361,7 @@ void tskLog(void *arg)
 	uint16_t time;
 	openlog.new_file("table_%d.csv", 2);
 	openlog.append_file("table_%d.csv", 2);
-	openlog.record("yaw_speed_t,yaw_speed,yaw_angle,yaw_current\r");
+	openlog.record("pitch_speed,pitch_current,pitch_current_t\r");
 	openlog.push_buff();
 	openlog.Send();
 	TickType_t xLastWakeTime_t;
@@ -376,6 +381,11 @@ void tskLog(void *arg)
 //		if(yaw_out != 0)
 //		{
 //			openlog.record("%d,%d,%d,%d\r", (int16_t)infantry.gimbal.yaw_speedloop.Target, (int16_t)infantry.gimbal.yawMotor.getSpeed(), (int16_t)infantry.gimbal.yawMotor.Out,(int16_t)infantry.gimbal.yawMotor.givenCurrent);
+//			openlog.push_buff();
+//		}
+//		if(debug_switch)
+//		{
+//			openlog.record("%d,%d,%d\r",(int16_t)infantry.gimbal.pitchMotor.getSpeed(),(int16_t)infantry.gimbal.pitchMotor.givenCurrent,(int16_t)yaw_out);
 //			openlog.push_buff();
 //		}
 	}

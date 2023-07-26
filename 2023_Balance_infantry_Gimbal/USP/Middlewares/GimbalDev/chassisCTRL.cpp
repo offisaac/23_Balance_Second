@@ -172,10 +172,10 @@ void ChassisCTRL_Classdef::data_process()
 	if (keyboardState)
 	{
 		/*运动优化，使速度不会突变*/
-		(y_data > 0.5f) ? (velocity[0] + 100 < 1023 ? velocity[0] += 100 : velocity[0] = 1023) : (velocity[0] - 20 > 0 ? velocity[0] -= 20 : velocity[0] = 0);
-		(x_data > 0.5f) ? (velocity[2] + 100 < 1023 ? velocity[2] += 100 : velocity[2] = 1023) : (velocity[2] - 20 > 0 ? velocity[2] -= 20 : velocity[2] = 0);
-		(y_back_data > 0.5f) ? (velocity[1] + 100 < 1023 ? velocity[1] += 100 : velocity[1] = 1023) : (velocity[1] - 20 > 0 ? velocity[1] -= 20 : velocity[1] = 0);
-		(x_back_data > 0.5f) ? (velocity[3] + 100 < 1023 ? velocity[3] += 100 : velocity[3] = 1023) : (velocity[3] - 20 > 0 ? velocity[3] -= 20 : velocity[3] = 0);
+		(y_data > 0.5f) ? (velocity[0] + 50 < 1023 ? velocity[0] += 50 : velocity[0] = 1023) : (velocity[0] - 50 > 0 ? velocity[0] -= 50 : velocity[0] = 0);
+		(x_data > 0.5f) ? (velocity[2] + 50 < 1023 ? velocity[2] += 50 : velocity[2] = 1023) : (velocity[2] - 50 > 0 ? velocity[2] -= 50 : velocity[2] = 0);
+		(y_back_data > 0.5f) ? (velocity[1] + 50 < 1023 ? velocity[1] += 50 : velocity[1] = 1023) : (velocity[1] - 50 > 0 ? velocity[1] -= 50 : velocity[1] = 0);
+		(x_back_data > 0.5f) ? (velocity[3] + 50 < 1023 ? velocity[3] += 50 : velocity[3] = 1023) : (velocity[3] - 50 > 0 ? velocity[3] -= 50 : velocity[3] = 0);
 
 		// speed_Y = (velocity[0] - velocity[1]) * arm_cos_f32(chassis_yaw_current / RAD * PI) + (velocity[2] - velocity[3]) * arm_sin_f32(chassis_yaw_current / RAD * PI);
 		// speed_X = (velocity[2] - velocity[3]) * arm_cos_f32(chassis_yaw_current / RAD * PI) - (velocity[0] - velocity[1]) * arm_sin_f32(chassis_yaw_current / RAD * PI);
