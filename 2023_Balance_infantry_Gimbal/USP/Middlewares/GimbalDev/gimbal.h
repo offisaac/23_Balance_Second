@@ -165,14 +165,14 @@ public:
 
 	float adjust()
 	{
-		if (speed_target_lpf != nullptr)
-		{
-			speedLoop.Target = speed_target_lpf->f(angleLoop.Adjust());
-		}
-		else
-		{
-			speedLoop.Target = angleLoop.Adjust();
-		}
+		 if (speed_target_lpf != nullptr)
+		 {
+		 	speedLoop.Target = speed_target_lpf->f(angleLoop.Adjust());
+		 }
+		 else
+		 {
+		 	speedLoop.Target = angleLoop.Adjust();
+		 }
 
 		if (motor_speed == 0)
 			currentLoop.Target = speedLoop.Adjust() + 
@@ -199,16 +199,17 @@ public:
 		yawMotor.setEncoderOffset(_yaw_offset);
 		pitchMotor.setEncoderOffset(_pitch_offset);
 
-		pitch_controller.LoadAngleLPF(&pitchAngleLPF);
-		pitch_controller.LoadSpeedLPF(&pitchSpeedLPF);
+		//pitch_controller.LoadAngleLPF(&pitchAngleLPF);
+		//pitch_controller.LoadSpeedLPF(&pitchSpeedLPF);
 		pitch_controller.SetCurrentFeedForward(53, 0.0004f);
-		pitch_controller.SetSpeedFeedForward(240, 4.8f, 2.15f);
-		pitch_controller.SetMgFeedForward(116.2253f, - 994.4664f + 231.1759f);
+		// pitch_controller.SetSpeedFeedForward(240, 4.8f, 2.15f);//2.15
+		pitch_controller.SetSpeedFeedForward(0, 0, 0);//2.15
+		pitch_controller.SetMgFeedForward(116.2253f, - 994.4664f + 231.1759f + 1750.f);
 
-		yaw_controller.LoadAngleLPF(&yawAngleLPF);
+		//yaw_controller.LoadAngleLPF(&yawAngleLPF);
 		yaw_controller.LoadSpeedLPF(&yawSpeedLPF);
 		yaw_controller.SetCurrentFeedForward(55, 0.0004f);
-		yaw_controller.SetSpeedFeedForward(536, 1 / 3.72f, 4.4f);
+		yaw_controller.SetSpeedFeedForward(536, 0.28, 5.5f);//5.5
 	}
 	/*创建电机对象*/
 	Motor_GM6020 pitchMotor = Motor_GM6020(ID_PITCH);
@@ -225,7 +226,7 @@ public:
 	gimbal_motor_newController pitch_controller;
 
 	/*控制滤波器*/
-	SecondOrderButterworthLPF pitchAngleLPF = {SecondOrderButterworthLPF(5, 1000)};
+	SecondOrderButterworthLPF pitchAngleLPF = {SecondOrderButterworthLPF(20, 1000)};
 	SecondOrderButterworthLPF pitchSpeedLPF = {SecondOrderButterworthLPF(10, 1000)};
 	SecondOrderButterworthLPF yawAngleLPF = {SecondOrderButterworthLPF(5, 1000)};
 	SecondOrderButterworthLPF yawSpeedLPF = {SecondOrderButterworthLPF(20, 1000)};
