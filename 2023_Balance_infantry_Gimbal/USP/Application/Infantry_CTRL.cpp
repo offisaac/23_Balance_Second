@@ -548,11 +548,11 @@ float rune_yaw_angle_Ist = 400;
 float fc_pitchcurrent_kp = 0.25;
 float fc_pitchcurrent_ki = 50;
 float fc_pitchcurrent_imax = 3000;
-float fc_pitchcurrent_omax = 26000;
+float fc_pitchcurrent_omax = 30000;
 float fc_pitchspeed_kp = 80; // 150
-float fc_pitchspeed_ki = 6000;
-float fc_pitchspeed_imax = 400;
-float fc_pitchangle_kp = -17; // 25
+float fc_pitchspeed_ki = 1200;
+float fc_pitchspeed_imax = 5000;
+float fc_pitchangle_kp = -16; // 25
 
 float fc_current_kp = 0.25;
 float fc_current_ki = 50;
@@ -561,7 +561,7 @@ float fc_current_omax = 26000;
 float fc_speed_kp = 100; // 150
 float fc_speed_ki = 1000;
 float fc_speed_imax = 800;
-float fc_angle_kp = 27; // 25
+float fc_angle_kp = 25; // 25
 //打符
 float fr_pitchcurrent_kp = 0.25;
 float fr_pitchcurrent_ki = 50;
