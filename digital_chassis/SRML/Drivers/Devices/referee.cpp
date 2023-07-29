@@ -1366,7 +1366,7 @@ void referee_Classdef::Draw_Fri_State(uint8_t fri_flag, uint16_t center_x, uint1
  * @note 测试后的实例：			Referee.Draw_Balance_State(0,0,960,60,100,GREEN);
 
  */
-void referee_Classdef::Draw_Balance_State(float pitch_angle, float yaw_angle, uint16_t start_x, uint16_t start_y, uint16_t length, colorType_e _color)
+void referee_Classdef::Draw_Balance_State(uint8_t _layer, float pitch_angle, float yaw_angle, uint16_t start_x, uint16_t start_y, uint16_t length, colorType_e _color)
 {
 	static uint8_t balance_name1[] = "bl0";
 	static drawOperate_e _operate_type;
@@ -1398,16 +1398,16 @@ void referee_Classdef::Draw_Balance_State(float pitch_angle, float yaw_angle, ui
 		_operate_type = MODIFY_PICTURE;
 	}
 
-	memcpy(data_pack, (uint8_t *)line_drawing(3, _operate_type, start_x, start_y, end_x1, end_y1, 3, _color, balance_name1), DRAWING_PACK);
+	memcpy(data_pack, (uint8_t *)line_drawing(_layer, _operate_type, start_x, start_y, end_x1, end_y1, 3, _color, balance_name1), DRAWING_PACK);
 	balance_name1[2] = '1';
-	memcpy(&data_pack[DRAWING_PACK], (uint8_t *)line_drawing(3, _operate_type, start_x, start_y, end_x2, end_y2, 3, _color, balance_name1), DRAWING_PACK);
+	memcpy(&data_pack[DRAWING_PACK], (uint8_t *)line_drawing(_layer, _operate_type, start_x, start_y, end_x2, end_y2, 3, _color, balance_name1), DRAWING_PACK);
 	balance_name1[2] = '2';
-	memcpy(&data_pack[DRAWING_PACK * 2], (uint8_t *)line_drawing(3, _operate_type, end_x1, end_y1, end_x2, end_y2, 3, _color, balance_name1), DRAWING_PACK);
+	memcpy(&data_pack[DRAWING_PACK * 2], (uint8_t *)line_drawing(_layer, _operate_type, end_x1, end_y1, end_x2, end_y2, 3, _color, balance_name1), DRAWING_PACK);
 
 	balance_name1[2] = '3';
-	memcpy(&data_pack[DRAWING_PACK * 3], (uint8_t *)oval_drawing(3, _operate_type, start_x + 200, start_y + 35, 50, 70, 3, _color, balance_name1), DRAWING_PACK);
+	memcpy(&data_pack[DRAWING_PACK * 3], (uint8_t *)oval_drawing(_layer, _operate_type, start_x + 200, start_y + 35, 50, 70, 3, _color, balance_name1), DRAWING_PACK);
 	balance_name1[2] = '4';
-	memcpy(&data_pack[DRAWING_PACK * 4], (uint8_t *)line_drawing(3, _operate_type, start_x + 200, start_y + 35, end_x3 + 200, end_y3 + 35, 3, _color, balance_name1), DRAWING_PACK);
+	memcpy(&data_pack[DRAWING_PACK * 4], (uint8_t *)line_drawing(_layer, _operate_type, start_x + 200, start_y + 35, end_x3 + 200, end_y3 + 35, 3, _color, balance_name1), DRAWING_PACK);
 
 	pack_send_robotData(Drawing_5_ID, robot_client_ID.client, (uint8_t *)data_pack, DRAWING_PACK * 5);
 }

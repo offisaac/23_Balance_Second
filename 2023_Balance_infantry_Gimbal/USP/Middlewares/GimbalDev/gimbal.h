@@ -29,6 +29,9 @@
 /* Private macros ------------------------------------------------------------*/
 #define ID_PITCH (2)
 #define ID_YAW (4)
+
+#define PITCH_PARAM_STRUCTURE 1 // PITCH轴参数结构：0为单环角度环	1为角度环+电流环	2为全补偿三环
+#define YAW_PARAM_STRUCTURE 1		// YAW轴参数结构：0为单环角度环	1为角度环+电流环	2为全补偿三环
 /* Private type --------------------------------------------------------------*/
 /* Exported macros -----------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -165,26 +168,26 @@ public:
 
 	float adjust()
 	{
-		 if (speed_target_lpf != nullptr)
-		 {
-		 	speedLoop.Target = speed_target_lpf->f(angleLoop.Adjust());
-		 }
-		 else
-		 {
-		 	speedLoop.Target = angleLoop.Adjust();
-		 }
+		if (speed_target_lpf != nullptr)
+		{
+			speedLoop.Target = speed_target_lpf->f(angleLoop.Adjust());
+		}
+		else
+		{
+			speedLoop.Target = angleLoop.Adjust();
+		}
 
 		if (motor_speed == 0)
-			currentLoop.Target = speedLoop.Adjust() + 
-														f_k * (speedLoop.Target + motor_speed * 6 - speedLoop.Current) + 
-														a_k * (speed_target_Diff.calc(speedLoop.Target)) +
-														mg_k * angleLoop.Current + mg_c;
+			currentLoop.Target = speedLoop.Adjust() +
+													 f_k * (speedLoop.Target + motor_speed * 6 - speedLoop.Current) +
+													 a_k * (speed_target_Diff.calc(speedLoop.Target)) +
+													 mg_k * angleLoop.Current + mg_c;
 		else
-			currentLoop.Target = speedLoop.Adjust() + 
-														f_c * motor_speed / fabsf(motor_speed) + 
-														f_k * (speedLoop.Target + motor_speed * 6 - speedLoop.Current) + 
-														a_k * (speed_target_Diff.calc(speedLoop.Target)) +
-														mg_k * angleLoop.Current + mg_c;
+			currentLoop.Target = speedLoop.Adjust() +
+													 f_c * motor_speed / fabsf(motor_speed) +
+													 f_k * (speedLoop.Target + motor_speed * 6 - speedLoop.Current) +
+													 a_k * (speed_target_Diff.calc(speedLoop.Target)) +
+													 mg_k * angleLoop.Current + mg_c;
 		Out = currentLoop.Adjust() + (currentLoop.Target + m_r * motor_speed) / (0.75f - m_l * motor_speed);
 		return Out;
 	}
@@ -199,18 +202,18 @@ public:
 		yawMotor.setEncoderOffset(_yaw_offset);
 		pitchMotor.setEncoderOffset(_pitch_offset);
 
-		//pitch_controller.LoadAngleLPF(&pitchAngleLPF);
+		// pitch_controller.LoadAngleLPF(&pitchAngleLPF);
 		pitch_controller.LoadSpeedLPF(&pitchSpeedLPF);
-		pitch_controller.SetCurrentFeedForward(53, 0.0004f);
-		pitch_controller.SetSpeedFeedForward(240, 4.8f, 2.15f);//2.15
-		//pitch_controller.SetSpeedFeedForward(0, 0, 0);//2.15
-		pitch_controller.SetMgFeedForward(116.2253f, - 994.4664f + 231.1759f + 1000.f);
+		pitch_controller.SetCurrentFeedForward(pitch_m_r, pitch_m_l);
+		pitch_controller.SetSpeedFeedForward(pitch_f_c, pitch_f_k, pitch_a_k); // 2.15
+		// pitch_controller.SetSpeedFeedForward(0, 0, 0);//2.15
+		pitch_controller.SetMgFeedForward(pitch_g_k, pitch_g_c);
 
-		//yaw_controller.LoadAngleLPF(&yawAngleLPF);
+		// yaw_controller.LoadAngleLPF(&yawAngleLPF);
 		yaw_controller.LoadSpeedLPF(&yawSpeedLPF);
-		yaw_controller.SetCurrentFeedForward(55, 0.0004f);
-		yaw_controller.SetSpeedFeedForward(536, 0.28, 5.5f);//5.5
-		//yaw_controller.SetSpeedFeedForward(0, 0, 0);//5.5
+		yaw_controller.SetCurrentFeedForward(yaw_m_r, yaw_m_l);
+		yaw_controller.SetSpeedFeedForward(yaw_f_c, yaw_f_k, yaw_a_k); // 5.5
+																																	 // yaw_controller.SetSpeedFeedForward(0, 0, 0);//5.5
 	}
 	/*创建电机对象*/
 	Motor_GM6020 pitchMotor = Motor_GM6020(ID_PITCH);
@@ -252,10 +255,16 @@ public:
 	void Reset_YawUpdateFlag();											// 平衡步用，陀螺仪计算角度复位
 	/*pid相关*/
 	void PidParaInit(E_PitchYawPidType _type, float _kp, float _ki, float _kd, float _ki_max, float _pi_max, float _out_max, float _I_SeparThresh);
+	void PidInit(S_PidPara* _para, float _kp, float _ki, float _kd, float _ki_max, float _pi_max, float _out_max, float _I_SeparThresh);
 	// pid参数初始化
 	void LoadPidPara(myPID *_pidloop, S_PidPara _pid_para); // 加载pid参数进pid对象
 	void Switch2VisionPid(uint8_t _vision_pid_mode);				// 切换到视觉pid
 	S_PidPara pid_para[12];																	// pid各环参数
+
+	S_PidPara PitchHalfNormal[3], PitchHalfCar[3], PitchHalfRune[3];//半补偿
+	S_PidPara PitchFullNormal[3], PitchFullCar[3], PitchFullRune[3];//全补偿
+	S_PidPara YawHalfNormal[3], YawHalfCar[3], YawHalfRune[3];//半补偿
+	S_PidPara YawFullNormal[3], YawFullCar[3], YawFullRune[3];//全补偿
 
 	float pitch_target, yaw_target;
 
@@ -276,6 +285,21 @@ public:
 	void yaw_calculate();
 	/*云台复位函数*/
 	void gimbal_reset();
+
+	float yaw_m_r = 55.f;
+	float yaw_m_l = 0.0004f;
+	float pitch_m_r = 53.f;
+	float pitch_m_l = 0.0004f;
+
+	float pitch_f_k = 4.8f;														 //粘滞摩擦力斜率补偿(4.6
+	float pitch_f_c = 240;														 //静摩擦补偿(230
+	float pitch_a_k = 2.15f;													 //转动惯量补偿
+	float pitch_g_k = 116.7360f;											 //重力补偿斜率
+	float pitch_g_c = -994.4664f + 231.1759f + 1000.f; //重力补偿截距
+
+	float yaw_f_k = 0.28f;
+	float yaw_f_c = 536;
+	float yaw_a_k = 5.5f;
 };
 
 /* Exported function declarations --------------------------------------------*/

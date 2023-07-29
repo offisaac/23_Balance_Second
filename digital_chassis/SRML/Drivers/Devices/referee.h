@@ -627,7 +627,7 @@ public:
 	void Draw_Auto_Lock_Range(uint8_t auto_flag, uint8_t auto_mode, uint16_t center_x, uint16_t center_y, uint16_t length, uint16_t width, uint16_t line_width);
 	void Draw_Auto_Lock(uint8_t auto_flag, uint16_t center_x, uint16_t center_y, uint16_t line_width, colorType_e _color);
 	/* 【图层0】平衡步状态绘制 */
-	void Draw_Balance_State(float pitch_angle, float yaw_angle, uint16_t start_x, uint16_t start_y, uint16_t length, colorType_e _color);
+	void Draw_Balance_State(uint8_t _layer, float pitch_angle, float yaw_angle, uint16_t start_x, uint16_t start_y, uint16_t length, colorType_e _color);
 	/* 【自定义绘制】平衡步停车区域绘制 */
 	void Draw_Balance_Stop_Erea(uint8_t _layer, uint8_t enable_cnt, float _current_speed, float _max_speed, float height, uint16_t scale);
 	/*【自定义绘制】平衡步小陀螺撞墙提示 */
