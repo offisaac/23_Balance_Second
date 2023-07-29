@@ -298,9 +298,20 @@ void Gimbal_Classdef::gimbal_pid_calculate()
 	yaw_controller.update_target_angle(yaw_target);
 
 	/*计算输出值*/
-	//pitchMotor.Out = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + 116.7360f * current_pitch - 763.2905f; // old
+//	yaw_out = 200 + 50 * sinf(3 * sin_w * t) + 100 * sinf(sin_w * t);
+//	yaw_controller.SetSpeedloopParams(0,0,0,0,0);
+//	yaw_controller.update_current_state(total_yaw, angular_velocity_yaw, yawMotor.givenCurrent, yawMotor.getSpeed());
+//	if(debug_switch)
+//	{
+//		yaw_controller.speedLoop.Target = yaw_out;
+//	}
+//	else
+//	{
+//		yaw_controller.speedLoop.Target = 0;
+//	}
+	pitchMotor.Out = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + 116.7360f * current_pitch - 763.2905f; // old
 	//	pitchMotor.Out = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + 51.38340f * current_pitch  - 438.2411f;//new
-	pitchMotor.Out = pitch_controller.adjust();
+	//pitchMotor.Out = pitch_controller.adjust();
 
 	//yawMotor.Out = yaw_angleloop.Adjust_importDiff(angular_velocity_yaw);
 	yawMotor.Out = yaw_controller.adjust();
