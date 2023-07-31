@@ -623,6 +623,16 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
     }
 
     float rotation_slider_pos[2] = {-10, -10};
+		if(gimbal_data.rotation_state)
+		{
+			rotation_slider_pos[0] = -10;
+			rotation_slider_pos[1] = -10;
+		}
+		else if(gimbal_data.turn90degrees)
+		{
+			rotation_slider_pos[0] = -20;
+			rotation_slider_pos[1] = -20;
+		}
     if (gimbal_data.remote_ctrl_state == false)
     {
         wheel_out[LEFT] = 0;

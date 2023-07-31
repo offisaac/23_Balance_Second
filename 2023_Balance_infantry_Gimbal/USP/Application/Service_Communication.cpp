@@ -229,14 +229,19 @@ uint32_t User_UART1_RxCpltCallback(uint8_t *Recv_Data, uint16_t ReceiveLen)
 {
   infantry.pc_vision.GetViaionData(Recv_Data, ReceiveLen);
 #if VISION_DATA_MODE
-  float yaw_target = infantry.pc_vision.PackFromVisionUnion.PackFromVision.yawData + mpu_recoder.getFrames(imu_x);
+  float yaw_target = infantry.pc_vision.PackFromVisionUnion.PackFromVision.yawData + infantry.pc_vision.ImuYawRecord.getFrames(imu_x);
+  float pitch_target = infantry.pc_vision.PackFromVisionUnion.PackFromVision.pitchData + infantry.pc_vision.ImuPitchRecord.getFrames(imu_x);
 #else
   float yaw_target = infantry.pc_vision.PackFromVisionUnion.PackFromVision.yawData;
+  float pitch_target = infantry.pc_vision.PackFromVisionUnion.PackFromVision.pitchData;
 #endif
   /*识别到装甲板且自瞄时修改云台目标值*/
   if (infantry.pc_vision.PackFromVisionUnion.PackFromVision.target_mode != NO_ARMOR && DR16.IsKeyPress(DR16_MOUSE_R))
   {
-    infantry.gimbal.Set_PitchTarget(infantry.pc_vision.PackFromVisionUnion.PackFromVision.pitchData);
+    infantry.gimbal.angle_ff_calc(-pitch_target, yaw_target);
+    infantry.gimbal.pitch_controller.AngleFeedForwardCalc(-pitch_target);
+    infantry.gimbal.yaw_controller.AngleFeedForwardCalc(yaw_target);
+    infantry.gimbal.Set_PitchTarget(pitch_target);
     infantry.gimbal.Set_YawTarget(yaw_target);
     now_time = (float)Get_SystemTimer() / (float)1000.f;
     time_gap = now_time - last_time;

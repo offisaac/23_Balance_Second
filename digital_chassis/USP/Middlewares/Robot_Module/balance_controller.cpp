@@ -614,6 +614,10 @@ void Controller<LQR>::slider_control()
     float distance_error = distance_MF.f(target_location.y - current_location.y);
     /*speed*/
     float speed_error = std_lib::constrain(speed_lpf.f(target_linearSpeed.y - current_linearSpeed.y),-2.5f,2.5f);
+//		if(fabsf(speed_error)<0.3f)
+//		{
+//			speed_error = 0;
+//		}
     // float speed_error = target_linearSpeed.y - speed_MIF1.f(this->current_linearSpeed.y);
     /*pitch*/
     float pitch_error = pitch_MF.f(target_pos.pitch - current_pos.pitch);
@@ -751,9 +755,11 @@ float Controller<LQR>::self_adaption()
 				if (current_linearSpeed.y < 0.9f * target_linearSpeed.y)
 				{
 						setpoint_ctrl_out = 2.f;
+						//setpoint_ctrl_out = 0.f;
 						if (is_unlimited)
 						{
 								setpoint_ctrl_out = 3.f;
+								//setpoint_ctrl_out = 1.f;
 						}
 						if (is_turn90degrees)
 						{

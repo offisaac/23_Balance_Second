@@ -130,6 +130,9 @@ void Device_InfantryCtrl(void *arg)
 		infantry.Status_Update();
 		infantry.Adjust();
 		infantry.Actuate();
+
+		infantry.pc_vision.ImuYawRecord.addFrame(infantry.gimbal.Get_YawTotal());
+		infantry.pc_vision.ImuPitchRecord.addFrame(infantry.gimbal.Get_PitchCurrent());
 	}
 }
 /**
@@ -187,7 +190,7 @@ void Device_Indicator(void *arg)
 		{
 			/*LED1,摩擦轮是否打开*/
 			if (infantry.fri_state == true)
-				infantry.indicator.Change_Singal_RGB(LED_1, 255, 0, 255, 255); //摩擦轮打开，紫色
+				infantry.indicator.Change_Singal_RGB(LED_1, 0, 0, 255, 255); //摩擦轮打开，紫色
 			else
 				infantry.indicator.Change_Singal_RGB(LED_1, 0, 0, 0, 255); //摩擦轮关闭，不亮
 

@@ -74,11 +74,17 @@ struct S_PidPara
 
 class gimbal_motor_newController
 {
-private:
+public:
+	DiffCalculator<1> angle_target_Diff;
 	DiffCalculator<1> speed_target_Diff;
+	SecondOrderButterworthLPF *angle_f_lpf = nullptr;
 	SecondOrderButterworthLPF *angle_target_lpf = nullptr;
 	SecondOrderButterworthLPF *speed_target_lpf = nullptr;
 	float motor_speed = 0;
+	float angle_feedback = 0;
+	uint8_t angle_feedback_flag = 1;
+	uint8_t cnt = 0;
+	float last_angle_feedback = 0;
 
 public:
 	gimbal_motor_newController() {}
@@ -99,6 +105,11 @@ public:
 	float a_k = 4.4;			//用于补偿转动惯量的加速力矩，调信号跟踪性能
 
 	float Out = 0;
+
+	void LoadAngleFLPF(SecondOrderButterworthLPF *_lpf)
+	{
+		angle_f_lpf = _lpf;
+	}
 
 	void LoadAngleLPF(SecondOrderButterworthLPF *_lpf)
 	{
@@ -166,8 +177,35 @@ public:
 		currentLoop.I_SeparThresh = ist;
 	}
 
+	void AngleFeedForwardCalc(float _anglet)
+	{
+		angle_feedback = angle_target_Diff.calc(_anglet);
+		if (angle_f_lpf != nullptr)
+		{
+			angle_feedback = angle_f_lpf->f(angle_feedback);
+		}
+	}
+
 	float adjust()
 	{
+		if (last_angle_feedback == angle_feedback)
+		{
+			if (cnt < 15)
+				cnt++;
+			else
+				angle_feedback = 0;
+		}
+		else
+		{
+			cnt = 0;
+		}
+		last_angle_feedback = angle_feedback;
+
+		if (fabsf(angleLoop.Error) > 6)
+			angle_feedback_flag = 0;
+		else if (fabsf(angleLoop.Error) < 3)
+			angle_feedback_flag = 1;
+
 		if (speed_target_lpf != nullptr)
 		{
 			speedLoop.Target = speed_target_lpf->f(angleLoop.Adjust());
@@ -176,6 +214,7 @@ public:
 		{
 			speedLoop.Target = angleLoop.Adjust();
 		}
+		//speedLoop.Target += angle_feedback * angle_feedback_flag * 0.5f;
 
 		if (motor_speed == 0)
 			currentLoop.Target = speedLoop.Adjust() +
@@ -202,14 +241,16 @@ public:
 		yawMotor.setEncoderOffset(_yaw_offset);
 		pitchMotor.setEncoderOffset(_pitch_offset);
 
-		// pitch_controller.LoadAngleLPF(&pitchAngleLPF);
+		pitch_controller.LoadAngleFLPF(&pitchAngleFLPF);
+		pitch_controller.LoadAngleLPF(&pitchAngleLPF);
 		pitch_controller.LoadSpeedLPF(&pitchSpeedLPF);
 		pitch_controller.SetCurrentFeedForward(pitch_m_r, pitch_m_l);
 		pitch_controller.SetSpeedFeedForward(pitch_f_c, pitch_f_k, pitch_a_k); // 2.15
 		// pitch_controller.SetSpeedFeedForward(0, 0, 0);//2.15
 		pitch_controller.SetMgFeedForward(pitch_g_k, pitch_g_c);
 
-		// yaw_controller.LoadAngleLPF(&yawAngleLPF);
+		yaw_controller.LoadAngleFLPF(&yawAngleFLPF);
+		yaw_controller.LoadAngleLPF(&yawAngleLPF);
 		yaw_controller.LoadSpeedLPF(&yawSpeedLPF);
 		yaw_controller.SetCurrentFeedForward(yaw_m_r, yaw_m_l);
 		yaw_controller.SetSpeedFeedForward(yaw_f_c, yaw_f_k, yaw_a_k); // 5.5
@@ -230,10 +271,32 @@ public:
 	gimbal_motor_newController pitch_controller;
 
 	/*控制滤波器*/
-	SecondOrderButterworthLPF pitchAngleLPF = {SecondOrderButterworthLPF(2, 1000)};
-	SecondOrderButterworthLPF pitchSpeedLPF = {SecondOrderButterworthLPF(10, 1000)};
-	SecondOrderButterworthLPF yawAngleLPF = {SecondOrderButterworthLPF(5, 1000)};
+	SecondOrderButterworthLPF pitchAngleLPF = {SecondOrderButterworthLPF(20, 1000)};
+	SecondOrderButterworthLPF pitchAngleFLPF = {SecondOrderButterworthLPF(20, 1000)};
+	SecondOrderButterworthLPF pitchSpeedLPF = {SecondOrderButterworthLPF(20, 1000)};
+	SecondOrderButterworthLPF pitchCurrentLPF = {SecondOrderButterworthLPF(20, 1000)};
+
+	SecondOrderButterworthLPF yawAngleLPF = {SecondOrderButterworthLPF(20, 1000)};
+	SecondOrderButterworthLPF yawAngleFLPF = {SecondOrderButterworthLPF(20, 1000)};
 	SecondOrderButterworthLPF yawSpeedLPF = {SecondOrderButterworthLPF(20, 1000)};
+	SecondOrderButterworthLPF yawCurrentLPF = {SecondOrderButterworthLPF(20, 1000)};
+
+	DiffCalculator<1> pitch_angle_Diff[3];
+	DiffCalculator<1> yaw_angle_Diff[3];
+
+	float angle_feedback_pitch = 0;
+	float last_angle_feedback_pitch = 0;
+	float angle_feedback_yaw = 0;
+	float last_angle_feedback_yaw = 0;
+
+	void angle_ff_calc(float angle_t_pitch, float angle_t_yaw)
+	{
+		angle_feedback_pitch = pitch_angle_Diff[1].calc(pitch_angle_Diff[2].calc(angle_t_pitch));
+		angle_feedback_pitch = pitchAngleFLPF.f(angle_feedback_pitch);
+
+		angle_feedback_yaw = yaw_angle_Diff[1].calc(yaw_angle_Diff[2].calc(angle_t_yaw));
+		angle_feedback_yaw = yawAngleFLPF.f(angle_feedback_yaw);
+	}
 
 	/*接口*/
 	void Status_Update(float *_pitchData, float *_yawData, bool *_resetState);
@@ -255,16 +318,16 @@ public:
 	void Reset_YawUpdateFlag();											// 平衡步用，陀螺仪计算角度复位
 	/*pid相关*/
 	void PidParaInit(E_PitchYawPidType _type, float _kp, float _ki, float _kd, float _ki_max, float _pi_max, float _out_max, float _I_SeparThresh);
-	void PidInit(S_PidPara* _para, float _kp, float _ki, float _kd, float _ki_max, float _pi_max, float _out_max, float _I_SeparThresh);
+	void PidInit(S_PidPara *_para, float _kp, float _ki, float _kd, float _ki_max, float _pi_max, float _out_max, float _I_SeparThresh);
 	// pid参数初始化
 	void LoadPidPara(myPID *_pidloop, S_PidPara _pid_para); // 加载pid参数进pid对象
 	void Switch2VisionPid(uint8_t _vision_pid_mode);				// 切换到视觉pid
 	S_PidPara pid_para[12];																	// pid各环参数
 
-	S_PidPara PitchHalfNormal[3], PitchHalfCar[3], PitchHalfRune[3];//半补偿
-	S_PidPara PitchFullNormal[3], PitchFullCar[3], PitchFullRune[3];//全补偿
-	S_PidPara YawHalfNormal[3], YawHalfCar[3], YawHalfRune[3];//半补偿
-	S_PidPara YawFullNormal[3], YawFullCar[3], YawFullRune[3];//全补偿
+	S_PidPara PitchHalfNormal[3], PitchHalfCar[3], PitchHalfRune[3]; //半补偿
+	S_PidPara PitchFullNormal[3], PitchFullCar[3], PitchFullRune[3]; //全补偿
+	S_PidPara YawHalfNormal[3], YawHalfCar[3], YawHalfRune[3];			 //半补偿
+	S_PidPara YawFullNormal[3], YawFullCar[3], YawFullRune[3];			 //全补偿
 
 	float pitch_target, yaw_target;
 
