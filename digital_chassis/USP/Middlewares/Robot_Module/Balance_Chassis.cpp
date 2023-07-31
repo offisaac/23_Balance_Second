@@ -55,7 +55,7 @@ void Pre_Balance_State::State_Handler()
     //        context->Board_Com.gimbal_rx_pack2.chassis_flags &= 0x0000 << 1;
     //    }
 
-    //vTaskDelay(400);
+    // vTaskDelay(400);
 
     if (context->gimbal_data.enable_cmd)
     {
@@ -195,10 +195,12 @@ void Balance_Infantry_Classdef::CAN_Motor_Update(CAN_COB *CAN_RxMsg)
     if (wheel_motor[LEFT].CheckID(CAN_RxMsg->ID))
     {
         wheel_motor[LEFT].update(CAN_RxMsg->Data);
+        motorLinkCount[LEFT] = 0;
     }
     else if (wheel_motor[RIGHT].CheckID(CAN_RxMsg->ID))
     {
         wheel_motor[RIGHT].update(CAN_RxMsg->Data);
+        motorLinkCount[RIGHT] = 0;
     }
 }
 
@@ -221,7 +223,7 @@ void Balance_Infantry_Classdef::UART_Gyro_Update(uint8_t *_rx_msg)
  * @return
  * @retval  None
  */
-void Balance_Infantry_Classdef:: Judge_State()
+void Balance_Infantry_Classdef::Judge_State()
 {
     if (!gimbal_data.remote_ctrl_state)
     {
@@ -357,7 +359,7 @@ void Balance_Infantry_Classdef::Update_Current_Speed(float _y, float _yaw, float
     current_time = Get_SystemTimer();
     time_gap = current_time - last_time;
     MeanFilter<5> speed_mf;
-    distance += speed_mf.f(_y + _pitch * WHEEL_R)  * CTRL_INTERAL;
+    distance += speed_mf.f(_y + _pitch * WHEEL_R) * CTRL_INTERAL;
     balance_controller.Update_Current_LinearSpeed(0, speed_mf.f(_y + _pitch * WHEEL_R), 0); //当前线速度需要减去因车体旋转造成的误差
     balance_controller.Update_Current_AngularSpeed(_yaw, _pitch, 0);
     if (time_gap && current_time && last_time)
@@ -404,12 +406,12 @@ void Balance_Infantry_Classdef::Update_Motor_Current(float _current)
  * @return
  * @retval  None
  */
-void Balance_Infantry_Classdef::Update_Slider_Params(float _s[2],float _sspeed[2])
+void Balance_Infantry_Classdef::Update_Slider_Params(float _s[2], float _sspeed[2])
 {
-    for(int i = 0; i < 2 ; i++)
+    for (int i = 0; i < 2; i++)
     {
-        balance_controller.current_sliderLocation[i].y = _s[i]/360.f*2.f*PI*0.05;
-        balance_controller.current_sliderSpeed[i].y = _sspeed[i]/60.f*2.f*PI*0.05;
+        balance_controller.current_sliderLocation[i].y = _s[i] / 360.f * 2.f * PI * 0.05;
+        balance_controller.current_sliderSpeed[i].y = _sspeed[i] / 60.f * 2.f * PI * 0.05;
     }
 }
 
@@ -442,7 +444,7 @@ void Balance_Infantry_Classdef::Chassis_Ctrl_Cal()
     /*更新当前线性加速度*/
     Update_Current_Acc(absLpms.getAccData()->x, absLpms.getAccData()->y, absLpms.getAccData()->z);
     /*更新当前滑块状态*/
-    Update_Slider_Params(slider_s,slider_sspeed);
+    Update_Slider_Params(slider_s, slider_sspeed);
     /*更新当前电机电流值*/
     Update_Motor_Current(Source_Current_Out);
     /*底盘控制*/
@@ -464,7 +466,7 @@ void Balance_Infantry_Classdef::Chassis_Ctrl_Cal()
     debug_C = balance_controller.Get_Data().distance_out;
     debug_D = balance_controller.Get_Data().speed_out;
     debug_E = balance_controller.Get_Data().turn_out;
-		debug_F = slider_s[0];
+    debug_F = slider_s[0];
 }
 
 /**
@@ -620,7 +622,17 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
         }
     }
 
-		float rotation_slider_pos[2] = {-10,-10}; 
+    float rotation_slider_pos[2] = {-10, -10};
+		if(gimbal_data.rotation_state)
+		{
+			rotation_slider_pos[0] = -10;
+			rotation_slider_pos[1] = -10;
+		}
+		else if(gimbal_data.turn90degrees)
+		{
+			rotation_slider_pos[0] = -20;
+			rotation_slider_pos[1] = -20;
+		}
     if (gimbal_data.remote_ctrl_state == false)
     {
         wheel_out[LEFT] = 0;
@@ -634,21 +646,34 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
             balance_controller.output.sliderCtrl_out[RIGHT] = 0;
             balance_controller.output.sliderCtrl_out[LEFT] = 0;
         }
-				if(gimbal_data.rotation_state)
-				{
-					 Slider_Ctrl.update(rotation_slider_pos);
-           Slider_Ctrl.adjust();
-           Slider_Ctrl.acutate();
-				}
-				else
-				{
-					//Slider_Ctrl.setTorqueOut(balance_controller.output.sliderCtrl_out);
-					Slider_Ctrl.setVoltageOut(balance_controller.output.sliderCtrl_out);
-				}
+        if (gimbal_data.rotation_state || gimbal_data.turn90degrees)
+        {
+            Slider_Ctrl.update(rotation_slider_pos);
+            Slider_Ctrl.adjust();
+            Slider_Ctrl.acutate();
+        }
+        else
+        {
+            // Slider_Ctrl.setTorqueOut(balance_controller.output.sliderCtrl_out);
+            Slider_Ctrl.setVoltageOut(balance_controller.output.sliderCtrl_out);
+        }
     }
 
-    absWheelMotor[LEFT].setMotorCurrentOut(std_lib::constrain(wheel_out[LEFT] * COM_9025_TORQUE_RATIO, -2000.f, 2000.f));
-    absWheelMotor[RIGHT].setMotorCurrentOut(std_lib::constrain(wheel_out[RIGHT] * COM_9025_TORQUE_RATIO, -2000.f, 2000.f));
+    if (motorLinkCount[RIGHT] < 20 && motorLinkCount[LEFT] < 20)
+    {
+        absWheelMotor[LEFT].setMotorCurrentOut(std_lib::constrain(wheel_out[LEFT] * COM_9025_TORQUE_RATIO, -2000.f, 2000.f));
+        absWheelMotor[RIGHT].setMotorCurrentOut(std_lib::constrain(wheel_out[RIGHT] * COM_9025_TORQUE_RATIO, -2000.f, 2000.f));
+    }
+    else
+    {
+        for (int i = 0; i < 2; i++)
+        {
+            if (motorLinkCount[i] >= 20)
+                wheel_motor[i].startMotor();
+            else
+                wheel_motor[i].iqCloseControl_Current(0);
+        }
+    }
 
     /* 发送CAN包到云台 */
     Board_Com.gimbal_rx_pack2.chassis_flags &= 0xFFFE; //发送标志位除了第一位全部置1
@@ -698,10 +723,10 @@ void Balance_Infantry_Classdef::Set_MaxSpeed(uint16_t _powerMax)
     {
         speed_scale += 0.4f;
     }
-		else if (gimbal_data.ascent_state && Source_Cap_Voltage > 17.0f)
-		{
-				speed_scale = 4.f;
-		}
+    else if (gimbal_data.ascent_state && Source_Cap_Voltage > 17.0f)
+    {
+        speed_scale = 4.f;
+    }
     else
     {
     }
@@ -781,6 +806,62 @@ void Balance_Infantry_Classdef::Set_MaxPower(uint16_t _powerMax)
         {
             chassis_power_limit = 45;
         }
+    }
+}
+
+/**
+ * @brief  连接检测函数
+ * @note
+ * @param
+ * @return
+ * @retval  None
+ */
+void Balance_Infantry_Classdef::Link_Check()
+{
+    for (int i = 0; i < 2; i++)
+    {
+        if (motorLinkCount[i] < 100)
+            motorLinkCount[i]++;
+    }
+}
+
+/**
+ * @brief 9025电机状态获取
+ * @parma None
+ * @return None
+ */
+void Balance_Infantry_Classdef::Motor_State_Check()
+{
+    static float last_current[2] = {0, 0};
+    wheel_motor[RIGHT].readMotorState1_errorState();
+    wheel_motor[LEFT].readMotorState1_errorState();
+    vTaskDelay(2);
+    for (int i = 0; i < 2; i++)
+    {
+        float motor_current = wheel_motor[i].getData().current;
+        if (wheel_motor[i].getData().errorState)
+        {
+            motorErrorCnt[i]++;
+            wheel_motor[i].cleanErrorState();
+            vTaskDelay(2);
+            wheel_motor[i].startMotor();
+            vTaskDelay(2);
+            continue;
+        }
+        else
+            motorErrorCnt[i] = 0;
+
+        if (motor_current == last_current[i])
+            motorDeadCnt[i]++;
+        else
+            motorDeadCnt[i] = 0;
+
+        if (motorDeadCnt[i] >= 10)
+        {
+            wheel_motor[i].startMotor();
+            vTaskDelay(2);
+        }
+        last_current[i] = motor_current;
     }
 }
 

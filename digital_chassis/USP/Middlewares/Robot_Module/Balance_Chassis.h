@@ -23,8 +23,8 @@
 #endif
 
 #define WHEEL_R 0.110f                               //轮子半径（m）
-#define GEAR_SCALE 2.0f * PI * WHEEL_R / 1.0f / 60.0f //转速(rpm)转换为线速度(m/s)参数
-#define RPS_TO_RPM 1.0f * 60.0f / (2 * PI)            //把陀螺仪角速度（rps）转化为转速(rpm)
+#define GEAR_SCALE 2.0f * PI *WHEEL_R / 1.0f / 60.0f //转速(rpm)转换为线速度(m/s)参数
+#define RPS_TO_RPM 1.0f * 60.0f / (2 * PI)           //把陀螺仪角速度（rps）转化为转速(rpm)
 #define CTRL_INTERAL 0.003f                          //控制周期
 #define POWER_ENERGY_MAX 150.0f
 #define DEGREE_TO_RAD PI / 180.f
@@ -168,6 +168,8 @@ public:
     void Chassis_Ctrl_Cal();  //控制器计算
     void Power_Ctrl_Adjust(); //功率控制
     void Chassis_Adjust();    //控制量下发
+    void Link_Check();        //通信检测函数
+    void Motor_State_Check(); //电机状态检测与纠正
     void Reset_Adjust();      //重置函数
     //控制器更新数据部分
     void Update_Target(float _y_speed, float _z_speed, float _x_speed);
@@ -175,7 +177,7 @@ public:
     void Update_Current_Speed(float _y, float _yaw, float _pitch);
     void Update_Current_Acc(float _x, float _y, float _z);
     void Update_Motor_Current(float _current);
-    void Update_Slider_Params(float _s[2],float _sspeed[2]);
+    void Update_Slider_Params(float _s[2], float _sspeed[2]);
     //功率控制部分
     float Source_Current_Out = 0;
     float Source_Cap_Voltage = 0;
@@ -208,6 +210,11 @@ public:
     float target_rotation_r = 0;      //目标速度模长
     float target_rotation_angle = 0;  //速度向量旋转角
     float rotation_chassis_angle = 0; //底盘坐标相对于云台转角
+
+    //电机状态检测
+    uint8_t motorLinkCount[2] = {}; // 电机连接检测1
+    uint16_t motorErrorCnt[2] = {}; // 电机出错统计
+    uint16_t motorDeadCnt[2] = {};
 };
 
 #endif

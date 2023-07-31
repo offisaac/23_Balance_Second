@@ -62,21 +62,67 @@ void InfantryCTRL_Classdef::Infantry_Config()
 	booster.right_fri_speedloop.SetPIDParam(11.0f, 0.6f, 0.0f, 0, 30000.0f, 30000.0f);
 	booster.turnplate_speedloop.SetPIDParam(20.0f, 0.0f, 0.0f, 7000.0, 10000.0f, 8000.0f); // 20.0f,0.0f,0.0f,7000.0,8000.0f
 	booster.turnplate_angleloop.SetPIDParam(10.0f, 0.0f, 0.02f, 0, 10000.0f, 8000.0f);		 // 10.0f,0.0f,0.05f,0,8000.0f
-	/*云台pid参数*/
-	gimbal.pitch_angleloop.SetPIDParam(-3000, -72000, 200, 3000, 10000, 30000);
-	gimbal.yaw_angleloop.SetPIDParam(6000, 30000, -420, 3000, 150000, 30000);
+																																												 // /*云台pid参数*/
+																																												 // gimbal.pitch_angleloop.SetPIDParam(-3000, -72000, 200, 3000, 10000, 30000);
+																																												 // gimbal.yaw_angleloop.SetPIDParam(6000, 30000, -420, 3000, 150000, 30000);
 
-	gimbal.yaw_controller.SetAngleloopParams(18, 500);
-	gimbal.yaw_controller.SetSpeedloopParams(120, 1000, 300, 30000, 500);
-	gimbal.yaw_controller.SetCurrentloopParams(0.25, 50, 3000, 30000, 120000);
+#if !PITCH_PARAM_STRUCTURE
+	gimbal.PidInit(&gimbal.PitchHalfNormal[0], -2500, -40000, 175, 3000, 100000, 30000, 400);
+	gimbal.PidInit(&gimbal.PitchHalfCar[0], -1800, -40000, 180, 4500, 100000, 30000, 400);
+	gimbal.PidInit(&gimbal.PitchHalfRune[0], -3700, -40000, 230, 5000, 100000, 30000, 400);
+#else
+	gimbal.PidInit(&gimbal.PitchHalfNormal[0], -1700, -40000, 140, 0, 100000, 17000, 400);
+	gimbal.PidInit(&gimbal.PitchHalfCar[0], -2000, -40000, 170, 3000, 100000, 17000, 400);
+	gimbal.PidInit(&gimbal.PitchHalfRune[0], -2000, -40000, 170, 3000, 100000, 17000, 400);
+#endif
 
-	gimbal.pitch_controller.SetAngleloopParams(-17, 500);
-	gimbal.pitch_controller.SetSpeedloopParams(80, 6000, 400, 17000, 500);
-	gimbal.pitch_controller.SetCurrentloopParams(0.25, 50, 3000, 30000, 120000);
+#if !YAW_PARAM_STRUCTURE
+	gimbal.PidInit(&gimbal.YawHalfNormal[0], 6000, 30000, -420, 3000, 150000, 17000, 400);
+	gimbal.PidInit(&gimbal.YawHalfCar[0], 3000, 20000, -300, 1500, 150000, 22000, 400);
+	gimbal.PidInit(&gimbal.YawHalfRune[0], 4200, 30000, -300, 3000, 100000, 30000, 400);
+#else
+	gimbal.PidInit(&gimbal.YawHalfNormal[0], 2200, 30000, -250, 800, 150000, 17000, 400);
+	gimbal.PidInit(&gimbal.YawHalfCar[0], 2500, 60000, -220, 3000, 150000, 17000, 400);
+	gimbal.PidInit(&gimbal.YawHalfRune[0], 2500, 40000, -220, 3000, 100000, 17000, 400);
+#endif
 
-	gimbal.pitch_angleloop.I_SeparThresh = 5;
-	gimbal.yaw_angleloop.I_SeparThresh = 5;
+	gimbal.PidInit(&gimbal.PitchFullNormal[0], -15, 0, 0, 0, 500, 500, 500);
+	gimbal.PidInit(&gimbal.PitchFullNormal[1], 75, 1000, 0, 1000, 17000, 17000, 500);
+	gimbal.PidInit(&gimbal.PitchFullNormal[2], 0.25, 50, 0, 3000, 30000, 30000, 120000);
 
+	gimbal.PidInit(&gimbal.PitchFullCar[0], -16, 0, 0, 0, 500, 500, 500);
+	gimbal.PidInit(&gimbal.PitchFullCar[1], 80, 1200, 0, 4000, 17000, 17000, 500);
+	gimbal.PidInit(&gimbal.PitchFullCar[2], 0.25, 50, 0, 3000, 30000, 30000, 120000);
+
+	gimbal.PidInit(&gimbal.PitchFullRune[0], -17, 0, 0, 0, 500, 500, 500);
+	gimbal.PidInit(&gimbal.PitchFullRune[1], 80, 1200, 0, 4000, 17000, 17000, 500);
+	gimbal.PidInit(&gimbal.PitchFullRune[2], 0.25, 50, 0, 3000, 30000, 30000, 120000);
+
+	gimbal.PidInit(&gimbal.YawFullNormal[0], 13, 0, 0, 0, 500, 500, 500);
+	gimbal.PidInit(&gimbal.YawFullNormal[1], 140, 1000, 0, 0, 17000, 17000, 500);
+	gimbal.PidInit(&gimbal.YawFullNormal[2], 0.4, 0, 0, 3000, 30000, 30000, 120000);
+
+	gimbal.PidInit(&gimbal.YawFullCar[0], 20, 0, 0, 0, 900, 900, 900);
+	gimbal.PidInit(&gimbal.YawFullCar[1], 150, 1000, 0, 1500, 17000, 17000, 500);
+	gimbal.PidInit(&gimbal.YawFullCar[2], 0.4, 0, 0, 3000, 30000, 30000, 120000);
+
+	gimbal.PidInit(&gimbal.YawFullRune[0], 20, 0, 0, 0, 500, 500, 500);
+	gimbal.PidInit(&gimbal.YawFullRune[1], 150, 1000, 0, 1500, 17000, 17000, 500);
+	gimbal.PidInit(&gimbal.YawFullRune[2], 0.4, 0, 0, 3000, 30000, 30000, 120000);
+
+	gimbal.LoadPidPara(&gimbal.pitch_angleloop, gimbal.PitchHalfNormal[0]);
+	gimbal.LoadPidPara(&gimbal.pitch_speedloop, gimbal.PitchHalfNormal[1]);
+	gimbal.LoadPidPara(&gimbal.pitch_currentloop, gimbal.PitchHalfNormal[2]);
+	gimbal.LoadPidPara(&gimbal.yaw_angleloop, gimbal.YawHalfNormal[0]);
+	gimbal.LoadPidPara(&gimbal.yaw_speedloop, gimbal.YawHalfNormal[1]);
+	gimbal.LoadPidPara(&gimbal.yaw_currentloop, gimbal.YawHalfNormal[2]);
+
+	gimbal.pitch_controller.SetAngleloopParams(gimbal.PitchFullNormal[0].kp, gimbal.PitchFullNormal[0].Out_Max);
+	gimbal.pitch_controller.SetSpeedloopParams(gimbal.PitchFullNormal[1].kp, gimbal.PitchFullNormal[1].ki, gimbal.PitchFullNormal[1].I_Term_Max, gimbal.PitchFullNormal[1].Out_Max, gimbal.PitchFullNormal[1].I_SeparThresh);
+	gimbal.pitch_controller.SetCurrentloopParams(gimbal.PitchFullNormal[2].kp, gimbal.PitchFullNormal[2].ki, gimbal.PitchFullNormal[2].I_Term_Max, gimbal.PitchFullNormal[2].Out_Max, gimbal.PitchFullNormal[2].I_SeparThresh);
+	gimbal.yaw_controller.SetAngleloopParams(gimbal.YawFullNormal[0].kp, gimbal.YawFullNormal[0].Out_Max);
+	gimbal.yaw_controller.SetSpeedloopParams(gimbal.YawFullNormal[1].kp, gimbal.YawFullNormal[1].ki, gimbal.YawFullNormal[1].I_Term_Max, gimbal.YawFullNormal[1].Out_Max, gimbal.YawFullNormal[1].I_SeparThresh);
+	gimbal.yaw_controller.SetCurrentloopParams(gimbal.YawFullNormal[2].kp, gimbal.YawFullNormal[2].ki, gimbal.YawFullNormal[2].I_Term_Max, gimbal.YawFullNormal[2].Out_Max, gimbal.YawFullNormal[2].I_SeparThresh);
 /*底盘跟随pid参数*/
 #if CLASSICAL_INFANTRY
 	chassisCTRL.chassis_yawAngle.SetPIDParam(50, 0, 3, 0, 10000.0f); // 去年麦轮：250,0,3,0,10000，平衡步：15,0,0,0,10000， 新舵轮：-5,0,0,0,10000
@@ -149,37 +195,6 @@ void LostCtrl_State::Handle_State()
 	context->perbalance_delay_cnt = 800;
 }
 
-//单环参数
-float normal_pitch_angle_kp = -2500;
-float normal_pitch_angle_ki = -40000; // 320
-float normal_pitch_angle_kd = 175;
-float normal_pitch_angle_imax = 3000; // 16
-float normal_pitch_angle_pimax = 100000;
-float normal_pitch_angle_Ist = 400;
-float normal_yaw_angle_kp = 6000;
-float normal_yaw_angle_ki = 30000;
-float normal_yaw_angle_kd = -420;
-float normal_yaw_angle_imax = 3000;
-float normal_yaw_angle_pimax = 150000;
-float normal_yaw_angle_Ist = 5;
-//全补偿参数
-float fn_pitchcurrent_kp = 0.25;
-float fn_pitchcurrent_ki = 50;
-float fn_pitchcurrent_imax = 3000;
-float fn_pitchcurrent_omax = 26000;
-float fn_pitchspeed_kp = 75; // 150
-float fn_pitchspeed_ki = 1000;
-float fn_pitchspeed_imax = 300;
-float fn_pitchangle_kp = -15; // 25
-
-float fn_yawcurrent_kp = 0.25;
-float fn_yawcurrent_ki = 50;
-float fn_yawcurrent_imax = 3000;
-float fn_yawcurrent_omax = 26000;
-float fn_yawspeed_kp = 140; // 150
-float fn_yawspeed_ki = 1000;
-float fn_yawspeed_imax = 0;
-float fn_yawangle_kp = 13; // 25
 /**
  * @brief 遥控控制状态机Handle
  * @parma None
@@ -190,6 +205,7 @@ void RemoteCtrl_State::Handle_State()
 	context->state_machine = REMOTECTRL;
 	static uint8_t temp_rotationState = 1;								 // 底盘判断标志位
 	static uint8_t temp_friWheel = 1, temp_laserState = 1; // 小发射判断标志位
+
 	/*底盘*/
 	context->y_data = DR16.Get_LY_Norm();
 	context->x_data = DR16.Get_LX_Norm();
@@ -255,18 +271,20 @@ void RemoteCtrl_State::Handle_State()
 			break;
 		}
 	}
-	context->gimbal.pitch_angleloop.SetPIDParam(normal_pitch_angle_kp, normal_pitch_angle_ki, normal_pitch_angle_kd, normal_pitch_angle_imax, normal_pitch_angle_pimax, 30000);
-	context->gimbal.yaw_angleloop.SetPIDParam(normal_yaw_angle_kp, normal_yaw_angle_ki, normal_yaw_angle_kd, normal_yaw_angle_imax, normal_yaw_angle_pimax, 30000);
-	context->gimbal.pitch_angleloop.I_SeparThresh = normal_pitch_angle_Ist;
-	context->gimbal.yaw_angleloop.I_SeparThresh = normal_yaw_angle_Ist;
+	context->gimbal.pitch_controller.SetAngleloopParams(context->gimbal.PitchFullNormal[0].kp, context->gimbal.PitchFullNormal[0].Out_Max);
+	context->gimbal.pitch_controller.SetSpeedloopParams(context->gimbal.PitchFullNormal[1].kp, context->gimbal.PitchFullNormal[1].ki, context->gimbal.PitchFullNormal[1].I_Term_Max, context->gimbal.PitchFullNormal[1].Out_Max, context->gimbal.PitchFullNormal[1].I_SeparThresh);
+	context->gimbal.pitch_controller.SetCurrentloopParams(context->gimbal.PitchFullNormal[2].kp, context->gimbal.PitchFullNormal[2].ki, context->gimbal.PitchFullNormal[2].I_Term_Max, context->gimbal.PitchFullNormal[2].Out_Max, context->gimbal.PitchFullNormal[2].I_SeparThresh);
 
-	context->gimbal.yaw_controller.SetAngleloopParams(fn_yawangle_kp, 500);
-	context->gimbal.yaw_controller.SetSpeedloopParams(fn_yawspeed_kp, fn_yawspeed_ki, fn_yawspeed_imax, 30000, 500);
-	context->gimbal.yaw_controller.SetCurrentloopParams(fn_yawcurrent_kp, fn_yawcurrent_ki, fn_yawcurrent_imax, 30000, 120000);
+	context->gimbal.yaw_controller.SetAngleloopParams(context->gimbal.YawFullNormal[0].kp, context->gimbal.YawFullNormal[0].Out_Max);
+	context->gimbal.yaw_controller.SetSpeedloopParams(context->gimbal.YawFullNormal[1].kp, context->gimbal.YawFullNormal[1].ki, context->gimbal.YawFullNormal[1].I_Term_Max, context->gimbal.YawFullNormal[1].Out_Max, context->gimbal.YawFullNormal[1].I_SeparThresh);
+	context->gimbal.yaw_controller.SetCurrentloopParams(context->gimbal.YawFullNormal[2].kp, context->gimbal.YawFullNormal[2].ki, context->gimbal.YawFullNormal[2].I_Term_Max, context->gimbal.YawFullNormal[2].Out_Max, context->gimbal.YawFullNormal[2].I_SeparThresh);
 
-	context->gimbal.pitch_controller.SetAngleloopParams(fn_pitchangle_kp, 500);
-	context->gimbal.pitch_controller.SetSpeedloopParams(fn_pitchspeed_kp, fn_pitchspeed_ki, fn_pitchspeed_imax, 30000, 500);
-	context->gimbal.pitch_controller.SetCurrentloopParams(fn_pitchcurrent_kp, fn_pitchcurrent_ki, fn_pitchcurrent_imax, 30000, 120000);
+	context->gimbal.LoadPidPara(&context->gimbal.pitch_angleloop, context->gimbal.PitchHalfNormal[0]);
+	context->gimbal.LoadPidPara(&context->gimbal.pitch_speedloop, context->gimbal.PitchHalfNormal[1]);
+	context->gimbal.LoadPidPara(&context->gimbal.pitch_currentloop, context->gimbal.PitchHalfNormal[2]);
+	context->gimbal.LoadPidPara(&context->gimbal.yaw_angleloop, context->gimbal.YawHalfNormal[0]);
+	context->gimbal.LoadPidPara(&context->gimbal.yaw_speedloop, context->gimbal.YawHalfNormal[1]);
+	context->gimbal.LoadPidPara(&context->gimbal.yaw_currentloop, context->gimbal.YawHalfNormal[2]);
 }
 /**
  * @brief 键盘控制状态机Handle
@@ -281,7 +299,7 @@ void KeyboardCtrl_State::Handle_State()
 	static uint8_t temp_bulletBay;										// 小发射判断标志位
 	static uint8_t temp_turnBack, temp_turn90degrees; // 云台判断标志位
 	static uint8_t temp_ws, temp_ad;									//辅助车身方向检测
-	static uint8_t temp_self_rescue;
+	// static uint8_t temp_self_rescue;
 	static int16_t gg_mode, gimbal_gg_delay_cnt = 0; // 云台延时复位，确保gg_flag下发到底盘
 
 	/*刷新UI*/
@@ -339,7 +357,11 @@ void KeyboardCtrl_State::Handle_State()
 		context->turn90degrees = true;
 	}
 	/*按V，平衡步侧身90°*/
-	context->turn90degrees = context->LogicJudge(context->turn90degrees, DR16.IsKeyPress(DR16_KEY_V), &temp_turn90degrees);
+	// context->turn90degrees = context->LogicJudge(context->turn90degrees, DR16.IsKeyPress(DR16_KEY_V), &temp_turn90degrees);
+	if (DR16.IsKeyPress(DR16_KEY_V)) //按下开启
+	{
+		context->turn90degrees = true;
+	}
 	if (context->turn90degrees && context->self_rescue_state == false)
 	{
 		// context->y_data = DR16.IsKeyPress(DR16_KEY_D);
@@ -392,7 +414,7 @@ void KeyboardCtrl_State::Handle_State()
 	/*按ctrl+s，滑块软件复位*/
 	context->sliding_remake = (DR16.IsKeyPress(DR16_KEY_Z) && DR16.IsKeyPress(DR16_KEY_CTRL));
 	/*按ctrl+c，开启固连自救*/
-	context->self_rescue_state = context->LogicJudge(context->self_rescue_state, DR16.IsKeyPress(DR16_KEY_C) && DR16.IsKeyPress(DR16_KEY_CTRL), &temp_self_rescue);
+	// context->self_rescue_state = context->LogicJudge(context->self_rescue_state, DR16.IsKeyPress(DR16_KEY_C) && DR16.IsKeyPress(DR16_KEY_CTRL), &temp_self_rescue);
 
 	/*按X云台旋转180°*/
 	if (context->LogicJudge(0, DR16.IsKeyPress(DR16_KEY_X), &temp_turnBack))
@@ -492,18 +514,20 @@ void KeyboardCtrl_State::Handle_State()
 			context->fri_state = true;
 		}
 
-		context->gimbal.pitch_angleloop.SetPIDParam(normal_pitch_angle_kp, normal_pitch_angle_ki, normal_pitch_angle_kd, normal_pitch_angle_imax, normal_pitch_angle_pimax, 30000);
-		context->gimbal.yaw_angleloop.SetPIDParam(normal_yaw_angle_kp, normal_yaw_angle_ki, normal_yaw_angle_kd, normal_yaw_angle_imax, normal_yaw_angle_pimax, 30000);
-		context->gimbal.pitch_angleloop.I_SeparThresh = normal_pitch_angle_Ist;
-		context->gimbal.yaw_angleloop.I_SeparThresh = normal_yaw_angle_Ist;
+		context->gimbal.pitch_controller.SetAngleloopParams(context->gimbal.PitchFullNormal[0].kp, context->gimbal.PitchFullNormal[0].Out_Max);
+		context->gimbal.pitch_controller.SetSpeedloopParams(context->gimbal.PitchFullNormal[1].kp, context->gimbal.PitchFullNormal[1].ki, context->gimbal.PitchFullNormal[1].I_Term_Max, context->gimbal.PitchFullNormal[1].Out_Max, context->gimbal.PitchFullNormal[1].I_SeparThresh);
+		context->gimbal.pitch_controller.SetCurrentloopParams(context->gimbal.PitchFullNormal[2].kp, context->gimbal.PitchFullNormal[2].ki, context->gimbal.PitchFullNormal[2].I_Term_Max, context->gimbal.PitchFullNormal[2].Out_Max, context->gimbal.PitchFullNormal[2].I_SeparThresh);
 
-		context->gimbal.yaw_controller.SetAngleloopParams(fn_yawangle_kp, 500);
-		context->gimbal.yaw_controller.SetSpeedloopParams(fn_yawspeed_kp, fn_yawspeed_ki, fn_yawspeed_imax, 30000, 400);
-		context->gimbal.yaw_controller.SetCurrentloopParams(fn_yawcurrent_kp, fn_yawcurrent_ki, fn_yawcurrent_imax, 30000, 120000);
+		context->gimbal.yaw_controller.SetAngleloopParams(context->gimbal.YawFullNormal[0].kp, context->gimbal.YawFullNormal[0].Out_Max);
+		context->gimbal.yaw_controller.SetSpeedloopParams(context->gimbal.YawFullNormal[1].kp, context->gimbal.YawFullNormal[1].ki, context->gimbal.YawFullNormal[1].I_Term_Max, context->gimbal.YawFullNormal[1].Out_Max, context->gimbal.YawFullNormal[1].I_SeparThresh);
+		context->gimbal.yaw_controller.SetCurrentloopParams(context->gimbal.YawFullNormal[2].kp, context->gimbal.YawFullNormal[2].ki, context->gimbal.YawFullNormal[2].I_Term_Max, context->gimbal.YawFullNormal[2].Out_Max, context->gimbal.YawFullNormal[2].I_SeparThresh);
 
-		context->gimbal.pitch_controller.SetAngleloopParams(fn_pitchangle_kp, 500);
-		context->gimbal.pitch_controller.SetSpeedloopParams(fn_pitchspeed_kp, fn_pitchspeed_ki, fn_pitchspeed_imax, 30000, 500);
-		context->gimbal.pitch_controller.SetCurrentloopParams(fn_pitchcurrent_kp, fn_pitchcurrent_ki, fn_pitchcurrent_imax, 30000, 120000);
+		context->gimbal.LoadPidPara(&context->gimbal.pitch_angleloop, context->gimbal.PitchHalfNormal[0]);
+		context->gimbal.LoadPidPara(&context->gimbal.pitch_speedloop, context->gimbal.PitchHalfNormal[1]);
+		context->gimbal.LoadPidPara(&context->gimbal.pitch_currentloop, context->gimbal.PitchHalfNormal[2]);
+		context->gimbal.LoadPidPara(&context->gimbal.yaw_angleloop, context->gimbal.YawHalfNormal[0]);
+		context->gimbal.LoadPidPara(&context->gimbal.yaw_speedloop, context->gimbal.YawHalfNormal[1]);
+		context->gimbal.LoadPidPara(&context->gimbal.yaw_currentloop, context->gimbal.YawHalfNormal[2]);
 	}
 }
 /**
@@ -511,74 +535,6 @@ void KeyboardCtrl_State::Handle_State()
  * @parma None
  * @return None
  */
-//单环参数
-// 视觉模式pid参数（非打符模式）
-float pitch_angle_kp = -2700;
-float pitch_angle_ki = -40000; // 320
-float pitch_angle_kd = 190;
-float pitch_angle_imax = 4500; // 16
-float pitch_angle_pimax = 100000;
-float pitch_angle_outmax = 30000;
-float pitch_angle_Ist = 400;
-float yaw_angle_kp = 3000;
-float yaw_angle_ki = 20000;
-float yaw_angle_kd = -300;
-float yaw_angle_imax = 1500;
-float yaw_angle_pimax = 150000;
-float yaw_angle_outmax = 22000;
-float yaw_angle_Ist = 400;
-// 视觉模式pid参数（打符模式）
-float rune_pitch_angle_kp = -3700;
-float rune_pitch_angle_ki = -40000; // 320
-float rune_pitch_angle_kd = 230;
-float rune_pitch_angle_imax = 5000; // 16
-float rune_pitch_angle_pimax = 100000;
-float rune_pitch_angle_outmax = 30000;
-float rune_pitch_angle_Ist = 400;
-float rune_yaw_angle_kp = 4200;
-float rune_yaw_angle_ki = 30000;
-float rune_yaw_angle_kd = -300;
-float rune_yaw_angle_imax = 3000;
-float rune_yaw_angle_pimax = 100000;
-float rune_yaw_angle_outmax = 30000;
-float rune_yaw_angle_Ist = 400;
-
-//全补偿参数
-//非打符
-float fc_pitchcurrent_kp = 0.25;
-float fc_pitchcurrent_ki = 50;
-float fc_pitchcurrent_imax = 3000;
-float fc_pitchcurrent_omax = 30000;
-float fc_pitchspeed_kp = 80; // 150
-float fc_pitchspeed_ki = 1200;
-float fc_pitchspeed_imax = 5000;
-float fc_pitchangle_kp = -16; // 25
-
-float fc_current_kp = 0.25;
-float fc_current_ki = 50;
-float fc_current_imax = 3000;
-float fc_current_omax = 26000;
-float fc_speed_kp = 100; // 150
-float fc_speed_ki = 1000;
-float fc_speed_imax = 800;
-float fc_angle_kp = 25; // 25
-//打符
-float fr_pitchcurrent_kp = 0.25;
-float fr_pitchcurrent_ki = 50;
-float fr_pitchcurrent_imax = 3000;
-float fr_pitchcurrent_omax = 26000;
-float fr_pitchspeed_kp = 80; // 150
-float fr_pitchspeed_ki = 6000;
-float fr_pitchspeed_imax = 400;
-float fr_pitchangle_kp = -17; // 25
-float fr_current_kp = 0.25;
-float fr_current_ki = 50;
-float fr_current_imax = 3000;
-float fr_current_omax = 30000;
-float fr_speed_kp = 150; // 150
-float fr_speed_ki = 1000;
-float fr_speed_imax = 800;
-float fr_angle_kp = 25; // 25
 void PCvisionCtrl_State::Handle_State()
 {
 	static uint8_t last_can_shoot = 0;
@@ -604,34 +560,39 @@ void PCvisionCtrl_State::Handle_State()
 	/*视觉模式切换pid*/
 	if (context->pc_vision_mode == RUNE_V || context->pc_vision_mode == AGAINST_RUNE_V)
 	{
-		context->gimbal.pitch_angleloop.SetPIDParam(rune_pitch_angle_kp, rune_pitch_angle_ki, rune_pitch_angle_kd, rune_pitch_angle_imax, rune_pitch_angle_pimax, rune_pitch_angle_outmax);
-		context->gimbal.yaw_angleloop.SetPIDParam(rune_yaw_angle_kp, rune_yaw_angle_ki, rune_yaw_angle_kd, rune_yaw_angle_imax, rune_yaw_angle_pimax, rune_yaw_angle_outmax);
 		context->fri_state = true;
-		context->gimbal.pitch_angleloop.I_SeparThresh = pitch_angle_Ist;
-		context->gimbal.yaw_angleloop.I_SeparThresh = yaw_angle_Ist;
 
-		context->gimbal.yaw_controller.SetAngleloopParams(fr_angle_kp, 500);
-		context->gimbal.yaw_controller.SetSpeedloopParams(fr_speed_kp, fr_speed_ki, fr_speed_imax, 30000, 400);
-		context->gimbal.yaw_controller.SetCurrentloopParams(fr_current_kp, fr_current_ki, fr_current_imax, 30000, 120000);
-	
-		context->gimbal.pitch_controller.SetAngleloopParams(fr_pitchangle_kp, 500);
-		context->gimbal.pitch_controller.SetSpeedloopParams(fr_pitchspeed_kp, fr_pitchspeed_ki, fr_pitchspeed_imax, 30000, 500);
-		context->gimbal.pitch_controller.SetCurrentloopParams(fr_pitchcurrent_kp, fr_pitchcurrent_ki, fr_pitchcurrent_imax, 30000, 120000);
+		context->gimbal.pitch_controller.SetAngleloopParams(context->gimbal.PitchFullRune[0].kp, context->gimbal.PitchFullRune[0].Out_Max);
+		context->gimbal.pitch_controller.SetSpeedloopParams(context->gimbal.PitchFullRune[1].kp, context->gimbal.PitchFullRune[1].ki, context->gimbal.PitchFullRune[1].I_Term_Max, context->gimbal.PitchFullRune[1].Out_Max, context->gimbal.PitchFullRune[1].I_SeparThresh);
+		context->gimbal.pitch_controller.SetCurrentloopParams(context->gimbal.PitchFullRune[2].kp, context->gimbal.PitchFullRune[2].ki, context->gimbal.PitchFullRune[2].I_Term_Max, context->gimbal.PitchFullRune[2].Out_Max, context->gimbal.PitchFullRune[2].I_SeparThresh);
+
+		context->gimbal.yaw_controller.SetAngleloopParams(context->gimbal.YawFullRune[0].kp, context->gimbal.YawFullRune[0].Out_Max);
+		context->gimbal.yaw_controller.SetSpeedloopParams(context->gimbal.YawFullRune[1].kp, context->gimbal.YawFullRune[1].ki, context->gimbal.YawFullRune[1].I_Term_Max, context->gimbal.YawFullRune[1].Out_Max, context->gimbal.YawFullRune[1].I_SeparThresh);
+		context->gimbal.yaw_controller.SetCurrentloopParams(context->gimbal.YawFullRune[2].kp, context->gimbal.YawFullRune[2].ki, context->gimbal.YawFullRune[2].I_Term_Max, context->gimbal.YawFullRune[2].Out_Max, context->gimbal.YawFullRune[2].I_SeparThresh);
+
+		context->gimbal.LoadPidPara(&context->gimbal.pitch_angleloop, context->gimbal.PitchHalfRune[0]);
+		context->gimbal.LoadPidPara(&context->gimbal.pitch_speedloop, context->gimbal.PitchHalfRune[1]);
+		context->gimbal.LoadPidPara(&context->gimbal.pitch_currentloop, context->gimbal.PitchHalfRune[2]);
+		context->gimbal.LoadPidPara(&context->gimbal.yaw_angleloop, context->gimbal.YawHalfRune[0]);
+		context->gimbal.LoadPidPara(&context->gimbal.yaw_speedloop, context->gimbal.YawHalfRune[1]);
+		context->gimbal.LoadPidPara(&context->gimbal.yaw_currentloop, context->gimbal.YawHalfRune[2]);
 	}
 	else
 	{
-		context->gimbal.pitch_angleloop.SetPIDParam(pitch_angle_kp, pitch_angle_ki, pitch_angle_kd, pitch_angle_imax, pitch_angle_pimax, pitch_angle_outmax);
-		context->gimbal.yaw_angleloop.SetPIDParam(yaw_angle_kp, yaw_angle_ki, yaw_angle_kd, yaw_angle_imax, yaw_angle_pimax, yaw_angle_outmax);
-		context->gimbal.pitch_angleloop.I_SeparThresh = rune_pitch_angle_Ist;
-		context->gimbal.yaw_angleloop.I_SeparThresh = rune_yaw_angle_Ist;
+		context->gimbal.pitch_controller.SetAngleloopParams(context->gimbal.PitchFullCar[0].kp, context->gimbal.PitchFullCar[0].Out_Max);
+		context->gimbal.pitch_controller.SetSpeedloopParams(context->gimbal.PitchFullCar[1].kp, context->gimbal.PitchFullCar[1].ki, context->gimbal.PitchFullCar[1].I_Term_Max, context->gimbal.PitchFullCar[1].Out_Max, context->gimbal.PitchFullCar[1].I_SeparThresh);
+		context->gimbal.pitch_controller.SetCurrentloopParams(context->gimbal.PitchFullCar[2].kp, context->gimbal.PitchFullCar[2].ki, context->gimbal.PitchFullCar[2].I_Term_Max, context->gimbal.PitchFullCar[2].Out_Max, context->gimbal.PitchFullCar[2].I_SeparThresh);
 
-		context->gimbal.yaw_controller.SetAngleloopParams(fc_angle_kp, 500);
-		context->gimbal.yaw_controller.SetSpeedloopParams(fc_speed_kp, fc_speed_ki, fc_speed_imax, 30000, 400);
-		context->gimbal.yaw_controller.SetCurrentloopParams(fc_current_kp, fc_current_ki, fc_current_imax, 30000, 120000);
+		context->gimbal.yaw_controller.SetAngleloopParams(context->gimbal.YawFullCar[0].kp, context->gimbal.YawFullCar[0].Out_Max);
+		context->gimbal.yaw_controller.SetSpeedloopParams(context->gimbal.YawFullCar[1].kp, context->gimbal.YawFullCar[1].ki, context->gimbal.YawFullCar[1].I_Term_Max, context->gimbal.YawFullCar[1].Out_Max, context->gimbal.YawFullCar[1].I_SeparThresh);
+		context->gimbal.yaw_controller.SetCurrentloopParams(context->gimbal.YawFullCar[2].kp, context->gimbal.YawFullCar[2].ki, context->gimbal.YawFullCar[2].I_Term_Max, context->gimbal.YawFullCar[2].Out_Max, context->gimbal.YawFullCar[2].I_SeparThresh);
 
-		context->gimbal.pitch_controller.SetAngleloopParams(fc_pitchangle_kp, 500);
-		context->gimbal.pitch_controller.SetSpeedloopParams(fc_pitchspeed_kp, fc_pitchspeed_ki, fc_pitchspeed_imax, 30000, 500);
-		context->gimbal.pitch_controller.SetCurrentloopParams(fc_pitchcurrent_kp, fc_pitchcurrent_ki, fc_pitchcurrent_imax, 30000, 120000);
+		context->gimbal.LoadPidPara(&context->gimbal.pitch_angleloop, context->gimbal.PitchHalfCar[0]);
+		context->gimbal.LoadPidPara(&context->gimbal.pitch_speedloop, context->gimbal.PitchHalfCar[1]);
+		context->gimbal.LoadPidPara(&context->gimbal.pitch_currentloop, context->gimbal.PitchHalfCar[2]);
+		context->gimbal.LoadPidPara(&context->gimbal.yaw_angleloop, context->gimbal.YawHalfCar[0]);
+		context->gimbal.LoadPidPara(&context->gimbal.yaw_speedloop, context->gimbal.YawHalfCar[1]);
+		context->gimbal.LoadPidPara(&context->gimbal.yaw_currentloop, context->gimbal.YawHalfCar[2]);
 	}
 
 	/*小发射*/
@@ -751,11 +712,18 @@ void InfantryCTRL_Classdef::Status_Update()
  */
 void InfantryCTRL_Classdef::Update_StateRequest()
 {
+	static uint8_t temp_self_rescue = 0;
+	/*按ctrl+c，开启固连自救*/
+	self_rescue_state = LogicJudge(self_rescue_state, DR16.IsKeyPress(DR16_KEY_C) && DR16.IsKeyPress(DR16_KEY_CTRL), &temp_self_rescue);
 	if (DR16.GetStatus() != DR16_ESTABLISHED)
 	{
 		TransitionTo(&lostctrl_state);
 	}
 #if BALANCE_INFANTRY
+	else if (self_rescue_state == true)
+	{
+		TransitionTo(&keyboardctrl_state);//自救进入键盘状态机
+	}
 	else if (current_state == &lostctrl_state)
 	{
 		TransitionTo(&perbalance_state);
@@ -799,7 +767,7 @@ void InfantryCTRL_Classdef::Actuate()
 	/*视觉*/
 	pc_vision.SendGimbleStatus();
 	/*底盘板间通信*/
-	//enable_cmd = false;
+	// enable_cmd = false;
 #if BALANCE_INFANTRY
 	board_com.Set_BalanceInfanty_Flag(DR16.GetStatus(),
 																		cap_mode == UNLIMITED,
@@ -865,19 +833,19 @@ void InfantryCTRL_Classdef::Update_Data(CAN_COB CAN_RxMsg)
 		switch (board_com.rx_pack2.source_power_max)
 		{
 		case 50:
-			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 3., 0, 10000.0f, 500.0f);
+			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 2.8, 0, 10000.0f, 500.0f);
 			break;
 		case 60:
-			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 3., 0, 10000.0f, 500.0f);
+			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 2.8, 0, 10000.0f, 500.0f);
 			break;
 		case 80:
-			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 3., 0, 10000.0f, 500.0f);
+			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 2.6, 0, 10000.0f, 500.0f);
 			break;
 		case 100:
-			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 3., 0, 10000.0f, 500.0f);
+			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 2.5, 0, 10000.0f, 500.0f);
 			break;
 		default:
-			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 3., 0, 10000.0f, 500.0f);
+			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 2.8, 0, 10000.0f, 500.0f);
 			break;
 		}
 	}

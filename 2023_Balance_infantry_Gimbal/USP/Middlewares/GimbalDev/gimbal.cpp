@@ -170,6 +170,22 @@ void Gimbal_Classdef::PidParaInit(E_PitchYawPidType _type, float _kp, float _ki,
 	pid_para[_type].Out_Max = _out_max;
 	pid_para[_type].I_SeparThresh = _I_SeparThresh;
 }
+
+/**
+ * @brief pid参数初始化
+ * @param None
+ * @retval None
+ */
+void Gimbal_Classdef::PidInit(S_PidPara *_para, float _kp, float _ki, float _kd, float _ki_max, float _pi_max, float _out_max, float _I_SeparThresh)
+{
+	_para->kp = _kp;
+	_para->ki = _ki;
+	_para->kd = _kd;
+	_para->I_Term_Max = _ki_max;
+	_para->PI_Term_Max = _pi_max;
+	_para->Out_Max = _out_max;
+	_para->I_SeparThresh = _I_SeparThresh;
+}
 /**
  * @brief pid对象加载pid参数
  * @param None
@@ -233,25 +249,13 @@ int16_t ta_count = 0;
 float t = 0;
 uint8_t debug_switch = 0;
 
-// float m_r = 53.f;
-// float m_l = 0.0004f;
-// //速度环
-// float speed_kp = 80;
-// float speed_ki = 6000;
-// float speed_imax = 400;
-// float speed_omax = 17000;
-// float f_k = 4.8f;//粘滞摩擦力斜率补偿(4.6
-// float f_c = 240;//静摩擦补偿(230
-// float a_k = 2.15f;//转动惯量补偿
-// //float f_k = 4.f;//粘滞摩擦力斜率补偿(4.6
-// //float f_c = 200;//静摩擦补偿(230
-// //float a_k = 4.f;//转动惯量补偿
-// //角度环
-// float angle_kp = -17;
-// float angle_omax = 500;
+float feedforward_scale = 1.f;
+
 //粘滞摩擦系数辨识
-float safe_angle = 24.f;//安全区域，也就是openlog记录的范围
-float stop_angle = 26.f;//停车位置，云台停转
+float safe_angle = 24.f; //安全区域，也就是openlog记录的范围
+float stop_angle = 26.f; //停车位置，云台停转
+
+float debug_ff_t = 0;
 void Gimbal_Classdef::gimbal_pid_calculate()
 {
 	t = Get_SystemTimer() * 0.000001f;
@@ -259,7 +263,7 @@ void Gimbal_Classdef::gimbal_pid_calculate()
 	if (feedback_by == ENCODER)
 	{
 		pitch_angleloop.Current = -pitchMotor.getAngle();
-		pitch_controller.update_current_state(-pitchMotor.getAngle(),-angular_velocity_pitch,pitchMotor.givenCurrent,yawMotor.getSpeed());
+		pitch_controller.update_current_state(-pitchMotor.getAngle(), -angular_velocity_pitch, pitchMotor.givenCurrent, yawMotor.getSpeed());
 		/*以最小角度跟随*/
 		yaw_controller.update_current_state(int(yawMotor.getAngle()) % 360, angular_velocity_yaw, yawMotor.givenCurrent, yawMotor.getSpeed());
 		yaw_angleloop.Current = int(yawMotor.getAngle()) % 360;
@@ -271,7 +275,7 @@ void Gimbal_Classdef::gimbal_pid_calculate()
 		{
 			yaw_controller.angleLoop.Current += 360;
 		}
-		
+
 		if (yaw_angleloop.Current > 180)
 		{
 			yaw_angleloop.Current -= 360;
@@ -284,7 +288,7 @@ void Gimbal_Classdef::gimbal_pid_calculate()
 	else
 	{
 		pitch_angleloop.Current = current_pitch;
-		pitch_controller.update_current_state(current_pitch,-angular_velocity_pitch,pitchMotor.givenCurrent,yawMotor.getSpeed());
+		pitch_controller.update_current_state(current_pitch, -angular_velocity_pitch, pitchMotor.givenCurrent, yawMotor.getSpeed());
 		yaw_controller.update_current_state(total_yaw, angular_velocity_yaw, yawMotor.givenCurrent, yawMotor.getSpeed());
 		yaw_angleloop.Current = total_yaw;
 	}
@@ -297,24 +301,96 @@ void Gimbal_Classdef::gimbal_pid_calculate()
 	yaw_angleloop.Target = yaw_target;
 	yaw_controller.update_target_angle(yaw_target);
 
-	/*计算输出值*/
-//	yaw_out = 200 + 50 * sinf(3 * sin_w * t) + 100 * sinf(sin_w * t);
-//	yaw_controller.SetSpeedloopParams(0,0,0,0,0);
-//	yaw_controller.update_current_state(total_yaw, angular_velocity_yaw, yawMotor.givenCurrent, yawMotor.getSpeed());
-//	if(debug_switch)
-//	{
-//		yaw_controller.speedLoop.Target = yaw_out;
-//	}
-//	else
-//	{
-//		yaw_controller.speedLoop.Target = 0;
-//	}
-	pitchMotor.Out = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + 116.7360f * current_pitch - 763.2905f; // old
-	//	pitchMotor.Out = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + 51.38340f * current_pitch  - 438.2411f;//new
-	//pitchMotor.Out = pitch_controller.adjust();
+	if (PITCH_PARAM_STRUCTURE == 0)
+	{
+		pitchMotor.Out = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + 116.7360f * current_pitch - 763.2905f; // old
+	}
+	else if (PITCH_PARAM_STRUCTURE == 1)
+	{
+		static bool angle_feedback_flag_p = 1;
+		static uint8_t cnt_p = 0;
+		if (last_angle_feedback_pitch == angle_feedback_pitch)
+		{
+			if (cnt_p < 15)
+				cnt_p++;
+			else
+				angle_feedback_pitch = 0;
+		}
+		else
+		{
+			cnt_p = 0;
+		}
+		last_angle_feedback_pitch = angle_feedback_pitch;
+		if (fabsf(pitch_angleloop.Error) > 6)
+			angle_feedback_flag_p = 0;
+		else if (fabsf(pitch_angleloop.Error) < 3)
+			angle_feedback_flag_p = 1;
 
-	//yawMotor.Out = yaw_angleloop.Adjust_importDiff(angular_velocity_yaw);
-	yawMotor.Out = yaw_controller.adjust();
+		pitch_angleloop.Target = pitchAngleLPF.f(pitch_angleloop.Target);
+		pitch_currentloop.SetPIDParam(0.25, 50, 0, 3000, 30000, 30000);
+		pitch_currentloop.I_SeparThresh = 120000;
+		pitch_currentloop.Target = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + feedforward_scale * pitch_f_k * (pitch_angle_Diff[0].calc(-pitch_angleloop.Target) + pitchMotor.getSpeed() * 6 - (-angular_velocity_pitch)) + pitch_g_k * pitch_angleloop.Current + pitch_g_c;
+		pitch_currentloop.Target += angle_feedback_flag_p * angle_feedback_pitch * pitch_a_k; // 加入二阶微分前馈
+		// debug_ff_t = angle_feedback_flag_p * angle_feedback_pitch * pitch_a_k;
+		pitch_currentloop.Current = pitchMotor.givenCurrent;
+		pitchMotor.Out = pitch_currentloop.Adjust() + (pitch_currentloop.Target + pitch_m_r * pitchMotor.getSpeed()) / (0.75f - pitch_m_l * pitchMotor.getSpeed());
+	}
+	else
+	{
+		pitchMotor.Out = pitch_controller.adjust();
+	}
+
+	if (YAW_PARAM_STRUCTURE == 0)
+	{
+		yawMotor.Out = yaw_angleloop.Adjust_importDiff(angular_velocity_yaw);
+	}
+	else if (YAW_PARAM_STRUCTURE == 1)
+	{
+		static bool angle_feedback_flag_y = 1;
+		static uint8_t cnt_y = 0;
+		if (last_angle_feedback_yaw == angle_feedback_yaw)
+		{
+			if (cnt_y < 15)
+				cnt_y++;
+			else
+				angle_feedback_yaw = 0;
+		}
+		else
+		{
+			cnt_y = 0;
+		}
+		last_angle_feedback_yaw = angle_feedback_yaw;
+		if (fabsf(yaw_angleloop.Error) > 6)
+			angle_feedback_flag_y = 0;
+		else if (fabsf(yaw_angleloop.Error) < 3)
+			angle_feedback_flag_y = 1;
+
+		yaw_angleloop.Target = yawAngleLPF.f(yaw_angleloop.Target);
+		yaw_currentloop.SetPIDParam(0.25, 50, 0, 3000, 30000, 30000);
+		yaw_currentloop.I_SeparThresh = 120000;
+		yaw_currentloop.Target = yaw_angleloop.Adjust_importDiff(angular_velocity_yaw) + feedforward_scale * yaw_f_k * (yaw_angle_Diff[0].calc(yaw_angleloop.Target) + yawMotor.getSpeed() * 6 - angular_velocity_yaw);
+		yaw_currentloop.Target += angle_feedback_flag_y * angle_feedback_yaw * yaw_a_k; // 加入二阶微分前馈
+		// debug_ff_t = angle_feedback_flag_y * angle_feedback_yaw * yaw_a_k;
+		yaw_currentloop.Current = yawMotor.givenCurrent;
+		yawMotor.Out = yaw_currentloop.Adjust() + (yaw_currentloop.Target + yaw_m_r * yawMotor.getSpeed()) / (0.75f - yaw_m_l * yawMotor.getSpeed());
+	}
+	else
+	{
+		yawMotor.Out = yaw_controller.adjust();
+	}
+
+	/*计算输出值*/
+	//	yaw_out = 200 + 50 * sinf(3 * sin_w * t) + 100 * sinf(sin_w * t);
+	//	yaw_controller.SetSpeedloopParams(0,0,0,0,0);
+	//	yaw_controller.update_current_state(total_yaw, angular_velocity_yaw, yawMotor.givenCurrent, yawMotor.getSpeed());
+	//	if(debug_switch)
+	//	{
+	//		yaw_controller.speedLoop.Target = yaw_out;
+	//	}
+	//	else
+	//	{
+	//		yaw_controller.speedLoop.Target = 0;
+	//	}
 
 	// /*生成三角波*/
 	// if(ta_o!=0)
@@ -349,15 +425,15 @@ void Gimbal_Classdef::gimbal_pid_calculate()
 	// static SecondOrderButterworthLPF angleOut_lpf(10,1000);
 	/*生成正弦波*/
 	// yaw_out = 200 + 50 * sinf(3 * sin_w * t) + 100 * sinf(sin_w * t);
-//	yaw_out = 200 * sinf(4 * sin_w * t);//30 2	20 3
-//	if(debug_switch)
-//	{
-//		pitch_speedloop.Target = -yaw_out;
-//	}
-//	else
-//	{
-//		pitch_speedloop.Target = 0;
-//	}
+	// yaw_out = 100 * sinf(2 * sin_w * t);//30 2	20 3
+	//	if(debug_switch)
+	//	{
+	//		pitch_speedloop.Target = -yaw_out;
+	//	}
+	//	else
+	//	{
+	//		pitch_speedloop.Target = 0;
+	//	}
 	// pitch_angleloop.SetPIDParam(angle_kp,0,0,0,angle_omax,angle_omax);
 	// pitch_angleloop.Target = angle_t_lpf.f(pitch_target);
 	// //pitch_angleloop.Target = pitch_target;

@@ -36,6 +36,8 @@
 #define VISION_YAW_SCALE 1.0f
 
 #define DELAY_TRANSIMISION_TIME 15.0f // 时序核对延时时间
+
+#define VISION_DATA_MODE 1 //视觉数据类型：0为绝对式	1为增量式
 /* Private type --------------------------------------------------------------*/
 
 /**************************************************************************
@@ -152,6 +154,36 @@ private:
 	float DataTab[Length];
 };
 
+/*数据对齐：循环队列*/
+template <uint16_t length>
+class Recorder
+{
+public:
+	Recorder() : currentIndex(0) {}
+
+	void addFrame(const float frame)
+	{
+		currentIndex = (currentIndex + 1) % length;
+		frames[currentIndex] = frame;
+	}
+
+	float getFrames(uint16_t last_frame_num)
+	{
+		if (last_frame_num >= length)
+		{
+			return NULL;
+		}
+
+		uint16_t Index = (currentIndex >= last_frame_num) ? (currentIndex - last_frame_num) : (length + (currentIndex - last_frame_num));
+
+		return frames[Index];
+	}
+
+private:
+	float frames[length];
+	uint16_t currentIndex;
+};
+
 /*视觉通信类*/
 class PCvision_Classdef
 {
@@ -177,6 +209,9 @@ public:
 	PreviousDataClass<50> YawPerviousData;
 	PreviousDataClass<50> PitchAngularSpeed_PerviousData;
 	PreviousDataClass<50> YawAngularSpeed_PerviousData;
+	/*陀螺仪数据*/
+	Recorder<20> ImuYawRecord;
+	Recorder<20> ImuPitchRecord;
 	/*打符上升沿标志位*/
 	uint8_t last_shoot_mode, shoot_mode, have_fire;
 	int count; // 上升冷却沿计时
