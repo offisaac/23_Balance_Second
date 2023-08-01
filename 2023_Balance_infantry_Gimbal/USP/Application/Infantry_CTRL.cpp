@@ -40,6 +40,7 @@ extern QueueHandle_t CAN2_TxPort;
 /* Private variables ---------------------------------------------------------*/
 float debug_pitch_angle = 0;
 float debug_yaw_angle = 0;
+uint32_t vision_can_shoot_t = 0;
 /* Private type --------------------------------------------------------------*/
 PerBalance_State perbalance_state;
 DeathStranding_State deathstranding_state;
@@ -83,7 +84,7 @@ void InfantryCTRL_Classdef::Infantry_Config()
 #else
 	gimbal.PidInit(&gimbal.YawHalfNormal[0], 2200, 30000, -250, 800, 150000, 17000, 400);
 	gimbal.PidInit(&gimbal.YawHalfCar[0], 2500, 60000, -220, 3000, 150000, 17000, 400);
-	gimbal.PidInit(&gimbal.YawHalfRune[0], 2500, 40000, -220, 3000, 100000, 17000, 400);
+	gimbal.PidInit(&gimbal.YawHalfRune[0], 2500, 40000, -220, 2000, 100000, 17000, 400);
 #endif
 
 	gimbal.PidInit(&gimbal.PitchFullNormal[0], -15, 0, 0, 0, 500, 500, 500);
@@ -202,6 +203,7 @@ void LostCtrl_State::Handle_State()
  */
 void RemoteCtrl_State::Handle_State()
 {
+	context->enable_cmd = true;
 	context->state_machine = REMOTECTRL;
 	static uint8_t temp_rotationState = 1;								 // 底盘判断标志位
 	static uint8_t temp_friWheel = 1, temp_laserState = 1; // 小发射判断标志位
@@ -293,6 +295,7 @@ void RemoteCtrl_State::Handle_State()
  */
 void KeyboardCtrl_State::Handle_State()
 {
+	context->enable_cmd = true;
 	context->state_machine = KEYBOARDCTRL;
 	static uint8_t leap_state, unlimited_state, temp_unlimited, temp_leap; // 底盘判断标志位
 	static uint8_t last_leap, last_unlimited;
@@ -302,6 +305,9 @@ void KeyboardCtrl_State::Handle_State()
 	// static uint8_t temp_self_rescue;
 	static int16_t gg_mode, gimbal_gg_delay_cnt = 0; // 云台延时复位，确保gg_flag下发到底盘
 
+	static uint8_t temp_self_rescue = 0;
+	/*按ctrl+c，开启固连自救*/
+	context->self_rescue_state = context->LogicJudge(context->self_rescue_state, DR16.IsKeyPress(DR16_KEY_C) && DR16.IsKeyPress(DR16_KEY_CTRL), &temp_self_rescue);
 	/*刷新UI*/
 	if (DR16.IsKeyPress(DR16_KEY_F) && DR16.IsKeyPress(DR16_KEY_CTRL))
 	{
@@ -636,6 +642,10 @@ void PCvisionCtrl_State::Handle_State()
 
 		if (context->pc_vision_mode == ROTATION_V)
 		{
+			if(context->pc_vision.PackFromVisionUnion.PackFromVision.shoot_mode == CAN_SHOOT && last_can_shoot != CAN_SHOOT)
+			{
+				vision_can_shoot_t = Get_SystemTimer();
+			}
 			if (context->pc_vision.PackFromVisionUnion.PackFromVision.shoot_mode != CAN_SHOOT && last_can_shoot == CAN_SHOOT)
 			{
 				context->vision_can_shoot_count = VISION_CAN_SHOOT_DELAY;
@@ -712,9 +722,6 @@ void InfantryCTRL_Classdef::Status_Update()
  */
 void InfantryCTRL_Classdef::Update_StateRequest()
 {
-	static uint8_t temp_self_rescue = 0;
-	/*按ctrl+c，开启固连自救*/
-	self_rescue_state = LogicJudge(self_rescue_state, DR16.IsKeyPress(DR16_KEY_C) && DR16.IsKeyPress(DR16_KEY_CTRL), &temp_self_rescue);
 	if (DR16.GetStatus() != DR16_ESTABLISHED)
 	{
 		TransitionTo(&lostctrl_state);
@@ -833,19 +840,19 @@ void InfantryCTRL_Classdef::Update_Data(CAN_COB CAN_RxMsg)
 		switch (board_com.rx_pack2.source_power_max)
 		{
 		case 50:
-			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 2.8, 0, 10000.0f, 500.0f);
+			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 3., 0, 10000.0f, 360.0f);
 			break;
 		case 60:
-			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 2.8, 0, 10000.0f, 500.0f);
+			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 3., 0, 10000.0f, 360.0f);
 			break;
 		case 80:
-			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 2.6, 0, 10000.0f, 500.0f);
+			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 2.8, 0, 10000.0f, 360.0f);
 			break;
 		case 100:
-			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 2.5, 0, 10000.0f, 500.0f);
+			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 2.8, 0, 10000.0f, 360.0f);
 			break;
 		default:
-			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 2.8, 0, 10000.0f, 500.0f);
+			chassisCTRL.chassis_yawAngle.SetPIDParam(15, 0, 2.8, 0, 10000.0f, 360.0f);
 			break;
 		}
 	}
@@ -982,5 +989,6 @@ void InfantryCTRL_Classdef::clear_state()
 	vision_mode_flag2 = 1;
 	pc_vision_mode = ROTATION_V;
 	turn90degrees = false;
+	self_rescue_state = false;
 }
 /************************ COPYRIGHT(C) SCUT-ROBOTLAB**************************/

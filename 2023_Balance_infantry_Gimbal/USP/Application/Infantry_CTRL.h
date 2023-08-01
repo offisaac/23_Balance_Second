@@ -54,7 +54,7 @@
 #define VISION_PITCH_COMPENSATION 0.0f
 #define VISION_YAW_COMPENSATION 0.0f
 /*视觉发射续弹延时*/
-#define VISION_CAN_SHOOT_DELAY 90
+#define VISION_CAN_SHOOT_DELAY 0
 /* Private type --------------------------------------------------------------*/
 /* Exported macros -----------------------------------------------------------*/
 extern TIM_HandleTypeDef htim3;

@@ -35,6 +35,8 @@
 /* Exported macros -----------------------------------------------------------*/
 extern TIM_HandleTypeDef htim2;	  // 弹舱盖用
 extern UART_HandleTypeDef huart3; // 小发射测试用
+uint32_t bullect_speed_t = 0;
+uint32_t turn_plate_t = 0;
 /* Private define ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private type --------------------------------------------------------------*/
@@ -81,6 +83,7 @@ void Booster_Classdef::Status_Update(bool *_friState,
 			if (auto_fire)
 			{
 				turnplate_targetAngle -= 1296;
+				turn_plate_t = Get_SystemTimer();
 			}
 			else
 			{
@@ -106,6 +109,7 @@ void Booster_Classdef::Status_Update(bool *_friState,
 	if (bulletSpeed != last_bulletspeed)
 	{
 		Sent_Contorl(&huart3);
+		bullect_speed_t = Get_SystemTimer();
 	}
 	last_bulletspeed = bulletSpeed;
 }
@@ -208,6 +212,7 @@ void Booster_Classdef::turnplate_ctrl(bool _turnplate_state)
 	{
 		turnplate_targetAngle -= 1296;
 		continuous_flag = 0;
+		turn_plate_t = Get_SystemTimer();
 	}
 }
 /**

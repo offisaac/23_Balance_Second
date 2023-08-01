@@ -56,6 +56,10 @@ extern float av_pidout;
 extern float blpf_out;
 extern uint8_t cnt_y;
 extern float debug_ff_t;
+extern uint32_t bullect_speed_t;
+extern uint32_t turn_plate_t;
+extern uint32_t vision_can_shoot_t;
+
 
 /**
  * @brief
@@ -112,12 +116,21 @@ void UpperMonitor_Sent_Choose(float *data)
           break;
       case 5: data[i]= infantry.gimbal.yawMotor.getAngle();//infantry.board_com.rx_pack1.booster_heat;
           break;
-      case 6: data[i]= infantry.booster.left_fri_speedloop.Current;
+      case 6: data[i]= infantry.booster.bulletSpeed;
       		break;
-      case 7: data[i]= (float)infantry.turnplate_state;
+      case 7: data[i]= infantry.pc_vision.PackFromVisionUnion.PackFromVision.yawData;
       		break;
-      case 8: data[i]= (float)infantry.pc_vision.shoot_mode;
+      case 8: data[i]= infantry.pc_vision.PackFromVisionUnion.PackFromVision.pitchData;
       		break;
+//			case 0:
+//				data[i] = (float)vision_can_shoot_t * 0.001;
+//			break;
+//			case 1:
+//				data[i] = (float)bullect_speed_t * 0.001;
+//			break;
+//			case 2:
+//				data[i] = (float)turn_plate_t * 0.001;
+//			break;
 
       // case 0: data[i]= infantry.gimbal.pitch_angleloop.Target;
       //     break;

@@ -275,18 +275,18 @@ public:
 	/*lqr参数*/
 	float body_distance_kp = -2.f;
 	float slider_distance_kp = 1.f;
+	
+float body_speed_kp = -2.934103e+00;
+float body_pitch_kp = -1.322443e+01;
+float body_pitchSpeed_kp = -2.193983e+00;
+float body_sposition_kp = -1.024606e+01;
+float body_sspeed_kp = -9.440063e-01;
 
-float body_speed_kp = -2.932343e+00;
-float body_pitch_kp = -1.323122e+01;
-float body_pitchSpeed_kp = -2.196372e+00;
-float body_sposition_kp = -1.021181e+01;
-float body_sspeed_kp = -9.508352e-01;
-
-float slider_speed_kp = 6.336051e-01;
-float slider_pitch_kp = -6.993622e-02;
-float slider_pitchSpeed_kp = -2.284245e-01;
-float slider_sposition_kp = 1.440014e+01;
-float slider_sspeed_kp = 1.757746e+00;
+float slider_speed_kp = 6.254045e-01;
+float slider_pitch_kp = -1.294584e-01;
+float slider_pitchSpeed_kp = -2.433366e-01;
+float slider_sposition_kp = 1.435008e+01;
+float slider_sspeed_kp = 1.639580e+00;
 
 	float body_yaw_kp = 0.f;
 	float body_yawSpeed_kp = 2.f;

@@ -497,7 +497,7 @@ void Controller<PID>::reset_adjust()
  */
 Controller<LQR>::Controller()
 {
-    set_point_pid.SetPIDParam(-10.0f, 0, 0.0f, 3.0f, 8.f);
+    set_point_pid.SetPIDParam(-10.0f, 0, 0.0f, 3.0f, 7.f);
     rotation_point_pid.SetPIDParam(0, 0.000001f, 0, 0.f, 3.f);
     // slider_follow_pid.SetPIDParam(1000.f, 0, 0.2f, 0, 20000.f);
     slider_follow_pid.SetPIDParam(-5.f, 0, 0.f, 0, 1.f);
@@ -575,7 +575,7 @@ void Controller<LQR>::Controller_Adjust()
         output.turn_out = turn_scale * turn_adjust();
         if (is_rotation == 0)
         {
-           output.turn_out = std_lib::constrain(output.turn_out, -2.f, 2.f);
+           output.turn_out = std_lib::constrain(output.turn_out, -3.f, 3.f);
         }
         else
         {
@@ -592,7 +592,7 @@ void Controller<LQR>::slider_control()
 {
     static MeanFilter<30> distance_MF;   //距离滤波
     static MeanFilter<10> pitch_MF;      //直立滤波
-    static MeanFilter<10> pitchSpeed_MF; //角速度滤波
+    static MeanFilter<20> pitchSpeed_MF; //角速度滤波
     static MeanFilter<100> speed_MF1;    //速度滤波
     static MeanFilter<100> speed_MF2;
     static MedianFilter<50> speed_MIF1; //中值滤波
@@ -677,7 +677,7 @@ void Controller<LQR>::slider_control()
 bool leapState = false;
 float Controller<LQR>::self_adaption()
 {                                    //自适应环
-    static MeanFilter<25> speed_MF1; //均值滤波
+    static MeanFilter<50> speed_MF1; //均值滤波
     static float setpoint_adapt_out = 0.0f;
     float setpoint_ctrl_out = 0.0f;
     float speed = current_linearSpeed.y;
@@ -738,10 +738,10 @@ float Controller<LQR>::self_adaption()
     {
 				if (current_linearSpeed.y > 0.9f * target_linearSpeed.y)
 				{
-						setpoint_ctrl_out = -2.f;
+						setpoint_ctrl_out = -1.5f;
 						if (is_unlimited)
 						{
-								setpoint_ctrl_out = -3.f;
+								setpoint_ctrl_out = -2.5f;
 						}
 						if (is_turn90degrees)
 						{
@@ -754,11 +754,11 @@ float Controller<LQR>::self_adaption()
     {
 				if (current_linearSpeed.y < 0.9f * target_linearSpeed.y)
 				{
-						setpoint_ctrl_out = 2.f;
+						setpoint_ctrl_out = 1.5f;
 						//setpoint_ctrl_out = 0.f;
 						if (is_unlimited)
 						{
-								setpoint_ctrl_out = 3.f;
+								setpoint_ctrl_out = 2.5f;
 								//setpoint_ctrl_out = 1.f;
 						}
 						if (is_turn90degrees)
@@ -875,9 +875,11 @@ float Controller<LQR>::distance_adjust()
  */
 float Controller<LQR>::stand_adjust()
 {
+		static SecondOrderButterworthLPF pitch_lpf(20,500);
+		static SecondOrderButterworthLPF pitchSpeed_lpf(20,500);
     float pitch_error = target_pos.pitch - current_pos.pitch;
     float pitchSpeed_error = 0 - current_angularSpeed.pitch;
-    return pitch_error * body_pitch_kp + pitchSpeed_error * body_pitchSpeed_kp;
+    return pitch_lpf.f(pitch_error) * body_pitch_kp + pitchSpeed_lpf.f(pitchSpeed_error) * body_pitchSpeed_kp;
 }
 
 /**
@@ -889,7 +891,8 @@ float Controller<LQR>::stand_adjust()
  */
 float Controller<LQR>::speed_adjust()
 {
-    float speed_error = target_linearSpeed.y - current_linearSpeed.y;
+		static MeanFilter<10> speed_mf;
+    float speed_error = speed_mf.f(target_linearSpeed.y - current_linearSpeed.y);
     return speed_error * body_speed_kp;
 }
 
@@ -902,9 +905,10 @@ float Controller<LQR>::speed_adjust()
  */
 float Controller<LQR>::turn_adjust()
 {
+		static SecondOrderButterworthLPF turn_lpf(12,500);
     float yaw_error = target_pos.yaw - current_pos.yaw;
     float yawSpeed_error = target_angularSpeed.yaw - current_angularSpeed.yaw;
-    return yaw_error * body_yaw_kp + yawSpeed_error * body_yawSpeed_kp;
+    return yaw_error * body_yaw_kp + turn_lpf.f(yawSpeed_error) * body_yawSpeed_kp;
 }
 
 /**
@@ -936,9 +940,11 @@ float Controller<LQR>::stand_feedforward()
  */
 float Controller<LQR>::slider_adjust()
 {
+		static MeanFilter<10> s_mf;
+		static MeanFilter<10> sspeed_mf;
     float s_error = 0 - 0.5f * (current_sliderLocation[0].y + current_sliderLocation[1].y);
     float sspeed_error = 0 - 0.5f * (current_sliderSpeed[0].y + current_sliderSpeed[1].y);
-    return body_sposition_kp * s_error + body_sspeed_kp * sspeed_error;
+    return body_sposition_kp * s_mf.f(s_error) + body_sspeed_kp * sspeed_mf.f(sspeed_error);
 }
 
 /**
