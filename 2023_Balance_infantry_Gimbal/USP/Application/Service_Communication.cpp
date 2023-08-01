@@ -224,7 +224,7 @@ float now_time = 0;
 float last_time = 0;
 float time_gap = 0;
 
-float imu_x = 3;
+float imu_x = 2;
 uint32_t User_UART1_RxCpltCallback(uint8_t *Recv_Data, uint16_t ReceiveLen)
 {
   infantry.pc_vision.GetViaionData(Recv_Data, ReceiveLen);

@@ -358,7 +358,7 @@ void Balance_Infantry_Classdef::Update_Current_Speed(float _y, float _yaw, float
     static uint32_t last_time = 0;
     current_time = Get_SystemTimer();
     time_gap = current_time - last_time;
-    MeanFilter<5> speed_mf;
+    static MeanFilter<20> speed_mf;
     distance += speed_mf.f(_y + _pitch * WHEEL_R) * CTRL_INTERAL;
     balance_controller.Update_Current_LinearSpeed(0, speed_mf.f(_y + _pitch * WHEEL_R), 0); //当前线速度需要减去因车体旋转造成的误差
     balance_controller.Update_Current_AngularSpeed(_yaw, _pitch, 0);
@@ -630,8 +630,8 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
 		}
 		else if(gimbal_data.turn90degrees)
 		{
-			rotation_slider_pos[0] = -20;
-			rotation_slider_pos[1] = -20;
+			rotation_slider_pos[0] = -40;
+			rotation_slider_pos[1] = -40;
 		}
     if (gimbal_data.remote_ctrl_state == false)
     {
@@ -646,7 +646,7 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
             balance_controller.output.sliderCtrl_out[RIGHT] = 0;
             balance_controller.output.sliderCtrl_out[LEFT] = 0;
         }
-        if (gimbal_data.rotation_state || gimbal_data.turn90degrees)
+        if (gimbal_data.rotation_state/* || gimbal_data.turn90degrees*/)
         {
             Slider_Ctrl.update(rotation_slider_pos);
             Slider_Ctrl.adjust();
