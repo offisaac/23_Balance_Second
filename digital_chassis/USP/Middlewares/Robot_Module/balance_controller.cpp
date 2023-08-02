@@ -145,7 +145,7 @@ void Ctrl_Base::Update_Flags(uint8_t _is_turn90degrees, uint8_t _is_rotation, ui
     is_reset = _is_reset;
     is_leap = _is_leap;
     is_unlimited = _is_unlimited;
-		is_slope = _is_slope;
+    is_slope = _is_slope;
 }
 //用于限制变量增长率
 float Ctrl_Base::Value_Step(const float value, const float last_value, const float step, const float max, const float min)
@@ -519,20 +519,13 @@ void Controller<LQR>::Controller_Adjust()
     }
     else
     {
-        weightless_check();     //失重检测
-        idling_check();         //空转检测
+        //weightless_check();     //失重检测
+        //idling_check();         //空转检测
         rotation_crash_check(); //小陀螺撞墙检测
                                 /*setpoint倾角辅助*/
         slider_control();       //滑块控制
         output.set_point_out = self_adaption() * ratio_degree2rad;
-        if (weightless_flag)
-        {
-            target_pos.pitch = balance_point;
-        }
-        else
-        {
-            target_pos.pitch = output.set_point_out; //自适应的输出设置为目标角度
-        }
+        target_pos.pitch = output.set_point_out; //自适应的输出设置为目标角度
         /*直立环*/
         output.stand_out = torque_scale * stand_adjust();
         /*速度环*/
@@ -575,11 +568,11 @@ void Controller<LQR>::Controller_Adjust()
         output.turn_out = turn_scale * turn_adjust();
         if (is_rotation == 0)
         {
-           output.turn_out = std_lib::constrain(output.turn_out, -3.f, 3.f);
+            output.turn_out = std_lib::constrain(output.turn_out, -3.f, 3.f);
         }
         else
         {
-					output.turn_out = std_lib::constrain(output.turn_out, -4.f, 4.f);
+            output.turn_out = std_lib::constrain(output.turn_out, -4.f, 4.f);
         }
         /*前馈*/
         output.feedforward_out = stand_feedforward();
@@ -598,34 +591,34 @@ void Controller<LQR>::slider_control()
     static MedianFilter<50> speed_MIF1; //中值滤波
     static MedianFilter<50> speed_MIF2;
     static MeanFilter<20> turn_MF;
-		static MeanFilter<10> s_MF[2];
+    static MeanFilter<10> s_MF[2];
     static MeanFilter<10> sspeed_MF[2];
-		
-		static SecondOrderButterworthLPF speed_lpf(10,500);
-		static SecondOrderButterworthLPF distance_lpf(10,500);
-		static SecondOrderButterworthLPF pitch_lpf(5,500);
-		static SecondOrderButterworthLPF pitchSpeed_lpf(5,500);
-		static SecondOrderButterworthLPF s_lpf[2] = {SecondOrderButterworthLPF(5,500),SecondOrderButterworthLPF(5,500)};
-		static SecondOrderButterworthLPF sspeed_lpf[2] = {SecondOrderButterworthLPF(5,500),SecondOrderButterworthLPF(5,500)};
+
+    static SecondOrderButterworthLPF speed_lpf(10, 500);
+    static SecondOrderButterworthLPF distance_lpf(10, 500);
+    static SecondOrderButterworthLPF pitch_lpf(5, 500);
+    static SecondOrderButterworthLPF pitchSpeed_lpf(5, 500);
+    static SecondOrderButterworthLPF s_lpf[2] = {SecondOrderButterworthLPF(5, 500), SecondOrderButterworthLPF(5, 500)};
+    static SecondOrderButterworthLPF sspeed_lpf[2] = {SecondOrderButterworthLPF(5, 500), SecondOrderButterworthLPF(5, 500)};
 
     static float last_speed_error = 0;
 
     /*distance*/
     float distance_error = distance_MF.f(target_location.y - current_location.y);
     /*speed*/
-    float speed_error = std_lib::constrain(speed_lpf.f(target_linearSpeed.y - current_linearSpeed.y),-2.5f,2.5f);
-//		if(fabsf(speed_error)<0.3f)
-//		{
-//			speed_error = 0;
-//		}
+    float speed_error = std_lib::constrain(speed_lpf.f(target_linearSpeed.y - current_linearSpeed.y), -2.5f, 2.5f);
+    //		if(fabsf(speed_error)<0.3f)
+    //		{
+    //			speed_error = 0;
+    //		}
     // float speed_error = target_linearSpeed.y - speed_MIF1.f(this->current_linearSpeed.y);
     /*pitch*/
     float pitch_error = pitch_MF.f(target_pos.pitch - current_pos.pitch);
     /*pitchSpeed*/
     float pitchSpeed_error = pitchSpeed_MF.f(0 - current_angularSpeed.pitch);
-		
-		float s_error;
-		float sspeed_error;
+
+    float s_error;
+    float sspeed_error;
 
     if (is_rotation)
     {
@@ -658,13 +651,13 @@ void Controller<LQR>::slider_control()
     slider_follow_pid.Adjust();
     output.sliderCtrl_out[0] -= slider_follow_pid.Out;
     output.sliderCtrl_out[1] += slider_follow_pid.Out;
-		
-		debug_out_A = distance_error;
-		debug_out_B = speed_error;
-		debug_out_C = pitch_error;
-		debug_out_D = pitchSpeed_error;
-		debug_out_F = s_error;
-		debug_out_G = sspeed_error;
+
+    debug_out_A = distance_error;
+    debug_out_B = speed_error;
+    debug_out_C = pitch_error;
+    debug_out_D = pitchSpeed_error;
+    debug_out_F = s_error;
+    debug_out_G = sspeed_error;
 }
 
 /**
@@ -736,36 +729,36 @@ float Controller<LQR>::self_adaption()
     /*负方向运动策略*/
     if (target_linearSpeed.y < -0.3f)
     {
-				if (current_linearSpeed.y > 0.9f * target_linearSpeed.y)
-				{
-						setpoint_ctrl_out = -1.5f;
-						if (is_unlimited)
-						{
-								setpoint_ctrl_out = -2.5f;
-						}
-						if (is_turn90degrees)
-						{
-								setpoint_ctrl_out = -0.f;
-						}
+        if (current_linearSpeed.y > 0.9f * target_linearSpeed.y)
+        {
+            setpoint_ctrl_out = -1.5f;
+            if (is_unlimited)
+            {
+                setpoint_ctrl_out = -2.5f;
+            }
+            if (is_turn90degrees)
+            {
+                setpoint_ctrl_out = -0.f;
+            }
         }
     }
     /* 正方向运动策略 */
     else if (target_linearSpeed.y > 0.3f)
     {
-				if (current_linearSpeed.y < 0.9f * target_linearSpeed.y)
-				{
-						setpoint_ctrl_out = 1.5f;
-						//setpoint_ctrl_out = 0.f;
-						if (is_unlimited)
-						{
-								setpoint_ctrl_out = 2.5f;
-								//setpoint_ctrl_out = 1.f;
-						}
-						if (is_turn90degrees)
-						{
-								setpoint_ctrl_out = 0.f;
-						}
-				}
+        if (current_linearSpeed.y < 0.9f * target_linearSpeed.y)
+        {
+            setpoint_ctrl_out = 1.5f;
+            // setpoint_ctrl_out = 0.f;
+            if (is_unlimited)
+            {
+                setpoint_ctrl_out = 2.5f;
+                // setpoint_ctrl_out = 1.f;
+            }
+            if (is_turn90degrees)
+            {
+                setpoint_ctrl_out = 0.f;
+            }
+        }
     }
     /* 刹车 */
     else if (break_flag)
@@ -779,31 +772,44 @@ float Controller<LQR>::self_adaption()
     //没有做前后适应
     if (is_leap)
     {
-			if (current_linearSpeed.y > 2.8f && leapState == false)
-			{
-					leapState = true;
-			}
-			else if (current_linearSpeed.y < 1.4f && leapState == true)
-			{
-					leapState = false;
-			}
-			if (target_linearSpeed.y > 0.3f)
-			{
-				if (leapState == true)
-				{
-					setpoint_ctrl_out = -10.f;
-				}
-				else
-				{
-					setpoint_ctrl_out = 4.f;
-				}
-			}
+        if (fabsf(current_linearSpeed.y) > 3.1f && leapState == false)
+        {
+            leapState = true;
+        }
+        else if (fabsf(current_linearSpeed.y) < 1.4f && leapState == true)
+        {
+            leapState = false;
+        }
+        if (target_linearSpeed.y > 0.3f)
+        {
+            if (leapState == true && current_linearSpeed.y > 1.4f)
+            {
+                setpoint_ctrl_out = -6.f;
+            }
+            else
+            {
+                setpoint_ctrl_out = 4.f;
+            }
+        }
+        else if (target_linearSpeed.y < -0.3f)
+        {
+            if (leapState == true && current_linearSpeed.y < -1.4f)
+            {
+                setpoint_ctrl_out = 6.f;
+            }
+            else
+            {
+                setpoint_ctrl_out = -4.f;
+            }
+        }
     }
-		else if(is_slope)
-		{
-			setpoint_ctrl_out = 0.f;
-		}
-
+    else if (is_slope)
+    {
+        setpoint_ctrl_out = 0.f;
+    }
+		
+		debug_out_H = setpoint_ctrl_out;
+		
     /*加速后制动一段时间才进入零点自适应*/
     if (target_linearSpeed.y != 0 && !break_flag)
     {
@@ -875,8 +881,8 @@ float Controller<LQR>::distance_adjust()
  */
 float Controller<LQR>::stand_adjust()
 {
-		static SecondOrderButterworthLPF pitch_lpf(20,500);
-		static SecondOrderButterworthLPF pitchSpeed_lpf(20,500);
+    static SecondOrderButterworthLPF pitch_lpf(20, 500);
+    static SecondOrderButterworthLPF pitchSpeed_lpf(20, 500);
     float pitch_error = target_pos.pitch - current_pos.pitch;
     float pitchSpeed_error = 0 - current_angularSpeed.pitch;
     return pitch_lpf.f(pitch_error) * body_pitch_kp + pitchSpeed_lpf.f(pitchSpeed_error) * body_pitchSpeed_kp;
@@ -891,7 +897,7 @@ float Controller<LQR>::stand_adjust()
  */
 float Controller<LQR>::speed_adjust()
 {
-		static MeanFilter<10> speed_mf;
+    static MeanFilter<10> speed_mf;
     float speed_error = speed_mf.f(target_linearSpeed.y - current_linearSpeed.y);
     return speed_error * body_speed_kp;
 }
@@ -905,7 +911,7 @@ float Controller<LQR>::speed_adjust()
  */
 float Controller<LQR>::turn_adjust()
 {
-		static SecondOrderButterworthLPF turn_lpf(12,500);
+    static SecondOrderButterworthLPF turn_lpf(20, 500);
     float yaw_error = target_pos.yaw - current_pos.yaw;
     float yawSpeed_error = target_angularSpeed.yaw - current_angularSpeed.yaw;
     return yaw_error * body_yaw_kp + turn_lpf.f(yawSpeed_error) * body_yawSpeed_kp;
@@ -940,8 +946,8 @@ float Controller<LQR>::stand_feedforward()
  */
 float Controller<LQR>::slider_adjust()
 {
-		static MeanFilter<10> s_mf;
-		static MeanFilter<10> sspeed_mf;
+    static MeanFilter<10> s_mf;
+    static MeanFilter<10> sspeed_mf;
     float s_error = 0 - 0.5f * (current_sliderLocation[0].y + current_sliderLocation[1].y);
     float sspeed_error = 0 - 0.5f * (current_sliderSpeed[0].y + current_sliderSpeed[1].y);
     return body_sposition_kp * s_mf.f(s_error) + body_sspeed_kp * sspeed_mf.f(sspeed_error);

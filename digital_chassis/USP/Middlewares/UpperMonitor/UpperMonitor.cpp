@@ -229,7 +229,7 @@ void UpperMonitor_Sent_Choose(float *data)
           break;
       case 6: data[i] = debug_out_G;
           break;
-			case 7: data[i] = balance_infantry.balance_controller.current_sliderLocation[0].y;
+			case 7: data[i] = debug_out_H;
 					break;
 			case 8: data[i] = balance_infantry.balance_controller.current_linearSpeed.y;
 					break;

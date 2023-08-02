@@ -302,7 +302,7 @@ float slider_sspeed_kp = 1.639580e+00;
 	float turn_scale = 1.f;
 
 	float balance_point = 0.0f;
-	float rotation_point = -1.f;
+	float rotation_point = -4.f;
 
 	/*小陀螺撞墙检测*/
 	float last_speed_z = 0.f;

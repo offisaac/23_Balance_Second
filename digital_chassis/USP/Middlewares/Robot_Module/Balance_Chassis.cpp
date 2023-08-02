@@ -564,8 +564,8 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
         {
             wheel_stand_out_theory[LEFT] = 0;
             wheel_stand_out_theory[RIGHT] = 0;
-            wheel_out[LEFT] = gimbal_data.get_speed_y / 1000.f * 2.f - balance_controller.Get_Data().turn_out;
-            wheel_out[RIGHT] = gimbal_data.get_speed_y / 1000.f * 2.f + balance_controller.Get_Data().turn_out;
+            wheel_out[LEFT] = balance_controller.target_linearSpeed.y   - balance_controller.Get_Data().turn_out;
+            wheel_out[RIGHT] = balance_controller.target_linearSpeed.y   + balance_controller.Get_Data().turn_out;
         }
         else
         {
@@ -625,8 +625,8 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
     float rotation_slider_pos[2] = {-10, -10};
 		if(gimbal_data.rotation_state)
 		{
-			rotation_slider_pos[0] = -10;
-			rotation_slider_pos[1] = -10;
+			rotation_slider_pos[0] = -5;
+			rotation_slider_pos[1] = -5;
 		}
 		else if(gimbal_data.turn90degrees)
 		{
@@ -700,11 +700,11 @@ void Balance_Infantry_Classdef::Set_MaxSpeed(uint16_t _powerMax)
 {
     if (_powerMax <= 60)
     {
-        speed_scale = 1.8f;
+        speed_scale = 2.f;
     }
     else if (_powerMax > 60 && _powerMax < 100)
     {
-        speed_scale = 2.1f;
+        speed_scale = 2.2f;
     }
     else if (_powerMax >= 100)
     {
@@ -717,7 +717,7 @@ void Balance_Infantry_Classdef::Set_MaxSpeed(uint16_t _powerMax)
     /*各种功率标志位*/
     if (gimbal_data.leap_state && Source_Cap_Voltage > 17.0f)
     {
-        speed_scale = 4.f;
+        speed_scale = 3.4f;
     }
     else if (gimbal_data.unlimited_state && Source_Cap_Voltage > 17.0f)
     {
@@ -725,7 +725,7 @@ void Balance_Infantry_Classdef::Set_MaxSpeed(uint16_t _powerMax)
     }
     else if (gimbal_data.ascent_state && Source_Cap_Voltage > 17.0f)
     {
-        speed_scale = 4.f;
+        speed_scale = 3.4f;
     }
     else
     {
@@ -734,10 +734,12 @@ void Balance_Infantry_Classdef::Set_MaxSpeed(uint16_t _powerMax)
     if (Source_Cap_Voltage <= 14.f)
     {
         rotation_scale = 0.1;
+				speed_scale = 1.5f;
     }
     else if (Source_Cap_Voltage <= 19.f && Source_Cap_Voltage > 14.f)
     {
         rotation_scale = 0.4;
+				speed_scale = 1.8f;
     }
     else if (Source_Cap_Voltage > 19.f && Source_Cap_Voltage <= 23)
     {

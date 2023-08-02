@@ -145,6 +145,14 @@ void PerBalance_State::Handle_State()
 {
 	context->state_machine = PERBALANCE;
 	static uint16_t perbalance_delay_time = 800; // 预平衡延时
+	if (context->chassisCTRL.yaw_encoder_count % 2 == 0)
+	{
+		context->gimbal.yawMotor.setEncoderOffset(YAW_OFFSET);
+	}
+	else
+	{
+		context->gimbal.yawMotor.setEncoderOffset(abs((YAW_OFFSET - 4096) > 0 ? (YAW_OFFSET - 4096) : (YAW_OFFSET + 4096)));
+	}
 	/*根据底盘发来的标志位判断是否自救完成*/
 	context->perbalance_delay_cnt--;
 	/*预平衡状态下，云台归中*/
@@ -364,24 +372,29 @@ void KeyboardCtrl_State::Handle_State()
 	}
 	/*按V，平衡步侧身90°*/
 	// context->turn90degrees = context->LogicJudge(context->turn90degrees, DR16.IsKeyPress(DR16_KEY_V), &temp_turn90degrees);
-	if (DR16.IsKeyPress(DR16_KEY_V)) //按下开启
+	if(DR16.IsKeyPress(DR16_KEY_V))
 	{
 		context->turn90degrees = true;
 	}
 	if (context->turn90degrees && context->self_rescue_state == false)
 	{
-		// context->y_data = DR16.IsKeyPress(DR16_KEY_D);
-		// context->y_back_data = DR16.IsKeyPress(DR16_KEY_A);
-		// context->gimbal.yawMotor.setEncoderOffset((YAW_OFFSET + 2048) % 8192); // 确保不会超出8192
-		if (context->turn_way == 1)
-			context->chassisCTRL.chassis_yawAngle.Target = -90;
+		if (context->chassisCTRL.yaw_encoder_count % 2 == 0)
+		{
+			if (context->turn_way == 1)
+				context->chassisCTRL.chassis_yawAngle.Target = -90;
+			else
+				context->chassisCTRL.chassis_yawAngle.Target = 90;
+		}
 		else
-			context->chassisCTRL.chassis_yawAngle.Target = 90;
+		{
+			if (context->turn_way == 1)
+				context->chassisCTRL.chassis_yawAngle.Target = -90;
+			else
+				context->chassisCTRL.chassis_yawAngle.Target = 90;
+		}
 	}
 	else
 	{
-		// context->gimbal.yawMotor.setEncoderOffset(YAW_OFFSET);
-
 		context->chassisCTRL.chassis_yawAngle.Target = 0;
 	}
 
@@ -426,6 +439,16 @@ void KeyboardCtrl_State::Handle_State()
 	if (context->LogicJudge(0, DR16.IsKeyPress(DR16_KEY_X), &temp_turnBack))
 	{
 		context->gimbal.Set_YawTarget(context->gimbal.Get_YawTarget() - 180);
+		context->chassisCTRL.yaw_encoder_count++;
+	}
+
+	if (context->chassisCTRL.yaw_encoder_count % 2 == 0)
+	{
+		context->gimbal.yawMotor.setEncoderOffset(YAW_OFFSET);
+	}
+	else
+	{
+		context->gimbal.yawMotor.setEncoderOffset(abs((YAW_OFFSET - 4096) > 0 ? (YAW_OFFSET - 4096) : (YAW_OFFSET + 4096)));
 	}
 
 	if (DR16.IsKeyPress(DR16_KEY_G)) // 关闭摩擦轮
