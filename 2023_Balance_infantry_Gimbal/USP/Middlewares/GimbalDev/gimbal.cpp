@@ -329,7 +329,19 @@ void Gimbal_Classdef::gimbal_pid_calculate()
 		pitch_angleloop.Target = pitchAngleLPF.f(pitch_angleloop.Target);
 		pitch_currentloop.SetPIDParam(0.25, 50, 0, 3000, 30000, 30000);
 		pitch_currentloop.I_SeparThresh = 120000;
-		pitch_currentloop.Target = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + feedforward_scale * pitch_f_k * (pitch_angle_Diff[0].calc(-pitch_angleloop.Target) + pitchMotor.getSpeed() * 6 - (-angular_velocity_pitch)) + pitch_g_k * pitch_angleloop.Current + pitch_g_c;
+		if(pitchMotor.getSpeed() == 0)
+		{
+			pitch_currentloop.Target = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + 
+															feedforward_scale * pitch_f_k * (pitch_angle_Diff[0].calc(-pitch_angleloop.Target) + 
+															pitchMotor.getSpeed() * 6 - (-angular_velocity_pitch)) + pitch_g_k * pitch_angleloop.Current + pitch_g_c;
+		}
+		else
+		{
+			pitch_currentloop.Target = pitch_angleloop.Adjust_importDiff(angular_velocity_pitch) + 
+															//feedforward_scale * pitch_f_c * pitchMotor.getSpeed()/fabsf(pitchMotor.getSpeed()) +
+															feedforward_scale * pitch_f_k * (pitch_angle_Diff[0].calc(-pitch_angleloop.Target) + 
+															pitchMotor.getSpeed() * 6 - (-angular_velocity_pitch)) + pitch_g_k * pitch_angleloop.Current + pitch_g_c;
+		}
 		pitch_currentloop.Target += angle_feedback_flag_p * angle_feedback_pitch * pitch_a_k; // 加入二阶微分前馈
 		// debug_ff_t = angle_feedback_flag_p * angle_feedback_pitch * pitch_a_k;
 		pitch_currentloop.Current = pitchMotor.givenCurrent;
