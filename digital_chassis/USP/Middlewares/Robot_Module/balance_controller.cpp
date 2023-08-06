@@ -572,7 +572,7 @@ void Controller<LQR>::Controller_Adjust()
         }
         else
         {
-            output.turn_out = std_lib::constrain(output.turn_out, -4.f, 4.f);
+            output.turn_out = std_lib::constrain(output.turn_out, -3.f, 3.f);
         }
         /*前馈*/
         output.feedforward_out = stand_feedforward();

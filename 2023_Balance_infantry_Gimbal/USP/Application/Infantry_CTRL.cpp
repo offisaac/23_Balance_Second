@@ -576,14 +576,14 @@ void PCvisionCtrl_State::Handle_State()
 		context->fri_state = true;
 	}
 	/*激光，若识别到装甲板且不是反打符模式，则关闭红外激光*/
-	if (context->pc_vision_mode != AGAINST_RUNE_V)
-	{
-		context->laser_state = false;
-	}
-	else
-	{
-		context->laser_state = true;
-	}
+//	if (context->pc_vision_mode != AGAINST_RUNE_V)
+//	{
+//		context->laser_state = false;
+//	}
+//	else
+//	{
+//		context->laser_state = true;
+//	}
 	// 按右键下发标志位给视觉
 	context->pc_vision.PackToVision.R_key = true;
 	/*视觉模式切换pid*/
@@ -625,7 +625,7 @@ void PCvisionCtrl_State::Handle_State()
 	}
 
 	/*小发射*/
-	if (context->pc_vision_mode == RUNE_V) // 打符模式
+	if (context->pc_vision_mode == RUNE_V || context->pc_vision_mode == AGAINST_RUNE_V) // 打符模式
 	{
 		/*打符关闭底盘跟随*/
 		context->chassisCTRL.ChassisFollowOn(false);

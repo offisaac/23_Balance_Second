@@ -592,13 +592,13 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
         //防止电流过大
         if (Source_Current_Out > 10.0f)
         {
-            wheel_out[LEFT] = std_lib::constrain(wheel_out[LEFT], -5.12f, 5.12f);
-            wheel_out[RIGHT] = std_lib::constrain(wheel_out[RIGHT], -5.12f, 5.12f);
+            wheel_out[LEFT] = std_lib::constrain(wheel_out[LEFT], -4.f, 4.f);
+            wheel_out[RIGHT] = std_lib::constrain(wheel_out[RIGHT], -4.f, 4.f);
         }
         else
         {
-            wheel_out[LEFT] = std_lib::constrain(wheel_out[LEFT], -5.12f, 5.12f);
-            wheel_out[RIGHT] = std_lib::constrain(wheel_out[RIGHT], -5.12f, 5.12f);
+            wheel_out[LEFT] = std_lib::constrain(wheel_out[LEFT], -4.6f, 4.6f);
+            wheel_out[RIGHT] = std_lib::constrain(wheel_out[RIGHT], -4.6f, 4.6f);
         }
     }
     else
