@@ -50,7 +50,7 @@ void Service_Devices_Init(void)
   xTaskCreate(tskSource, "App.Source", Normal_Stack_Size, NULL, PriorityAboveNormal, &Source_Handle);
   xTaskCreate(tskRefereeRx, "App.Referee", Normal_Stack_Size, NULL, PriorityNormal, &Referee_Handle);
   xTaskCreate(tskRefereeUI, "App.RefereeUI", Normal_Stack_Size, NULL, PriorityBelowNormal, &Referee_UI);
-  xTaskCreate(tskOpenlog_send, "App.Openlog send", Small_Stack_Size, NULL, PriorityAboveNormal, &Openlog_send_Handle);
+  //xTaskCreate(tskOpenlog_send, "App.Openlog send", Small_Stack_Size, NULL, PriorityAboveNormal, &Openlog_send_Handle);
   xTaskCreate(tskLog, "App.Log", Small_Stack_Size, NULL, PriorityAboveNormal, &Log_Handle);
   xTaskCreate(Motor_State, "Motor_State_Check", Small_Stack_Size, NULL, PriorityAboveNormal, &Motor_State_Handle);
 }
@@ -223,11 +223,12 @@ void tskOpenlog_send(void *arg)
   TickType_t xLastWakeTime_t;
   xLastWakeTime_t = xTaskGetTickCount();
   /* Infinite loop */
+	vTaskDelay(1000);
   for (;;)
   {
     /* wait for next circle */
-    vTaskDelayUntil(&xLastWakeTime_t, 250);
-    //		openlog.Send();
+    vTaskDelayUntil(&xLastWakeTime_t, 1000);
+//    openlog.Send();
   }
 }
 
@@ -235,24 +236,29 @@ void tskLog(void *arg)
 {
   /* Pre-Load for task */
   vTaskDelay(1000 * 3);
-  openlog.new_file("table_%d.csv", 1);
-  openlog.append_file("table_%d.csv", 1);
-  openlog.record("Time,pow_Charge,Vcap,rotation,yaw_speed,powerBuffer,shootHeat,bulletSpeed\r");
+  openlog.new_file("table_%d.csv", 2);
+  openlog.append_file("table_%d.csv", 2);
+  openlog.record("Time,ID,zSpeed_t,rotation,zSpeed_c,gimbalGetZ,state,bulletSpeed\r");
   openlog.push_buff();
+	openlog.Send();
+	TickType_t xLastWakeTime_t;
+	xLastWakeTime_t = xTaskGetTickCount();
+	vTaskDelay(1000);
   /* Infinite loop */
   for (;;)
   {
     /* wait for next circle */
-    vTaskDelay(200);
-    //    openlog.record("%d,%d,%d,%d,%d,%d,%d,%d\r",Get_SystemTimer()/1000000,
-    //                                              (int16_t)digital_Power.power.pow_Charge,
-    //                                              (int8_t)digital_Power.unit_DPW_data.Vcap,
-    //                                              (int8_t)balance_infantry.gimbal_data.rotation_state,
-    //                                              (int16_t)(balance_infantry.balance_controller.current_angularSpeed.yaw / ratio_degree_to_rad),
-    //                                              balance_infantry.Referee.PowerHeatData.chassis_power_buffer,
-    //                                              balance_infantry.Referee.PowerHeatData.shooter_id1_17mm_cooling_heat,
-    //                                              (int16_t)balance_infantry.Referee.ShootData.bullet_speed*1000.0f);
-    //		openlog.push_buff();
+    vTaskDelayUntil(&xLastWakeTime_t, 100);
+    openlog.record("%d,%d,%d,%d,%d,%d,%d,%d\r",(int16_t)Get_SystemTimer()/1000000,
+                                               (int16_t)balance_infantry.Referee.GameRobotState.robot_id,
+                                               (int16_t)(balance_infantry.balance_controller.target_angularSpeed.yaw),
+                                               (int16_t)balance_infantry.gimbal_data.rotation_state,
+                                               (int16_t)(balance_infantry.balance_controller.current_angularSpeed.yaw),
+                                               (int16_t)(balance_infantry.gimbal_data.get_speed_z),
+                                               (int16_t)balance_infantry.machine_mode,
+                                               (int16_t)balance_infantry.Referee.ShootData.bullet_speed*1000.0f);
+ 		openlog.push_buff();
+		openlog.Send();
   }
 }
 

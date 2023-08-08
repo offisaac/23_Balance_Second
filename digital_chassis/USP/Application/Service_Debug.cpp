@@ -42,7 +42,7 @@ void Task_Debug(void *arg)
     /* Wait for the next cycle */
     vTaskDelayUntil(&xLastWakeTime_t, 5);
 
-		Sent_Contorl(&huart2);
+		Sent_Contorl(&huart3);
   }
 }
 

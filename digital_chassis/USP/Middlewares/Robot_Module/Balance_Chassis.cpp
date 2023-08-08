@@ -20,6 +20,7 @@ Balance_State balance_state;
 
 void Lost_Ctrl_State::State_Handler()
 {
+		context->machine_mode = 0;
     Land_Delay = 200; //计数器重置
     is_reset = 1;
     context->Reset_Adjust();
@@ -56,6 +57,8 @@ void Pre_Balance_State::State_Handler()
     //    }
 
     // vTaskDelay(400);
+		
+		context->machine_mode = 1;
 
     if (context->gimbal_data.enable_cmd)
     {
@@ -65,6 +68,7 @@ void Pre_Balance_State::State_Handler()
 
 void Balance_State::State_Handler()
 {
+		context->machine_mode = 2;
     is_reset = 0;
     /* 底盘电机控制 */
     context->Chassis_Ctrl_Cal();
@@ -252,7 +256,7 @@ void Balance_Infantry_Classdef::Judge_State()
 float debug_angle = 100;
 void Balance_Infantry_Classdef::Update_Target(float _y_speed, float _z_speed, float _x_speed)
 {
-    float rotation_speed = (360.f + rotation_scale * 360.f) * DEGREE_TO_RAD;
+    float rotation_speed = (360.f + rotation_scale * 180.f) * DEGREE_TO_RAD;
     // float rotation_speed = 360.f;
     // if (gimbal_data.unlimited_state)
     // {
@@ -494,12 +498,12 @@ void Balance_Infantry_Classdef::Power_Ctrl_Adjust()
     /*设置目标速度挡位*/
     Set_MaxSpeed(power_get);
     /*设置充电功率*/
-    Set_MaxPower(power_get);
-    Power_Ctrl.Set_PE_Target(power_get, chassis_power_limit, 50);
-    /* 仅对速度环和转向环进行功率控制 */
-    Power_Ctrl.Control(digital_Power.power.pow_In, digital_Power.power.pow_motor, Referee.PowerHeatData.chassis_power_buffer, wheel_out_raw);
-    power_limit_scale = std_lib::constrain((float)Power_Ctrl.Get_limScale(), 0.0f, 1.0f);
-    debug_G = power_get;
+    // Set_MaxPower(power_get);
+    //  Power_Ctrl.Set_PE_Target(power_get, chassis_power_limit, 50);
+    //  /* 仅对速度环和转向环进行功率控制 */
+    //  Power_Ctrl.Control(digital_Power.power.pow_In, digital_Power.power.pow_motor, Referee.PowerHeatData.chassis_power_buffer, wheel_out_raw);
+    //  power_limit_scale = std_lib::constrain((float)Power_Ctrl.Get_limScale(), 0.0f, 1.0f);
+    //  debug_G = power_get;
 }
 
 /**
@@ -564,30 +568,32 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
         {
             wheel_stand_out_theory[LEFT] = 0;
             wheel_stand_out_theory[RIGHT] = 0;
-            wheel_out[LEFT] = balance_controller.target_linearSpeed.y   - balance_controller.Get_Data().turn_out;
-            wheel_out[RIGHT] = balance_controller.target_linearSpeed.y   + balance_controller.Get_Data().turn_out;
+            wheel_out[LEFT] = balance_controller.target_linearSpeed.y - balance_controller.Get_Data().turn_out;
+            wheel_out[RIGHT] = balance_controller.target_linearSpeed.y + balance_controller.Get_Data().turn_out;
         }
         else
         {
             //制动取消速度环功率控制
-            if (balance_controller.break_flag && !gimbal_data.rotation_state)
-            {
-                wheel_out[LEFT] = wheel_stand_out_theory[LEFT] + balance_controller.Get_Data().speed_out - balance_controller.Get_Data().turn_out * power_limit_scale;
-                wheel_out[RIGHT] = wheel_stand_out_theory[RIGHT] + balance_controller.Get_Data().speed_out + balance_controller.Get_Data().turn_out * power_limit_scale;
-            }
-            else
-            {
-                if (power_energy < 0.f)
-                {
-                    wheel_out[LEFT] = wheel_stand_out_theory[LEFT] + balance_controller.Get_Data().speed_out * power_limit_scale - balance_controller.Get_Data().turn_out * power_limit_scale;
-                    wheel_out[RIGHT] = wheel_stand_out_theory[RIGHT] + balance_controller.Get_Data().speed_out * power_limit_scale + balance_controller.Get_Data().turn_out * power_limit_scale;
-                }
-                else
-                {
-                    wheel_out[LEFT] = wheel_stand_out_theory[LEFT] + balance_controller.Get_Data().speed_out - balance_controller.Get_Data().turn_out * power_limit_scale;
-                    wheel_out[RIGHT] = wheel_stand_out_theory[RIGHT] + balance_controller.Get_Data().speed_out + balance_controller.Get_Data().turn_out * power_limit_scale;
-                }
-            }
+            // if (balance_controller.break_flag && !gimbal_data.rotation_state)
+            // {
+            //     wheel_out[LEFT] = wheel_stand_out_theory[LEFT] + balance_controller.Get_Data().speed_out - balance_controller.Get_Data().turn_out * power_limit_scale;
+            //     wheel_out[RIGHT] = wheel_stand_out_theory[RIGHT] + balance_controller.Get_Data().speed_out + balance_controller.Get_Data().turn_out * power_limit_scale;
+            // }
+            // else
+            // {
+            //     if (power_energy < 0.f)
+            //     {
+            //         wheel_out[LEFT] = wheel_stand_out_theory[LEFT] + balance_controller.Get_Data().speed_out * power_limit_scale - balance_controller.Get_Data().turn_out * power_limit_scale;
+            //         wheel_out[RIGHT] = wheel_stand_out_theory[RIGHT] + balance_controller.Get_Data().speed_out * power_limit_scale + balance_controller.Get_Data().turn_out * power_limit_scale;
+            //     }
+            //     else
+            //     {
+            //         wheel_out[LEFT] = wheel_stand_out_theory[LEFT] + balance_controller.Get_Data().speed_out - balance_controller.Get_Data().turn_out * power_limit_scale;
+            //         wheel_out[RIGHT] = wheel_stand_out_theory[RIGHT] + balance_controller.Get_Data().speed_out + balance_controller.Get_Data().turn_out * power_limit_scale;
+            //     }
+            // }
+            wheel_out[LEFT] = wheel_stand_out_theory[LEFT] + balance_controller.Get_Data().speed_out - balance_controller.Get_Data().turn_out;
+            wheel_out[RIGHT] = wheel_stand_out_theory[RIGHT] + balance_controller.Get_Data().speed_out + balance_controller.Get_Data().turn_out;
         }
         //防止电流过大
         if (Source_Current_Out > 10.0f)
@@ -623,16 +629,16 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
     }
 
     float rotation_slider_pos[2] = {-10, -10};
-		if(gimbal_data.rotation_state)
-		{
-			rotation_slider_pos[0] = -5;
-			rotation_slider_pos[1] = -5;
-		}
-		else if(gimbal_data.turn90degrees)
-		{
-			rotation_slider_pos[0] = -40;
-			rotation_slider_pos[1] = -40;
-		}
+    if (gimbal_data.rotation_state)
+    {
+        rotation_slider_pos[0] = -5;
+        rotation_slider_pos[1] = -5;
+    }
+    else if (gimbal_data.turn90degrees)
+    {
+        rotation_slider_pos[0] = -40;
+        rotation_slider_pos[1] = -40;
+    }
     if (gimbal_data.remote_ctrl_state == false)
     {
         wheel_out[LEFT] = 0;
@@ -646,10 +652,10 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
             balance_controller.output.sliderCtrl_out[RIGHT] = 0;
             balance_controller.output.sliderCtrl_out[LEFT] = 0;
         }
-        if (gimbal_data.rotation_state/* || gimbal_data.turn90degrees*/)
+        if (gimbal_data.rotation_state || gimbal_data.turn90degrees)
         {
             Slider_Ctrl.update(rotation_slider_pos);
-            Slider_Ctrl.adjust();
+             Slider_Ctrl.adjust();
             Slider_Ctrl.acutate();
         }
         else
@@ -712,7 +718,7 @@ void Balance_Infantry_Classdef::Set_MaxSpeed(uint16_t _powerMax)
     }
     else
     {
-        speed_scale = 2.1f;
+        speed_scale = 2.f;
     }
     /*各种功率标志位*/
     if (gimbal_data.leap_state && Source_Cap_Voltage > 17.0f)
@@ -734,12 +740,12 @@ void Balance_Infantry_Classdef::Set_MaxSpeed(uint16_t _powerMax)
     if (Source_Cap_Voltage <= 14.f)
     {
         rotation_scale = 0.1;
-				speed_scale = 1.5f;
+        speed_scale = 1.5f;
     }
     else if (Source_Cap_Voltage <= 19.f && Source_Cap_Voltage > 14.f)
     {
         rotation_scale = 0.4;
-				speed_scale = 1.8f;
+        speed_scale = 1.8f;
     }
     else if (Source_Cap_Voltage > 19.f && Source_Cap_Voltage <= 23)
     {

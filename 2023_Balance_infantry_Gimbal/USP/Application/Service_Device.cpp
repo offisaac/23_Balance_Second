@@ -47,7 +47,7 @@ void Service_Devices_Init(void)
 	xTaskCreate(tskDR16, "App.DR16", Normal_Stack_Size, NULL, PriorityHigh, &DR16_Handle);
 	xTaskCreate(Device_InfantryCtrl, "Dev.Infantry", Huge_Stack_Size, NULL, PrioritySuperHigh, &InfantryCtrl_Handle);
 	xTaskCreate(Device_Indicator, "Device.Indicator", Normal_Stack_Size, NULL, PriorityHigh, &DeviceIndicator_Handle);
-	xTaskCreate(tskOpenlog_send,"App.Openlog send",Normal_Stack_Size, NULL,PriorityRealtime, &Openlog_send_Handle);
+	//xTaskCreate(tskOpenlog_send,"App.Openlog send",Normal_Stack_Size, NULL,PriorityRealtime, &Openlog_send_Handle);
 	xTaskCreate(tskLog, "App.Log", Normal_Stack_Size, NULL, PrioritySuperHigh, &Log_Handle);
 }
 
@@ -336,11 +336,11 @@ void tskOpenlog_send(void *arg)
 	for (;;)
 	{
 		/* wait for next circle */
-		vTaskDelayUntil(&xLastWakeTime_t, 5);
-		Sent_Contorl(&huart3);
+		vTaskDelayUntil(&xLastWakeTime_t, 100);
+		//Sent_Contorl(&huart3);
 //		if(infantry.Get_pcVisionMode() == RUNE_V && DR16.IsKeyPress(DR16_MOUSE_R))
 //		{
-//			openlog.Send();
+			//openlog.Send();
 //		}
 //		if(yaw_out != 0)
 //		{
@@ -364,16 +364,17 @@ void tskLog(void *arg)
 	uint16_t time;
 	openlog.new_file("table_%d.csv", 2);
 	openlog.append_file("table_%d.csv", 2);
-	openlog.record("pitch_speed,pitch_current,pitch_current_t\r");
+	openlog.record("pitch_speed,yaw_speed,chassis_mode,current_state,is_shift,masxBullectSpeed,heat,visionMode\r");
 	openlog.push_buff();
 	openlog.Send();
 	TickType_t xLastWakeTime_t;
 	xLastWakeTime_t = xTaskGetTickCount();
+	vTaskDelay(1000);
 	/* Infinite loop */
 	for (;;)
 	{
 		/* wait for next circle */
-		vTaskDelayUntil(&xLastWakeTime_t, 2);
+		vTaskDelayUntil(&xLastWakeTime_t, 100);
 		//vTaskDelay(2);
 		//time++;
 //		if(infantry.Get_pcVisionMode() == RUNE_V && DR16.IsKeyPress(DR16_MOUSE_R))
@@ -383,8 +384,16 @@ void tskLog(void *arg)
 //		}
 //		if(yaw_out != 0)
 //		{
-//			openlog.record("%d,%d,%d,%d\r", (int16_t)infantry.gimbal.yaw_speedloop.Target, (int16_t)infantry.gimbal.yawMotor.getSpeed(), (int16_t)infantry.gimbal.yawMotor.Out,(int16_t)infantry.gimbal.yawMotor.givenCurrent);
-//			openlog.push_buff();
+			openlog.record("%d,%d,%d,%d,%d,%d,%d,%d\r", (int16_t)infantry.gimbal.angular_velocity_pitch,
+																			 (int16_t)infantry.gimbal.angular_velocity_yaw, 
+																			 (int16_t)infantry.board_com.tx_pack1.chassis_mode,
+																			 (int16_t)infantry.Get_StateMachine(),
+																			 (int16_t)DR16.IsKeyPress(DR16_KEY_SHIFT),
+																			 (int16_t)infantry.booster.maxSpeed,
+																			 (int16_t)infantry.booster.heatRf,
+																			 (int16_t)infantry.Get_pcVisionMode());
+			openlog.push_buff();
+			openlog.Send();
 //		}
 //		if(debug_switch)
 //		{

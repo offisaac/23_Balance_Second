@@ -154,6 +154,8 @@ public:
     }
     float power_energy = POWER_ENERGY_MAX; //引入功率能量控制
     float chassis_power_limit;             //底盘功率限制
+		
+		int16_t machine_mode = 0;
 
 public:
     //使用友元类，使状态方法可以配置大类数据
