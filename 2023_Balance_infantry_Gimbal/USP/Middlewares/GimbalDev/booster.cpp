@@ -289,7 +289,7 @@ void Booster_Classdef::bulletVelocity_adjust()
 		break;
 	case 30:
 		reference_friRPM = debug_30rpm;
-		bulletSpeed_target = maxSpeed - 4.f; // 30射速小发射方差较大，要降低平均射速
+		bulletSpeed_target = maxSpeed - 5.f; // 30射速小发射方差较大，要降低平均射速
 		break;
 	default:
 		reference_friRPM = debug_15rpm;

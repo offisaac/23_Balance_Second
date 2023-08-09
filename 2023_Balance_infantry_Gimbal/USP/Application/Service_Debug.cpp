@@ -44,7 +44,7 @@ void Task_Debug(void *arg)
     vTaskDelayUntil(&xLastWakeTime_t, 5);
 		// if(yaw_out!=0)
 		// {
-		//Sent_Contorl(&huart3);
+		Sent_Contorl(&huart3);
 		// }
   }
 }
