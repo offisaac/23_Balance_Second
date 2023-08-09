@@ -695,7 +695,7 @@ void PCvisionCtrl_State::Handle_State()
 		// 其他模式由视觉控制，操作手可以介入
 		context->turnplate_state = DR16.IsKeyPress(DR16_MOUSE_L) || ((context->fact_vision_can_shoot == CAN_SHOOT) ? 1 : 0);
 
-		context->booster.Set_TurnplateFrq(15); // 打地面目标使用高射频
+		context->booster.Set_TurnplateFrq(20); // 打地面目标使用高射频
 		context->chassisCTRL.ChassisFollowOn(true);
 	}
 	last_can_shoot = context->pc_vision.PackFromVisionUnion.PackFromVision.shoot_mode;
