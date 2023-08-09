@@ -559,7 +559,6 @@ void Balance_Infantry_Classdef::Source_Adjust()
  */
 void Balance_Infantry_Classdef::Chassis_Adjust()
 {
-    float wheel_out[2];
     /* 需要修改  高速时转向环响应不够 */
     if (fabsf(LPMS.get_data().Euler_Pitch) < 45.0f)
     {
@@ -596,16 +595,16 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
             wheel_out[RIGHT] = wheel_stand_out_theory[RIGHT] + balance_controller.Get_Data().speed_out + balance_controller.Get_Data().turn_out;
         }
         //防止电流过大
-        if (Source_Current_Out > 10.0f)
-        {
-            wheel_out[LEFT] = std_lib::constrain(wheel_out[LEFT], -4.f, 4.f);
-            wheel_out[RIGHT] = std_lib::constrain(wheel_out[RIGHT], -4.f, 4.f);
-        }
-        else
-        {
-            wheel_out[LEFT] = std_lib::constrain(wheel_out[LEFT], -4.6f, 4.6f);
-            wheel_out[RIGHT] = std_lib::constrain(wheel_out[RIGHT], -4.6f, 4.6f);
-        }
+//        if (Source_Current_Out > 10.0f)
+//        {
+//            wheel_out[LEFT] = std_lib::constrain(wheel_out[LEFT], -4.f, 4.f);
+//            wheel_out[RIGHT] = std_lib::constrain(wheel_out[RIGHT], -4.f, 4.f);
+//        }
+//        else
+//        {
+            wheel_out[LEFT] = std_lib::constrain(wheel_out[LEFT], -4.2f, 4.2f);
+            wheel_out[RIGHT] = std_lib::constrain(wheel_out[RIGHT], -4.2f, 4.2f);
+//        }
     }
     else
     {
@@ -631,8 +630,8 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
     float rotation_slider_pos[2] = {-10, -10};
     if (gimbal_data.rotation_state)
     {
-        rotation_slider_pos[0] = -5;
-        rotation_slider_pos[1] = -5;
+        rotation_slider_pos[0] = -10;
+        rotation_slider_pos[1] = -10;
     }
     else if (gimbal_data.turn90degrees)
     {
@@ -737,17 +736,17 @@ void Balance_Infantry_Classdef::Set_MaxSpeed(uint16_t _powerMax)
     {
     }
     speed_scale = std_lib::constrain(speed_scale, -5.f, 5.f);
-    if (Source_Cap_Voltage <= 14.f)
+    if (Source_Cap_Voltage <= 12.f)
     {
         rotation_scale = 0.1;
-        speed_scale = 1.5f;
+        speed_scale = 1.7f;
     }
-    else if (Source_Cap_Voltage <= 19.f && Source_Cap_Voltage > 14.f)
+    else if (Source_Cap_Voltage <= 16.f && Source_Cap_Voltage > 12.f)
     {
         rotation_scale = 0.4;
-        speed_scale = 1.8f;
+        speed_scale = 1.9f;
     }
-    else if (Source_Cap_Voltage > 19.f && Source_Cap_Voltage <= 23)
+    else if (Source_Cap_Voltage > 16.f && Source_Cap_Voltage <= 23)
     {
         rotation_scale = 0.7f;
     }

@@ -497,7 +497,7 @@ void Controller<PID>::reset_adjust()
  */
 Controller<LQR>::Controller()
 {
-    set_point_pid.SetPIDParam(-10.0f, 0, 0.0f, 3.0f, 7.f);
+    set_point_pid.SetPIDParam(-10.0f, 0, 0.0f, 3.0f, 6.f);
     rotation_point_pid.SetPIDParam(0, 0.000001f, 0, 0.f, 3.f);
     // slider_follow_pid.SetPIDParam(1000.f, 0, 0.2f, 0, 20000.f);
     slider_follow_pid.SetPIDParam(-5.f, 0, 0.f, 0, 1.f);

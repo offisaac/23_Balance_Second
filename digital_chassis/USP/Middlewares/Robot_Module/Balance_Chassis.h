@@ -205,6 +205,7 @@ public:
     float wheel_speed_out_theory[2] = {0}; //速度环理论输出（相对于整车的前后而言）
     int wheel_out_raw[2] = {0};            //电机功控输出  （相对于单个轮子而言）
     float current_speed = 0;               //获取当前底盘速度
+		float wheel_out[2];
 
     /*小陀螺平移*/
     float angle_error = 0.f;          //目标速度向量与底盘坐标角度差
