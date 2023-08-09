@@ -112,9 +112,9 @@ void UpperMonitor_Sent_Choose(float *data)
           break;
       case 3: data[i]= infantry.gimbal.yaw_angleloop.Current;
           break;
-      case 4: data[i]= infantry.booster.left_fri_speedloop.Current;//infantry.board_com.rx_pack1.heat_limit;
+      case 4: data[i]= (float)infantry.booster.left_fri_speedloop.Current;//infantry.board_com.rx_pack1.heat_limit;
           break;
-      case 5: data[i]= infantry.booster.right_fri_speedloop.Current;//infantry.board_com.rx_pack1.booster_heat;
+      case 5: data[i]= (float)infantry.booster.right_fri_speedloop.Current;//infantry.board_com.rx_pack1.booster_heat;
           break;
       case 6: data[i]= infantry.booster.bulletSpeed;
       		break;

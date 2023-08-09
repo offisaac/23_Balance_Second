@@ -48,7 +48,7 @@ void Service_Devices_Init(void)
 	xTaskCreate(Device_InfantryCtrl, "Dev.Infantry", Huge_Stack_Size, NULL, PrioritySuperHigh, &InfantryCtrl_Handle);
 	xTaskCreate(Device_Indicator, "Device.Indicator", Normal_Stack_Size, NULL, PriorityHigh, &DeviceIndicator_Handle);
 	//xTaskCreate(tskOpenlog_send,"App.Openlog send",Normal_Stack_Size, NULL,PriorityRealtime, &Openlog_send_Handle);
-	xTaskCreate(tskLog, "App.Log", Normal_Stack_Size, NULL, PrioritySuperHigh, &Log_Handle);
+	//xTaskCreate(tskLog, "App.Log", Normal_Stack_Size, NULL, PrioritySuperHigh, &Log_Handle);
 }
 
 /**
