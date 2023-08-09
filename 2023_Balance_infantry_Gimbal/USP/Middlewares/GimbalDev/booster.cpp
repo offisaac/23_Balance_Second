@@ -108,7 +108,7 @@ void Booster_Classdef::Status_Update(bool *_friState,
 	static float last_bulletspeed;
 	if (bulletSpeed != last_bulletspeed)
 	{
-		Sent_Contorl(&huart3);
+		//Sent_Contorl(&huart3);
 		bullect_speed_t = Get_SystemTimer();
 	}
 	last_bulletspeed = bulletSpeed;

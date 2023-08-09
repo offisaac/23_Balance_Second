@@ -215,25 +215,35 @@ void UpperMonitor_Sent_Choose(float *data)
       //				break;
       //			default:break;
 
-      case 0: data[i] = debug_out_A;
-          break;
-      case 1: data[i] = debug_out_B;
-          break;
-      case 2: data[i] = debug_out_C;
-          break;
-      case 3: data[i] = debug_out_D;
-          break;
-      case 4: data[i] = debug_out_E;
-          break;
-      case 5: data[i] = debug_out_F;
-          break;
-      case 6: data[i] = debug_out_G;
-          break;
-			case 7: data[i] = balance_infantry.balance_controller.current_sliderLocation[0].y;
-					break;
-			case 8: data[i] = balance_infantry.balance_controller.current_linearSpeed.y;
-					break;
+//      case 0: data[i] = debug_out_A;
+//          break;
+//      case 1: data[i] = debug_out_B;
+//          break;
+//      case 2: data[i] = debug_out_C;
+//          break;
+//      case 3: data[i] = debug_out_D;
+//          break;
+//      case 4: data[i] = debug_out_E;
+//          break;
+//      case 5: data[i] = debug_out_F;
+//          break;
+//      case 6: data[i] = debug_out_G;
+//          break;
+//			case 7: data[i] = debug_out_H;
+//					break;
+//			case 8: data[i] = balance_infantry.balance_controller.current_linearSpeed.y;
+//					break;
 
+			case 0: data[i] = balance_infantry.wheel_out[LEFT];
+			break;
+			case 1: data[i] = balance_infantry.wheel_out[RIGHT];
+			break;
+			case 2: data[i] = balance_infantry.Source_Current_Out;
+			break;
+			case 3: data[i] = balance_infantry.Source_Cap_Voltage;
+			break;
+			case 4: data[i] = digital_Power.power.pow_motor;
+			break;
       default:
           break;
 

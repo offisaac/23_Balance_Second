@@ -31,7 +31,7 @@
 /*摩擦轮射速宏定义*/
 #define BULLET_SPEED_15 4300;
 #define BULLET_SPEED_18 4750;
-#define BULLET_SPEED_30 6900;
+#define BULLET_SPEED_30 6800;
 /*热量上限阈值宏定义*/
 #define HEAT_OFFSET (30) // 20Hz射频时上限-38，15Hz、10Hz射频上限-28，2Hz射频上限-13
 /*弹舱盖开关限位*/

@@ -225,6 +225,14 @@ void ChassisCTRL_Classdef::data_process()
 		speed_Z = chassis_yawAngle.Out;
 	}
 	chassis_yaw_current_full = chassis_yaw_current - rotateCnt * 360;
+
+	if (yaw_encoder_count % 2 == 1)
+	{
+		chassis_yaw_current_full += 180;
+	}
+	else
+	{
+	}
 }
 /**
  * @brief 底盘复位

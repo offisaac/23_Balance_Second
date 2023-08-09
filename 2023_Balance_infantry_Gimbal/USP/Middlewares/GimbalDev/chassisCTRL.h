@@ -68,6 +68,7 @@ public:
 	float chassis_yaw_current_full; //底盘360度角度当前值
 	float y_data, x_data, y_back_data, x_back_data;
 	int rotateCnt; //记录云台旋转圈数
+	uint32_t yaw_encoder_count = 0;	//底盘跟随掉头编码器计数
 	/*标志位*/
 	bool chassis_resetState; //遥控保护
 	uint8_t rotationState = 0;	 //小陀螺
