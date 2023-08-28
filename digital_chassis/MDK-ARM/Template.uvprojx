@@ -1786,9 +1786,9 @@
               <FilePath>..\USP\Middlewares\Robot_Module\Slider_controller.cpp</FilePath>
             </File>
             <File>
-              <FileName>BalanceChassisMiddleware_template.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\USP\middleware_template\BalanceChassisMiddleware_template.h</FilePath>
+              <FileName>BalanceChassisMiddleware_template.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\USP\middleware_template\BalanceChassisMiddleware_template.cpp</FilePath>
             </File>
           </Files>
         </Group>

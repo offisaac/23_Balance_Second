@@ -270,7 +270,7 @@ void tskLog(void *arg)
                                                (int16_t)(balance_infantry.balance_controller.target_angularSpeed.yaw),
                                                (int16_t)absChassis.getCtrlData().rotation_state,
                                                (int16_t)(balance_infantry.balance_controller.current_angularSpeed.yaw),
-                                               (int16_t)(absChassis.getCtrlData().get_speed_z),
+                                               (int16_t)(absChassis.getCtrlData().target_speed_z * 180 / PI),
                                                (int16_t)balance_infantry.machine_mode,
                                                (int16_t)Referee.ShootData.bullet_speed*1000.0f);
  		openlog.push_buff();

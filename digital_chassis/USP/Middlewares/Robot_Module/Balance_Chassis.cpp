@@ -51,10 +51,6 @@ void Balance_State::State_Handler()
  */
 Balance_Infantry_Classdef::Balance_Infantry_Classdef()
 {
-    speed_scale = 0.25;
-    max_wheel_speed = 9000.0f;
-    max_launch_speed = 9000.0f;
-    max_wheel_output = 16384.0f;
     current_state = &lostctrl_state;
 }
 
@@ -91,15 +87,11 @@ void Balance_Infantry_Classdef::Judge_State()
  * @return
  * @retval  None
  */
-float debug_angle = 100;
 void Balance_Infantry_Classdef::Update_Target(float _y_speed, float _z_speed, float _x_speed)
 {
-    float rotation_speed = (360.f + rotation_scale * 180.f) * DEGREE_TO_RAD;
-    // float rotation_speed = 360.f;
-    // if (absChassis.getCtrlData().unlimited_state)
-    // {
-    //     rotation_speed = 720.f;
-    // }
+    float target_rotation_angle = 0;  //速度向量旋转角
+    float target_rotation_r;      //目标速度模长
+    float fact_target_speed;
 
     target_rotation_r = sqrtf(powf(_y_speed, 2) + powf(_x_speed, 2)); //计算平移矢量模长
     if (_y_speed == 0 && _x_speed > 0)
@@ -139,34 +131,26 @@ void Balance_Infantry_Classdef::Update_Target(float _y_speed, float _z_speed, fl
     {
         target_rotation_angle -= (0.25f * PI * (-balance_controller.current_angularSpeed.yaw - 2 * PI) / (2 * PI) + 0.5f * PI); //根据小陀螺转速进行速度向量相位补偿
     }
-    angle_error = rotation_chassis_angle - target_rotation_angle; //得出速度向量与底盘坐标系夹角
 
+    float angle_error = rotation_chassis_angle - target_rotation_angle; //得出速度向量与底盘坐标系夹角
     fact_target_speed = target_rotation_r * cosf(angle_error);
 
     if (absChassis.getCtrlData().rotation_state)
     {
-        balance_controller.Update_Target_LinearSpeed(0, std_lib::constrain(fact_target_speed, -1.0f, 1.0f) * speed_scale * rotation_move_gain, 0);
-        balance_controller.Update_Target_AngularSpeed(std_lib::constrain(_z_speed * 6 * PI, -rotation_speed, rotation_speed), 0, 0);
+        balance_controller.Update_Target_LinearSpeed(0, fact_target_speed * rotation_move_gain, 0);
+        balance_controller.Update_Target_AngularSpeed(_z_speed, 0, 0);
         balance_controller.down_slope_flag = false;
     }
     else
     {
-        if (absChassis.getCtrlData().turn90degrees)
+        balance_controller.Update_Target_LinearSpeed(0, fact_target_speed, 0);
+        balance_controller.Update_Target_AngularSpeed(_z_speed, 0, 0);
+        if (absChassis.getCtrlData().ascent_state)
         {
-            balance_controller.Update_Target_LinearSpeed(0, std_lib::constrain(fact_target_speed, -0.5f, 0.5f) * speed_scale, 0);
-            balance_controller.Update_Target_AngularSpeed(std_lib::constrain(_z_speed, -1.0f, 1.0f) * 6 * PI, 0, 0);
-            balance_controller.down_slope_flag = false;
-        }
-        else if (absChassis.getCtrlData().ascent_state)
-        {
-            balance_controller.Update_Target_LinearSpeed(0, std_lib::constrain(fact_target_speed, -0.5f, 0.5f) * speed_scale, 0);
-            balance_controller.Update_Target_AngularSpeed(std_lib::constrain(_z_speed, -1.0f, 1.0f) * 6 * PI, 0, 0);
             balance_controller.down_slope_flag = true;
         }
         else
         {
-            balance_controller.Update_Target_LinearSpeed(0, std_lib::constrain(fact_target_speed, -1.0f, 1.0f) * speed_scale, 0);
-            balance_controller.Update_Target_AngularSpeed(std_lib::constrain(_z_speed, -1.0f, 1.0f) * 6 * PI, 0, 0);
             balance_controller.down_slope_flag = false;
         }
     }
@@ -201,8 +185,8 @@ void Balance_Infantry_Classdef::Update_Current_Speed(float _y, float _yaw, float
     current_time = Get_SystemTimer();
     time_gap = current_time - last_time;
 
-    distance += (_y + _pitch * WHEEL_R) * CTRL_INTERAL;
-    balance_controller.Update_Current_LinearSpeed(0, (_y + _pitch * WHEEL_R), 0); //当前线速度需要减去因车体旋转造成的误差
+    distance += (_y + _pitch * absChassis.wheelRadius) * CTRL_INTERAL;
+    balance_controller.Update_Current_LinearSpeed(0, (_y + _pitch * absChassis.wheelRadius), 0); //当前线速度需要减去因车体旋转造成的误差
     balance_controller.Update_Current_AngularSpeed(_yaw, _pitch, 0);
     if (time_gap && current_time && last_time)
     {
@@ -277,7 +261,7 @@ void Balance_Infantry_Classdef::Chassis_Ctrl_Cal()
     slider_sspeed[RIGHT] = Slider_Ctrl.slider[RIGHT].getCurrentSpeed();
 
     /*更新目标值*/
-    Update_Target(absChassis.getCtrlData().get_speed_y / 1000.0f, -absChassis.getCtrlData().get_speed_z / 1000.0f, absChassis.getCtrlData().get_speed_x / 1000.f);
+    Update_Target(absChassis.getCtrlData().target_speed_y, -absChassis.getCtrlData().target_speed_z, absChassis.getCtrlData().target_speed_x);
     /*更新当前位姿*/
     Update_Current_Pos(absChassis.absIMU.getEularData()->yaw, absChassis.absIMU.getEularData()->pitch, absChassis.getCtrlData().chassis_rotation_angle);
     /*更新当前速度*/
@@ -297,9 +281,6 @@ void Balance_Infantry_Classdef::Chassis_Ctrl_Cal()
 
     wheel_speed_out_theory[LEFT] = balance_controller.Get_Data().speed_out - balance_controller.Get_Data().turn_out; //还需要做功率控制，先不转换类型
     wheel_speed_out_theory[RIGHT] = balance_controller.Get_Data().speed_out + balance_controller.Get_Data().turn_out;
-
-    wheel_out_raw[LEFT] = (int)fabsf(wheel_speed_out_theory[LEFT]);
-    wheel_out_raw[RIGHT] = (int)fabsf(wheel_speed_out_theory[RIGHT]);
 }
 
 /**
@@ -324,38 +305,10 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
         }
         else
         {
-            //制动取消速度环功率控制
-            // if (balance_controller.break_flag && !absChassis.getCtrlData().rotation_state)
-            // {
-            //     wheel_out[LEFT] = wheel_stand_out_theory[LEFT] + balance_controller.Get_Data().speed_out - balance_controller.Get_Data().turn_out * power_limit_scale;
-            //     wheel_out[RIGHT] = wheel_stand_out_theory[RIGHT] + balance_controller.Get_Data().speed_out + balance_controller.Get_Data().turn_out * power_limit_scale;
-            // }
-            // else
-            // {
-            //     if (power_energy < 0.f)
-            //     {
-            //         wheel_out[LEFT] = wheel_stand_out_theory[LEFT] + balance_controller.Get_Data().speed_out * power_limit_scale - balance_controller.Get_Data().turn_out * power_limit_scale;
-            //         wheel_out[RIGHT] = wheel_stand_out_theory[RIGHT] + balance_controller.Get_Data().speed_out * power_limit_scale + balance_controller.Get_Data().turn_out * power_limit_scale;
-            //     }
-            //     else
-            //     {
-            //         wheel_out[LEFT] = wheel_stand_out_theory[LEFT] + balance_controller.Get_Data().speed_out - balance_controller.Get_Data().turn_out * power_limit_scale;
-            //         wheel_out[RIGHT] = wheel_stand_out_theory[RIGHT] + balance_controller.Get_Data().speed_out + balance_controller.Get_Data().turn_out * power_limit_scale;
-            //     }
-            // }
+
             wheel_out[LEFT] = wheel_stand_out_theory[LEFT] + balance_controller.Get_Data().speed_out - balance_controller.Get_Data().turn_out;
             wheel_out[RIGHT] = wheel_stand_out_theory[RIGHT] + balance_controller.Get_Data().speed_out + balance_controller.Get_Data().turn_out;
         }
-        //防止电流过大
-//        if (Source_Current_Out > 10.0f)
-//        {
-//            wheel_out[LEFT] = std_lib::constrain(wheel_out[LEFT], -4.f, 4.f);
-//            wheel_out[RIGHT] = std_lib::constrain(wheel_out[RIGHT], -4.f, 4.f);
-//        }
-//        else
-//        {
-            
-//        }
     }
     else
     {
@@ -374,6 +327,9 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
             wheel_out[RIGHT] = 0;
         }
     }
+
+    wheel_out[LEFT] = std_lib::constrain(wheel_out[LEFT], -4.2f, 4.2f);
+    wheel_out[RIGHT] = std_lib::constrain(wheel_out[RIGHT], -4.2f, 4.2f);
 
     float rotation_slider_pos[2] = {-10, -10};
     if (absChassis.getCtrlData().rotation_state)
@@ -412,8 +368,6 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
         }
     }
 
-    wheel_out[LEFT] = std_lib::constrain(wheel_out[LEFT], -4.2f, 4.2f);
-    wheel_out[RIGHT] = std_lib::constrain(wheel_out[RIGHT], -4.2f, 4.2f);
     if (motorLinkCount[RIGHT] < 20 && motorLinkCount[LEFT] < 20)
     {
         absChassis.controlWheelMotor(wheel_out);
@@ -429,68 +383,6 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
         }
     }
 
-}
-
-/**
- * @brief 切换速度挡位
- * @parma None
- * @return None
- */
-
-void Balance_Infantry_Classdef::Set_MaxSpeed(uint16_t _powerMax)
-/* 需测试 */
-{
-    if (_powerMax <= 60)
-    {
-        speed_scale = 2.f;
-    }
-    else if (_powerMax > 60 && _powerMax < 100)
-    {
-        speed_scale = 2.2f;
-    }
-    else if (_powerMax >= 100)
-    {
-        speed_scale = 2.4f; // 0.5f
-    }
-    else
-    {
-        speed_scale = 2.f;
-    }
-    /*各种功率标志位*/
-    if (absChassis.getCtrlData().leap_state && Source_Cap_Voltage > 17.0f)
-    {
-        speed_scale = 3.4f;
-    }
-    else if (absChassis.getCtrlData().unlimited_state && Source_Cap_Voltage > 17.0f)
-    {
-        speed_scale += 0.4f;
-    }
-    else if (absChassis.getCtrlData().ascent_state && Source_Cap_Voltage > 17.0f)
-    {
-        speed_scale = 3.4f;
-    }
-    else
-    {
-    }
-    speed_scale = std_lib::constrain(speed_scale, -5.f, 5.f);
-    if (Source_Cap_Voltage <= 12.f)
-    {
-        rotation_scale = 0.1;
-        speed_scale = 1.7f;
-    }
-    else if (Source_Cap_Voltage <= 16.f && Source_Cap_Voltage > 12.f)
-    {
-        rotation_scale = 0.4;
-        speed_scale = 1.9f;
-    }
-    else if (Source_Cap_Voltage > 16.f && Source_Cap_Voltage <= 23)
-    {
-        rotation_scale = 0.7f;
-    }
-    else
-    {
-        rotation_scale = 1.f;
-    }
 }
 
 /**
