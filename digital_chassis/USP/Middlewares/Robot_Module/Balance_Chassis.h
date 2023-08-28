@@ -91,8 +91,6 @@ public:
     void Judge_State();       //转换状态
     void Chassis_Ctrl_Cal();  //控制器计算
     void Chassis_Adjust();    //控制量下发
-    void Link_Check();        //通信检测函数
-    void Motor_State_Check(); //电机状态检测与纠正
     void Reset_Adjust();      //重置函数
     //控制器更新数据部分
     void Update_Target(float _y_speed, float _z_speed, float _x_speed);
@@ -110,11 +108,6 @@ public:
     /*小陀螺平移*/
     float rotation_move_gain = 0.3f;  //平移速度增益
     float rotation_chassis_angle = 0; //底盘坐标相对于云台转角
-
-    //电机状态检测
-    uint8_t motorLinkCount[2] = {}; // 电机连接检测1
-    uint16_t motorErrorCnt[2] = {}; // 电机出错统计
-    uint16_t motorDeadCnt[2] = {};
 };
 
 #endif

@@ -98,6 +98,7 @@ void tskDjiMotor(void *arg)
     /* wait for next circle */
 
     vTaskDelayUntil(&xLastWakeTime_t, 2);
+    absChassis.Link_Check();
     balance_infantry.Chassis_Ctrl();
 
     /* 发送CAN包到云台 */
@@ -127,7 +128,7 @@ void Motor_State(void *arg)
   {
     /* wait for next circle */
     vTaskDelay(20);
-    balance_infantry.Motor_State_Check();
+    absChassis.Motor_State_Check();
   }
 }
 

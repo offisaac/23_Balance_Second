@@ -330,6 +330,7 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
 
     wheel_out[LEFT] = std_lib::constrain(wheel_out[LEFT], -4.2f, 4.2f);
     wheel_out[RIGHT] = std_lib::constrain(wheel_out[RIGHT], -4.2f, 4.2f);
+    absChassis.controlWheelMotor(wheel_out);
 
     float rotation_slider_pos[2] = {-10, -10};
     if (absChassis.getCtrlData().rotation_state)
@@ -358,7 +359,7 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
         if (absChassis.getCtrlData().rotation_state || absChassis.getCtrlData().turn90degrees)
         {
             Slider_Ctrl.update(rotation_slider_pos);
-             Slider_Ctrl.adjust();
+            Slider_Ctrl.adjust();
             Slider_Ctrl.acutate();
         }
         else
@@ -366,78 +367,6 @@ void Balance_Infantry_Classdef::Chassis_Adjust()
             // Slider_Ctrl.setTorqueOut(balance_controller.output.sliderCtrl_out);
             Slider_Ctrl.setVoltageOut(balance_controller.output.sliderCtrl_out);
         }
-    }
-
-    if (motorLinkCount[RIGHT] < 20 && motorLinkCount[LEFT] < 20)
-    {
-        absChassis.controlWheelMotor(wheel_out);
-    }
-    else
-    {
-        for (int i = 0; i < 2; i++)
-        {
-            if (motorLinkCount[i] >= 20)
-                absChassis.wheelMotor[i].motor->startMotor();
-            else
-                absChassis.wheelMotor[i].motor->iqCloseControl_Current(0);
-        }
-    }
-
-}
-
-/**
- * @brief  连接检测函数
- * @note
- * @param
- * @return
- * @retval  None
- */
-void Balance_Infantry_Classdef::Link_Check()
-{
-    for (int i = 0; i < 2; i++)
-    {
-        if (motorLinkCount[i] < 100)
-            motorLinkCount[i]++;
-    }
-}
-
-/**
- * @brief 9025电机状态获取
- * @parma None
- * @return None
- */
-void Balance_Infantry_Classdef::Motor_State_Check()
-{
-    static float last_current[2] = {0, 0};
-    absChassis.wheelMotor[RIGHT].motor->readMotorState1_errorState();
-    absChassis.wheelMotor[LEFT].motor->readMotorState1_errorState();
-    vTaskDelay(2);
-    for (int i = 0; i < 2; i++)
-    {
-        float motor_current = absChassis.wheelMotor[i].motor->getData().current;
-        if (absChassis.wheelMotor[i].motor->getData().errorState)
-        {
-            motorErrorCnt[i]++;
-            absChassis.wheelMotor[i].motor->cleanErrorState();
-            vTaskDelay(2);
-            absChassis.wheelMotor[i].motor->startMotor();
-            vTaskDelay(2);
-            continue;
-        }
-        else
-            motorErrorCnt[i] = 0;
-
-        if (motor_current == last_current[i])
-            motorDeadCnt[i]++;
-        else
-            motorDeadCnt[i] = 0;
-
-        if (motorDeadCnt[i] >= 10)
-        {
-            absChassis.wheelMotor[i].motor->startMotor();
-            vTaskDelay(2);
-        }
-        last_current[i] = motor_current;
     }
 }
 

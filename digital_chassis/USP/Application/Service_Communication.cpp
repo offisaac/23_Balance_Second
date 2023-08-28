@@ -139,14 +139,7 @@ void Task_CAN2Receive(void *arg)
     /* update motor data from CAN1_RxPort */
     if (xQueueReceive(CAN2_RxPort, &CAN_RxCOB, portMAX_DELAY) == pdPASS)
     {
-      if(absChassis.wheelMotor[LEFT].update(CAN_RxCOB))
-      {
-
-      }
-      else if (absChassis.wheelMotor[RIGHT].update(CAN_RxCOB))
-      {
-
-      }
+      absChassis.MotorUpdate(CAN_RxCOB);
     }
   }
 }
