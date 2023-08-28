@@ -8,6 +8,8 @@
 #ifndef _INTERNAL_H_
 #define _INTERNAL_H_
 
+#include "BalanceChassisMiddleware_template.h"
+#include "Slider_controller.h"
 #include "Balance_Chassis.h"
 #include "semphr.h"
 #include "Middlewares/Utility/openlog.h"
@@ -91,6 +93,11 @@ extern uint8_t Uart2_Rx_Buff[USART2_RX_BUFFER_SIZE];
 extern uint8_t Uart3_Rx_Buff[USART3_RX_BUFFER_SIZE];
 extern uint8_t Uart6_Rx_Buff[USART6_RX_BUFFER_SIZE]; 
 
+
+extern abstractBalanceChassis absChassis;
+extern referee_Classdef Referee;                           //裁判系统管理
+extern GimbalCom_Classdef Board_Com;
+extern SliderControllerClassdef<Motor_GM6020> Slider_Ctrl; //滑块控制器
 extern Balance_Infantry_Classdef balance_infantry;
 extern openlog_classdef<16> openlog;
 /* Exported function declarations --------------------------------------------*/
@@ -107,17 +114,6 @@ uint32_t User_UART3_RxCpltCallback(uint8_t* Recv_Data, uint16_t ReceiveLen);
 uint32_t User_UART4_RxCpltCallback(uint8_t* Recv_Data, uint16_t ReceiveLen);
 uint32_t User_UART5_RxCpltCallback(uint8_t* Recv_Data, uint16_t ReceiveLen);
 uint32_t Referee_recv_Callback(uint8_t* Recv_Data, uint16_t ReceiveLen);
-
-
-extern float debug_A;
-extern float debug_B;
-extern float debug_C;
-extern float debug_D;
-extern float debug_E;
-extern float debug_F;
-extern float debug_G;
-extern float debug_H;
-extern float debug_I;
 
 #ifdef __cplusplus
 }

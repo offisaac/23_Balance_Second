@@ -113,16 +113,16 @@ void SliderControllerClassdef<Motor_C610>::acutate()
     xQueueSend(canTxPort, &(canTxPack.Id200), 0);
 }
 
-void SliderControllerClassdef<Motor_C610>::updateMotorData(CAN_COB *CAN_RxMsg)
+void SliderControllerClassdef<Motor_C610>::updateMotorData(CAN_COB &CAN_RxMsg)
 {
-    if (slider[0].motor.CheckID(CAN_RxMsg->ID))
+    if (slider[0].motor.CheckID(CAN_RxMsg.ID))
     {
-        slider[0].motor.update(CAN_RxMsg->Data);
+        slider[0].motor.update(CAN_RxMsg.Data);
         sliderMotorInit[0] = true;
     }
-    else if (slider[1].motor.CheckID(CAN_RxMsg->ID))
+    else if (slider[1].motor.CheckID(CAN_RxMsg.ID))
     {
-        slider[1].motor.update(CAN_RxMsg->Data);
+        slider[1].motor.update(CAN_RxMsg.Data);
         sliderMotorInit[1] = true;
     }
 }
@@ -177,16 +177,16 @@ void SliderControllerClassdef<Motor_GM6020>::acutate()
     xQueueSend(canTxPort, &(canTxPack.Id2ff), 0);
 }
 
-void SliderControllerClassdef<Motor_GM6020>::updateMotorData(CAN_COB *CAN_RxMsg)
+void SliderControllerClassdef<Motor_GM6020>::updateMotorData(CAN_COB &CAN_RxMsg)
 {
-    if (slider[0].motor.CheckID(CAN_RxMsg->ID))
+    if (slider[0].motor.CheckID(CAN_RxMsg.ID))
     {
-        slider[0].motor.update(CAN_RxMsg->Data);
+        slider[0].motor.update(CAN_RxMsg.Data);
         sliderMotorInit[0] = true;
     }
-    else if (slider[1].motor.CheckID(CAN_RxMsg->ID))
+    else if (slider[1].motor.CheckID(CAN_RxMsg.ID))
     {
-        slider[1].motor.update(CAN_RxMsg->Data);
+        slider[1].motor.update(CAN_RxMsg.Data);
         sliderMotorInit[1] = true;
     }
 }
@@ -207,7 +207,7 @@ void SliderControllerClassdef<Motor_GM6020>::setTorqueOut(float _torque[2])
 
 void SliderControllerClassdef<Motor_GM6020>::setVoltageOut(float _voltage[2])
 {
-		slider[0].setVoltageOut(_voltage[0]/1.2*26000);
-		slider[1].setVoltageOut(_voltage[1]/1.2*26000);
+		slider[0].setVoltageOut(_voltage[0]/1.2f*26000);
+		slider[1].setVoltageOut(_voltage[1]/1.2f*26000);
 		acutate();
 }

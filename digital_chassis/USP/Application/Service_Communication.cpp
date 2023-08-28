@@ -116,11 +116,11 @@ void Task_CAN1Receive(void *arg)
     {
       if (CAN_RxCOB.ID == TOCHASSIS_PACK1_ID || CAN_RxCOB.ID == TOCHASSIS_PACK2_ID)
       {
-        balance_infantry.Gimbal_Data_Update(&CAN_RxCOB);
+        absChassis.CTRL_Data_Update(CAN_RxCOB);
       }
       else
       {
-        balance_infantry.Slider_Ctrl.updateMotorData(&CAN_RxCOB);
+        Slider_Ctrl.updateMotorData(CAN_RxCOB);
       }
     }
   }
@@ -139,8 +139,14 @@ void Task_CAN2Receive(void *arg)
     /* update motor data from CAN1_RxPort */
     if (xQueueReceive(CAN2_RxPort, &CAN_RxCOB, portMAX_DELAY) == pdPASS)
     {
-      // 更新电机数据，如
-      balance_infantry.CAN_Motor_Update(&CAN_RxCOB);
+      if(absChassis.wheelMotor[LEFT].update(CAN_RxCOB))
+      {
+
+      }
+      else if (absChassis.wheelMotor[RIGHT].update(CAN_RxCOB))
+      {
+
+      }
     }
   }
 }
@@ -252,8 +258,7 @@ void Task_UsartReceive(void *arg)
       switch (Usart_RxCOB.port_num)
       {
       case 1:
-        balance_infantry.LPMS.LPMS_BE2_Get_Data((uint8_t *)Usart_RxCOB.address);
-        balance_infantry.LPMS.LPMS_BE2_Data_Convert();
+        absChassis.absIMU.update((uint8_t *)Usart_RxCOB.address);
         break;
       default:
         break;

@@ -32,7 +32,12 @@ uint8_t Uart2_Rx_Buff[USART2_RX_BUFFER_SIZE];
 uint8_t Uart3_Rx_Buff[USART2_RX_BUFFER_SIZE]; /*!< Receive buffer for Uart3 */
 uint8_t Uart6_Rx_Buff[USART2_RX_BUFFER_SIZE]; /*!< Receive buffer for Uart6 */
 
+abstractBalanceChassis absChassis = abstractBalanceChassis(&USART_TxPort, 2, 1);
+referee_Classdef Referee;                           //裁判系统管理
+GimbalCom_Classdef Board_Com;
+SliderControllerClassdef<Motor_GM6020> Slider_Ctrl; //滑块控制器
 Balance_Infantry_Classdef balance_infantry;
+
 openlog_classdef<16> openlog(Uart2_Transmit);
 /************************ COPYRIGHT(C) SCUT-ROBOTLAB **************************/
 

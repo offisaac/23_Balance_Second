@@ -1,6 +1,5 @@
 #include "balance_controller.h"
 #include "math.h"
-#include "SecondButterworthLPF.h"
 
 myPID Cap_Charge_Pid;
 myPID Power_Limit_Pid;
@@ -714,7 +713,7 @@ float Controller<LQR>::self_adaption()
     }
     else
     {
-        rotation_point_pid.integral_e = 0;
+        rotation_point_pid.clean_intergral();
     }
     //根据情况判断当前平衡点
     if (is_turn90degrees)

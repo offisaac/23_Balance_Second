@@ -25,7 +25,7 @@ public:
 
     SliderControllerClassdef();
     void importQueueHander(QueueHandle_t _canTxPort) { canTxPort = _canTxPort; }
-    void updateMotorData(CAN_COB *CAN_RxMsg);
+    void updateMotorData(CAN_COB &CAN_RxMsg);
 
     void init();
     void update(float targetPos[2]);
@@ -47,7 +47,7 @@ public:
 
     SliderControllerClassdef();
     void importQueueHander(QueueHandle_t _canTxPort) { canTxPort = _canTxPort; }
-    void updateMotorData(CAN_COB *CAN_RxMsg);
+    void updateMotorData(CAN_COB &CAN_RxMsg);
 
     void init();
     void update(float targetPos[2]);

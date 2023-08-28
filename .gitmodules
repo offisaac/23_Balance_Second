@@ -4,3 +4,6 @@
 [submodule "digital_Power_LibraryFile"]
 	path = digital_Power_LibraryFile
 	url = https://git.scutbot.cn/Embedded/digital_Power_LibraryFile
+[submodule "digital_chassis/SRML"]
+	path = digital_chassis/SRML
+	url = https://git.scutbot.cn/WhiteNight/SRML_V2

@@ -238,7 +238,7 @@ void UpperMonitor_Sent_Choose(float *data)
 			break;
 			case 1: data[i] = balance_infantry.wheel_out[RIGHT];
 			break;
-			case 2: data[i] = balance_infantry.Source_Current_Out;
+			case 2: data[i] = 0;
 			break;
 			case 3: data[i] = balance_infantry.Source_Cap_Voltage;
 			break;

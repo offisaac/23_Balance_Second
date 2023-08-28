@@ -1,7 +1,7 @@
 #ifndef _SLIDING_BLOCK_H_
 #define _SLIDING_BLOCK_H_
 
-#include "abstractMotor.h"
+#include "SRML.h"
 #include "public_define.h"
 
 namespace SliderNameSpace
@@ -127,7 +127,6 @@ public:
     {
         // absMotor.setMotorTorqueOut(0);
         absMotor.setMotorVoltageOut(0);
-        absMotor.clearCurrentLoop();
     }
 };
 #endif

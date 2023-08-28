@@ -52,8 +52,8 @@ void System_Device_Init(void)
 	Uart_Init(&huart6, Uart6_Rx_Buff, USART6_RX_BUFFER_SIZE, Referee_recv_Callback);
   /* Modules Init */
   //初始化裁判系统
-	balance_infantry.Referee.Init(&huart6, Get_SystemTimer);
-  myPIDTimer::getMicroTick_regist (Get_SystemTimer);
+	Referee.Init(&huart6, Get_SystemTimer);
+  SRML_Timer::getMicroTick_regist (Get_SystemTimer);
 }
 
 
@@ -63,13 +63,13 @@ void System_Device_Init(void)
 void System_Task_Init(void)
 {
   /* Queue Init */
-	CAN1_TxPort 		= xQueueCreate(4, sizeof(CAN_COB));
-  CAN1_RxPort 		= xQueueCreate(4, sizeof(CAN_COB));
-  CAN2_TxPort 		= xQueueCreate(4, sizeof(CAN_COB));
-  CAN2_RxPort 		= xQueueCreate(4, sizeof(CAN_COB));
-  USART_TxPort 		= xQueueCreate(4, sizeof(USART_COB));
-	USART_RxPort		= xQueueCreate(4, sizeof(USART_COB)); 
-  DR16_QueueHandle 	= xQueueCreate(2, sizeof(USART_COB));
+	CAN1_TxPort 		= xQueueCreate(6, sizeof(CAN_COB));
+  CAN1_RxPort 		= xQueueCreate(6, sizeof(CAN_COB));
+  CAN2_TxPort 		= xQueueCreate(6, sizeof(CAN_COB));
+  CAN2_RxPort 		= xQueueCreate(6, sizeof(CAN_COB));
+  USART_TxPort 		= xQueueCreate(6, sizeof(USART_COB));
+	USART_RxPort		= xQueueCreate(6, sizeof(USART_COB)); 
+  DR16_QueueHandle 	= xQueueCreate(3, sizeof(USART_COB));
   /* Semaphore Init */
   /* Mutex Init */
   DR16_mutex = xSemaphoreCreateMutex();
