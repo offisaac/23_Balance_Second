@@ -7,3 +7,6 @@
 [submodule "digital_chassis/SRML"]
 	path = digital_chassis/SRML
 	url = https://git.scutbot.cn/WhiteNight/SRML_V2
+[submodule "digital_chassis/USP/middleware_template"]
+	path = digital_chassis/USP/middleware_template
+	url = https://git.scutbot.cn/WhiteNight/middleware_template
