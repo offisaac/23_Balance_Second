@@ -38,7 +38,7 @@ void Service_Communication_Init(void)
   xTaskCreate(Task_CAN1Receive, "Com.CAN1 RxPort", Small_Stack_Size, NULL, PrioritySuperHigh, &CAN1ReceivePort_Handle);
   xTaskCreate(Task_CAN2Receive, "Com.CAN2 RxPort", Small_Stack_Size, NULL, PrioritySuperHigh, &CAN2ReceivePort_Handle);
   xTaskCreate(Task_UsartTransmit, "Com.Usart TxPort", Small_Stack_Size, NULL, PrioritySuperHigh, &UartTransmitPort_Handle);
-  xTaskCreate(Task_UsartReceive, "Com.Usart RxPort", Normal_Stack_Size, NULL, PriorityHigh, &UartReceivePort_Handle);
+  xTaskCreate(Task_UsartReceive, "Com.Usart RxPort", Normal_Stack_Size, NULL, PriorityRealtime, &UartReceivePort_Handle);
 }
 
 /*----------------------------------------------- CAN Manager ---------------------------------------------*/
