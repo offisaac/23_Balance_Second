@@ -46,12 +46,12 @@ void Motor_State(void *arg);
  */
 void Service_Devices_Init(void)
 {
-  xTaskCreate(tskDjiMotor, "App.Motor", Normal_Stack_Size, NULL, PriorityAboveNormal, &DjiMotor_Handle);
   xTaskCreate(tskSource, "App.Source", Normal_Stack_Size, NULL, PriorityAboveNormal, &Source_Handle);
   xTaskCreate(tskRefereeRx, "App.Referee", Normal_Stack_Size, NULL, PriorityNormal, &Referee_Handle);
   xTaskCreate(tskRefereeUI, "App.RefereeUI", Normal_Stack_Size, NULL, PriorityBelowNormal, &Referee_UI);
   //xTaskCreate(tskOpenlog_send, "App.Openlog send", Small_Stack_Size, NULL, PriorityAboveNormal, &Openlog_send_Handle);
   xTaskCreate(tskLog, "App.Log", Small_Stack_Size, NULL, PriorityAboveNormal, &Log_Handle);
+	xTaskCreate(tskDjiMotor, "App.Motor", Large_Stack_Size, NULL, PriorityAboveNormal, &DjiMotor_Handle);
   xTaskCreate(Motor_State, "Motor_State_Check", Small_Stack_Size, NULL, PriorityAboveNormal, &Motor_State_Handle);
 }
 
@@ -81,10 +81,7 @@ void tskDjiMotor(void *arg)
   vTaskDelay(200);
   HAL_UART_Init(&huart1);
 
-  TickType_t xLastWakeTime_t;
-  xLastWakeTime_t = xTaskGetTickCount();
-
-  absChassis.bindCanHandle(CAN2_TxPort);
+  absChassis.bindCanHandle(&CAN2_TxPort);
 
   absChassis.wheelMotor[LEFT].motor->writePidToRAM(50, 50, 75, 25, 125, 25);
   vTaskDelay(5);
@@ -92,6 +89,9 @@ void tskDjiMotor(void *arg)
 
   Slider_Ctrl.importQueueHander(CAN1_TxPort);
   Slider_Ctrl.init();
+
+  TickType_t xLastWakeTime_t;
+  xLastWakeTime_t = xTaskGetTickCount();
 
   for (;;)
   {
@@ -161,6 +161,7 @@ void tskRefereeUI(void *arg)
 
   for (;;)
   {
+     vTaskDelay(2000);
   //   if (balance_infantry.absChassis.getCtrlData().ui_reset_flag == 1) //重画UI标志位
   //   {
   //     enable_cnt = 20;

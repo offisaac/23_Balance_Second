@@ -33,11 +33,11 @@ extern TaskHandle_t IMU_Handle;
  */
 void Service_Communication_Init(void)
 {
-  xTaskCreate(Task_CAN1Transmit, "Com.CAN1 TxPort", Tiny_Stack_Size, NULL, PrioritySuperHigh, &CAN1SendPort_Handle);
-  xTaskCreate(Task_CAN2Transmit, "Com.CAN2 TxPort", Tiny_Stack_Size, NULL, PrioritySuperHigh, &CAN2SendPort_Handle);
-  xTaskCreate(Task_CAN1Receive, "Com.CAN1 RxPort", Tiny_Stack_Size, NULL, PrioritySuperHigh, &CAN1ReceivePort_Handle);
-  xTaskCreate(Task_CAN2Receive, "Com.CAN2 RxPort", Tiny_Stack_Size, NULL, PrioritySuperHigh, &CAN2ReceivePort_Handle);
-  xTaskCreate(Task_UsartTransmit, "Com.Usart TxPort", Tiny_Stack_Size, NULL, PrioritySuperHigh, &UartTransmitPort_Handle);
+  xTaskCreate(Task_CAN1Transmit, "Com.CAN1 TxPort", Small_Stack_Size, NULL, PrioritySuperHigh, &CAN1SendPort_Handle);
+  xTaskCreate(Task_CAN2Transmit, "Com.CAN2 TxPort", Small_Stack_Size, NULL, PrioritySuperHigh, &CAN2SendPort_Handle);
+  xTaskCreate(Task_CAN1Receive, "Com.CAN1 RxPort", Small_Stack_Size, NULL, PrioritySuperHigh, &CAN1ReceivePort_Handle);
+  xTaskCreate(Task_CAN2Receive, "Com.CAN2 RxPort", Small_Stack_Size, NULL, PrioritySuperHigh, &CAN2ReceivePort_Handle);
+  xTaskCreate(Task_UsartTransmit, "Com.Usart TxPort", Small_Stack_Size, NULL, PrioritySuperHigh, &UartTransmitPort_Handle);
   xTaskCreate(Task_UsartReceive, "Com.Usart RxPort", Normal_Stack_Size, NULL, PriorityHigh, &UartReceivePort_Handle);
 }
 
@@ -213,6 +213,9 @@ void Task_UsartTransmit(void *arg)
       /* User Code Begin Here -------------------------------*/
       switch (Usart_TxCOB.port_num)
       {
+			case 1:
+        pUart_x = &huart1;
+        break;
       case 2:
         pUart_x = &huart2;
         break;
