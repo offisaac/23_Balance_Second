@@ -250,7 +250,6 @@ void Balance_Infantry_Classdef::Update_Slider_Params(float _s[2], float _sspeed[
  */
 void Balance_Infantry_Classdef::Chassis_Ctrl_Cal()
 {
-    //    static MeanFilter<50> speed_MF; //均值滤波
     static MeanFilter<20> turn_mf;
     static LowPassFilter turn_lf(0.5);
     float slider_s[2];
