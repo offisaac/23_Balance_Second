@@ -518,8 +518,8 @@ void Controller<LQR>::Controller_Adjust()
     }
     else
     {
-        weightless_check();     //失重检测
-        idling_check();         //空转检测
+        // weightless_check();     //失重检测
+        // idling_check();         //空转检测
         rotation_crash_check(); //小陀螺撞墙检测
                                 /*setpoint倾角辅助*/
         slider_control();       //滑块控制
