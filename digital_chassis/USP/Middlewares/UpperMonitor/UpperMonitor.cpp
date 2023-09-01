@@ -100,7 +100,7 @@ void UpperMonitor_Sent_Choose(float *data)
       data[i] = balance_infantry.balance_controller.current_linearSpeed.y;
       break;
     case 2:
-      data[i] = absChassis.absIMU.getAngleVelData()->pitch;
+      data[i] = 0;
       break;
     case 3:
       data[i] = balance_infantry.balance_controller.target_location.y;

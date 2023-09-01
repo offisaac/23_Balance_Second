@@ -254,7 +254,7 @@ void Task_UsartReceive(void *arg)
       switch (Usart_RxCOB.port_num)
       {
       case 1:
-        absChassis.absIMU.update((uint8_t *)Usart_RxCOB.address);
+        absChassis.absIMU.processRecData((uint8_t *)Usart_RxCOB.address);
         break;
       default:
         break;

@@ -111,7 +111,7 @@ public:
     {
     }
 
-    void setEncoderOffset(uint16_t _offset) { absMotor.setEncoderOffset(_offset); }
+    void setEncoderOffset(uint16_t _offset) { absMotor.motor->setEncoderOffset(_offset); }
 
     void setVoltageOut(float _out)
     {

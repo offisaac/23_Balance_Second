@@ -262,11 +262,11 @@ void Balance_Infantry_Classdef::Chassis_Ctrl_Cal()
     /*更新目标值*/
     Update_Target(absChassis.getCtrlData().target_speed_y, -absChassis.getCtrlData().target_speed_z, absChassis.getCtrlData().target_speed_x);
     /*更新当前位姿*/
-    Update_Current_Pos(absChassis.absIMU.getEularData()->yaw, absChassis.absIMU.getEularData()->pitch, absChassis.getCtrlData().chassis_rotation_angle);
+    Update_Current_Pos(absChassis.absIMU.eularData.yaw, absChassis.absIMU.eularData.pitch, absChassis.getCtrlData().chassis_rotation_angle);
     /*更新当前速度*/
-    Update_Current_Speed(absChassis.getLinerSpeed(), absChassis.absIMU.getAngleVelData()->yaw, absChassis.absIMU.getAngleVelData()->pitch);
+    Update_Current_Speed(absChassis.getLinerSpeed(), absChassis.absIMU.gyroData.yaw, absChassis.absIMU.gyroData.pitch);
     /*更新当前线性加速度*/
-    Update_Current_Acc(absChassis.absIMU.getAccData()->x, absChassis.absIMU.getAccData()->y, absChassis.absIMU.getAccData()->z);
+    Update_Current_Acc(absChassis.absIMU.accData.x, absChassis.absIMU.accData.y, absChassis.absIMU.accData.z);
     /*更新当前滑块状态*/
     Update_Slider_Params(slider_s, slider_sspeed);
     /*更新当前电机电流值*/
@@ -292,7 +292,7 @@ void Balance_Infantry_Classdef::Chassis_Ctrl_Cal()
 void Balance_Infantry_Classdef::Chassis_Adjust()
 {
     /* 需要修改  高速时转向环响应不够 */
-    if (fabsf(absChassis.absIMU.getEularData()->pitch) < 45.0f)
+    if (fabsf(absChassis.absIMU.eularData.pitch) < 45.0f)
     {
         /* 固连自救，取消直立环作用，只利用速度环	自救 */
         if (absChassis.getCtrlData().self_rescue_state)

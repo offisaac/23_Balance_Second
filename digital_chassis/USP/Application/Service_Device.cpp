@@ -98,8 +98,10 @@ void tskDjiMotor(void *arg)
     /* wait for next circle */
 
     vTaskDelayUntil(&xLastWakeTime_t, 2);
+    absChassis.absIMU.update();
     absChassis.Link_Check();
     balance_infantry.Chassis_Ctrl();
+    
     absChassis.Send2Gimbal(&CAN1_TxPort);
 
   }
