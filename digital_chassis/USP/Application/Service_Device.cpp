@@ -37,8 +37,8 @@ void tskOpenlog_send(void *arg);
 void tskLog(void *arg);
 void Motor_State(void *arg);
 /* Function prototypes -------------------------------------------------------*/
+void Send2Gimbal(QueueHandle_t *canHandle);
 
-// LPMS_BE2_Typedef LPMS(1,1);
 /**
  * @brief  Initialization of device management service
  * @param  None.
@@ -102,7 +102,7 @@ void tskDjiMotor(void *arg)
     absChassis.Link_Check();
     balance_infantry.Chassis_Ctrl();
     
-    absChassis.Send2Gimbal(&CAN1_TxPort);
+    Send2Gimbal(&CAN1_TxPort);
 
   }
 }
@@ -280,4 +280,22 @@ void tskLog(void *arg)
 uint32_t get_refeeretime()
 {
   return xTaskGetTickCount() * 1000;
+}
+
+void Send2Gimbal(QueueHandle_t *canHandle)
+{
+    /* 发送CAN包到云台 */
+    Board_Com.gimbal_rx_pack2.chassis_flags &= 0xFFFE; //发送标志位除了第一位全部置1
+    if (balance_infantry.machine_mode == 2)
+    {
+        Board_Com.gimbal_rx_pack2.chassis_flags |= 0x0001; //第一位置1（底盘正常）
+    }
+
+    if (Referee.GameState.stage_remain_time < 240 && Referee.GameState.stage_remain_time != 0)
+        Board_Com.gimbal_rx_pack2.chassis_flags |= 0x0001 << 3; //第四位置1
+    else
+        Board_Com.gimbal_rx_pack2.chassis_flags &= ~(0x1 << 3); //第四位置0
+    Board_Com.Send_GimbalPack1(canHandle, &Referee);
+    Board_Com.Send_GimbalPack2(canHandle, &Referee, digital_Power.unit_DPW_data.Vcap * 7.f);
+
 }
